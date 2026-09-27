@@ -35,6 +35,7 @@ Native Android client for Home Assistant (HA). This repository contains the Andr
 | Errors, offline, tests, distribution, open points | 14 |
 | Mockups, design tokens, screen specs | 15 |
 | GitHub repos, branches, CI/CD, secrets | 16 |
+| Development guidelines: packages, factories, errors, code index | 17 |
 
 ## Repository layout
 
@@ -44,9 +45,11 @@ docs/
   concept.md           # full specification (leading copy, exported from the concept document)
   mockups/             # haac-mockups-1c.html, png/M-0x-*.png
   icons/               # playstore-icon-512.png, launcher previews (concept 15.6)
+  code-index.md        # GENERATED: every class and function with a one-line description (concept 17.5)
+  error-codes.md       # GENERATED: every error code (concept 17.3)
 app/src/main/res/      # launcher icons (adaptive + legacy mipmaps) already in place; do not regenerate or replace them
-app/  core/security/  core/network/  core/database/
-feature/onboarding/  feature/layout/  feature/entities/  feature/settings/
+app/  core/common/  core/error/  core/security/  core/network/  core/database/
+feature/onboarding/  feature/instance/  feature/layout/  feature/entities/  feature/notifications/  feature/settings/
 gradle/libs.versions.toml
 .github/workflows/     # ci.yml, release.yml (concept 16.5)
 LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
@@ -54,6 +57,31 @@ LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 
 - The integration is NOT part of this repo. For its API, read concept chapters 10 and 11; do not add Python code here.
 - Branches, commits, versions and CI follow concept chapter 16 (Conventional Commits, tags `vX.Y.Z`, protected `main`).
+
+## Development rules (concept 17) – follow for every change
+
+**Before writing code**
+1. Read `docs/code-index.md` and search it for a function or class with the same purpose. Reuse or extend it; never write a second implementation of the same task.
+2. Code needed in a second place is extracted into its own function right away: in the topic package, or in `core.common` if several topics need it.
+
+**Packages by topic (17.1)**
+- `com.stacknoise.haac.<core|feature>.<topic>.<ui|domain|data|di>`, e.g. `com.stacknoise.haac.feature.layout.domain`.
+- Features never depend on each other; shared code and interfaces live in `core.*`.
+
+**Factories (17.2)**
+- Objects whose kind depends on a type or runtime data are created only by a factory (`EntityControlFactory`, `TileFactory`, `ServiceCallFactory`, `BridgeMessageFactory`, `KeyFactory`/`CipherFactory`, `InstanceSessionFactory`, `ErrorFactory`, `@AssistedFactory` ViewModels).
+- Never branch on the entity domain or key type to construct objects outside a factory. Factories are interfaces with a Hilt-provided implementation.
+
+**Errors (17.3, 17.4)**
+- Every thrown exception is a `HaacException` subclass with an `ErrorCode`. Never throw plain `Exception`, `IllegalStateException`, `RuntimeException` etc.
+- All error codes live only in `core/error/ErrorCode.kt`, format `HAAC-<AREA>-<NNN>`. A new error gets the next free number of its area; codes are never reused or renumbered. Add the user text to `strings.xml`.
+- User texts: short, plain language, say what happened and what to do; no technical terms, no secrets, no URLs with parameters.
+- Catch low-level exceptions (`IOException`, `SSLException`, `SerializationException`, `SQLiteException`, `KeyPermanentlyInvalidatedException`, bridge error replies) at the data-layer boundary and convert them with `ErrorFactory`.
+- Never catch or wrap `CancellationException`. Never swallow an exception: handle it in the UI or pass it to `ErrorReporter`, which also creates the entry in the notification list (with the code).
+
+**Code index (17.5)**
+- Every class and every function, including private ones, has a one-line KDoc summary.
+- After adding, renaming or removing a class or function, run `./gradlew codeIndex` and commit the regenerated `docs/code-index.md` and `docs/error-codes.md` in the same commit. Never edit these files by hand. CI (`codeIndexCheck`, CPD) fails otherwise.
 
 ## Non-negotiable rules
 
