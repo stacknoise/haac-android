@@ -1,6 +1,6 @@
 # HAAC – HA Android Client (repo: stacknoise/haac-android)
 
-Native Android client for Home Assistant (HA). This repository contains the Android app only; the companion HA custom integration ("Client Bridge") lives in `stacknoise/haac-bridge` and is distributed via HACS. The app lets a HA user build their own homes / levels / rooms on the phone, place entities that the HA admin exposed to that user, and control them.
+Native Android client for Home Assistant (HA). This repository contains the Android app only; the companion HA custom integration ("HAAC Bridge", domain `haac_bridge`) lives in `stacknoise/haac-bridge` and is distributed via HACS. The app lets a HA user build their own homes / levels / rooms on the phone, place entities that the HA admin exposed to that user, and control them.
 
 ## Source of truth
 
@@ -29,7 +29,7 @@ Native Android client for Home Assistant (HA). This repository contains the Andr
 | Switch, sensor, climate controls | 8 |
 | Sync on start / switch, notification list | 9 |
 | HACS integration, per-user YAML exposure | 10 |
-| HTTPS and WebSocket API (`client_bridge/*`) | 11 |
+| HTTPS and WebSocket API (`haac_bridge/*`) | 11 |
 | Room database schema | 12 |
 | Threat model, security rules | 13 |
 | Errors, offline, tests, distribution, open points | 14 |
@@ -58,9 +58,10 @@ LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 ## Non-negotiable rules
 
 - Never store, log or hard-code a password or token in plaintext. Only the HA refresh token is persisted, AES-GCM encrypted with an Android Keystore key (concept 5.2, 5.3). No secrets in Room or DataStore.
+- Login: `client_id` `https://stacknoise.com/haac/`, `redirect_uri` `https://stacknoise.com/haac/auth-callback` (same host, so HA needs no internet access; concept 5.1, 16.8). Do not change these URLs: existing refresh tokens are bound to the client_id.
 - Fingerprint unlock must use `BiometricPrompt` with a `CryptoObject` (Class 3); a UI-only check is not acceptable (5.4).
 - No HTTP logging of `/auth/*` requests, also in debug builds.
-- The app talks to entities only through `client_bridge/*` WebSocket commands, never through HA's generic state/service APIs (11, 13.1).
+- The app talks to entities only through `haac_bridge/*` WebSocket commands, never through HA's generic state/service APIs (11, 13.1).
 - Local aliases, layout and tile sizes never write back to HA.
 - Data of different HA instances is strictly separated by `serverId` (4.4, 12).
 
