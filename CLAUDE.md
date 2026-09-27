@@ -77,6 +77,7 @@ LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 - All error codes live only in `core/error/ErrorCode.kt`, format `HAAC-<AREA>-<NNN>`. A new error gets the next free number of its area; codes are never reused or renumbered. Add the user text to `strings.xml`.
 - User texts: short, plain language, say what happened and what to do; no technical terms, no secrets, no URLs with parameters.
 - Catch low-level exceptions (`IOException`, `SSLException`, `SerializationException`, `SQLiteException`, `KeyPermanentlyInvalidatedException`, bridge error replies) at the data-layer boundary and convert them with `ErrorFactory`.
+- Bridge error replies carry HAB codes (concept 18.3); `ErrorFactory` maps them to HAAC codes using the table in 18.3, unknown HAB codes to `HAAC-BRG-005`, and keeps the HAB code for the detail sheet.
 - Never catch or wrap `CancellationException`. Never swallow an exception: handle it in the UI or pass it to `ErrorReporter`, which also creates the entry in the notification list (with the code).
 
 **Code index (17.5)**
