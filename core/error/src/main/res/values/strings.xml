@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- User texts of ErrorCode (concept 17.3): plain language, what happened and what to do. -->
+    <string name="error_net_unreachable">The server is not reachable. Check your connection and try again.</string>
+    <string name="error_net_connection_lost">The connection to the server was lost. Reconnecting…</string>
+    <string name="error_net_certificate_changed">The server\'s certificate has changed. For your safety the connection was blocked.</string>
+    <string name="error_auth_invalid_credentials">Username or password is wrong.</string>
+    <string name="error_auth_invalid_mfa_code">The verification code is wrong.</string>
+    <string name="error_auth_session_expired">Your sign-in has expired. Please sign in again.</string>
+    <string name="error_sec_biometrics_changed">Your fingerprints have changed. Please sign in with your password.</string>
+    <string name="error_sec_storage_unavailable">Secure storage on this device is not available.</string>
+    <string name="error_brg_not_installed">HAAC Bridge is not installed on this server.</string>
+    <string name="error_brg_update_required">HAAC Bridge on the server needs an update.</string>
+    <string name="error_brg_not_allowed">You are not allowed to control this device.</string>
+    <string name="error_brg_action_not_available">This action is not available for this device.</string>
+    <string name="error_brg_action_failed">Home Assistant could not carry out the action. Please try again.</string>
+    <string name="error_brg_history_unavailable">History is not available on this server.</string>
+    <string name="error_ent_not_found">This device no longer exists in Home Assistant.</string>
+    <string name="error_db_save_failed">Your changes could not be saved. Please try again.</string>
+    <string name="error_app_unexpected">Something went wrong.</string>
+</resources>

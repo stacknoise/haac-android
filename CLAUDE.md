@@ -50,10 +50,20 @@ docs/
 app/src/main/res/      # launcher icons (adaptive + legacy mipmaps) already in place; do not regenerate or replace them
 app/  core/common/  core/error/  core/security/  core/network/  core/database/
 feature/onboarding/  feature/instance/  feature/layout/  feature/entities/  feature/notifications/  feature/settings/
-gradle/libs.versions.toml
+gradle/libs.versions.toml   # all versions; modules never declare versions themselves
+build-logic/           # convention plugins (haac.android.application/library/compose/feature, haac.hilt) and the code index generator (haac.code-index)
+config/detekt/detekt.yml
 .github/workflows/     # ci.yml, release.yml (concept 16.5)
 LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 ```
+
+## Build and checks
+
+- JDK 21, Gradle via the wrapper. `compileSdk` 37, `targetSdk` 36, `minSdk` 28 are set only in `build-logic` (`AndroidSdk`).
+- A module's `build.gradle.kts` applies convention plugins (`haac.android.library`, `haac.android.feature`, …) and lists its dependencies; no Android/Kotlin settings there.
+- `./gradlew assembleDebug lint detekt test codeIndexCheck` must pass before a PR; CI also runs PMD CPD and `./gradlew -p build-logic test`.
+- `HaacTheme` (colors, Inter, shapes of concept 15.2) lives in `:core:common`, package `com.stacknoise.haac.core.common.ui.theme`.
+- The launcher-icon files are excluded from two lint checks in `app/lint.xml`; do not "fix" them by moving or regenerating icons.
 
 - The integration is NOT part of this repo. For its API, read concept chapters 10 and 11; do not add Python code here.
 - Branches, commits, versions and CI follow concept chapter 16 (Conventional Commits, tags `vX.Y.Z`, protected `main`).

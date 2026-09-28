@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window theme only; the UI is styled by HaacTheme in Compose. -->
+    <style name="Theme.Haac" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/haac_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <color name="haac_background">#161826</color>
+</resources>
