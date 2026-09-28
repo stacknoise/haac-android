@@ -1,10 +1,8 @@
-package com.stacknoise.haac.feature.onboarding.data
+package com.stacknoise.haac.core.network.discovery
 
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.Build
-import com.stacknoise.haac.feature.onboarding.domain.DiscoveredServer
-import com.stacknoise.haac.feature.onboarding.domain.ServerDiscovery
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.channels.awaitClose

@@ -1,6 +1,6 @@
 package com.stacknoise.haac.feature.onboarding.ui
 
-import com.stacknoise.haac.feature.onboarding.domain.DiscoveredServer
+import com.stacknoise.haac.core.network.discovery.DiscoveredServer
 
 /** Callbacks of the onboarding screen, grouped to keep composable signatures short. */
 data class OnboardingActions(
@@ -15,4 +15,6 @@ data class OnboardingActions(
     val onStartOver: () -> Unit = {},
     val onCleartextConfirmed: () -> Unit = {},
     val onCleartextDismissed: () -> Unit = {},
+    val onAddAddress: () -> Unit = {},
+    val onAddressOfferDismissed: () -> Unit = {},
 )

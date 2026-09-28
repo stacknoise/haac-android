@@ -30,13 +30,23 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
-/** Answer of `haac_bridge/info` (concept 11.2, 11.4). */
+/** Answer of `haac_bridge/info` (concept 11.2, 11.4); older bridges send no [instanceId] and [urls]. */
 @Serializable
 data class BridgeInfo(
     @SerialName("bridge_version") val bridgeVersion: String,
     @SerialName("api_version") val apiVersion: Int,
     val domains: List<String> = emptyList(),
     @SerialName("ha_version") val haVersion: String,
+    @SerialName("instance_id") val instanceId: String? = null,
+    val urls: BridgeUrls = BridgeUrls(),
+)
+
+/** Addresses configured in HA (concept 4.5); each is null if not set. */
+@Serializable
+data class BridgeUrls(
+    val internal: String? = null,
+    val external: String? = null,
+    val cloud: String? = null,
 )
 
 /**

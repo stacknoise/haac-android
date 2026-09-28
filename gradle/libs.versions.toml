@@ -21,6 +21,7 @@ kotlinx-serialization = "1.11.0"
 kotlinx-coroutines = "1.11.0"
 room = "2.8.5"
 datastore = "1.2.1"
+sqlite-jdbc = "3.53.4.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
@@ -52,6 +53,7 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 
 # Plugins used by the convention plugins in build-logic
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }

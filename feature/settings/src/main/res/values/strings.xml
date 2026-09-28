@@ -15,4 +15,16 @@
     <string name="settings_off">Off</string>
     <string name="settings_immediately">Immediately</string>
     <string name="settings_minutes">%1$d min</string>
+    <string name="settings_addresses">Addresses</string>
+    <string name="settings_address_internal">Home network</string>
+    <string name="settings_address_external">External</string>
+    <string name="settings_address_not_set">Not set</string>
+    <string name="settings_address_edit">Edit</string>
+    <string name="settings_address_remove">Remove</string>
+    <string name="settings_address_placeholder">https://ha.example.com</string>
+    <string name="settings_always_internal">Always use the home network address</string>
+    <string name="settings_always_internal_hint">An unencrypted home network address is normally only used when the app finds this server on your network. Turn this on if that does not work. The app then sends your sign-in to any device that answers at this address, also in other networks.</string>
+    <string name="settings_use_ha_addresses">Use addresses from Home Assistant</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_cancel">Cancel</string>
 </resources>

@@ -7,13 +7,14 @@ import com.stacknoise.haac.core.error.BridgeException
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.network.auth.AuthTokens
+import com.stacknoise.haac.core.network.discovery.DiscoveredServer
+import com.stacknoise.haac.core.network.discovery.ServerDiscovery
 import com.stacknoise.haac.core.network.server.CleartextPolicy
-import com.stacknoise.haac.feature.onboarding.domain.DiscoveredServer
+import com.stacknoise.haac.core.network.server.ServerUrlNormalizer
 import com.stacknoise.haac.feature.onboarding.domain.KnownServer
-import com.stacknoise.haac.feature.onboarding.domain.ServerDiscovery
-import com.stacknoise.haac.feature.onboarding.domain.ServerUrlNormalizer
 import com.stacknoise.haac.feature.onboarding.domain.ServerValidator
 import com.stacknoise.haac.feature.onboarding.domain.SignInRepository
+import com.stacknoise.haac.feature.onboarding.domain.SignInResult
 import com.stacknoise.haac.feature.onboarding.domain.SignInStep
 import com.stacknoise.haac.feature.onboarding.domain.SignInTarget
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -51,6 +52,7 @@ data class OnboardingUiState(
     val busy: Boolean = false,
     val error: ErrorCode? = null,
     val cleartextWarningFor: String? = null,
+    val addressOffer: SignInResult.SameInstance? = null,
     val signedInServerId: String? = null,
 )
 
@@ -188,6 +190,26 @@ class OnboardingViewModel @Inject constructor(
         _state.update { it.copy(cleartextWarningFor = null) }
     }
 
+    /** Adds the address to the stored instance of the offer and opens it (concept 4.5). */
+    fun onAddAddress() {
+        val offer = _state.value.addressOffer
+        val url = target?.url
+        val tokens = pendingTokens
+        if (offer == null || url == null || tokens == null) return
+        _state.update { it.copy(addressOffer = null) }
+        perform {
+            repository.addAddress(offer.serverId, url, tokens)
+            pendingTokens = null
+            _state.update { it.copy(busy = false, signedInServerId = offer.serverId) }
+        }
+    }
+
+    /** Declines the offer; the tokens of the new sign-in are revoked. */
+    fun onAddressOfferDismissed() {
+        _state.update { it.copy(addressOffer = null) }
+        onStartOver()
+    }
+
     /** The user declined the unencrypted connection. */
     fun onCleartextDismissed() {
         _state.update { it.copy(cleartextWarningFor = null) }
@@ -234,14 +256,21 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
-    /** Bridge check and storage; a missing or outdated bridge keeps the tokens for another try. */
+    /**
+     * Bridge check and storage; a missing or outdated bridge keeps the tokens for another try, and a known
+     * server with the same user leads to the address offer (concept 4.5).
+     */
     private suspend fun finish() {
         val signInTarget = target ?: return
         val tokens = pendingTokens ?: return
         try {
-            val serverId = repository.finish(signInTarget, _state.value.username.trim(), tokens)
-            pendingTokens = null
-            _state.update { it.copy(busy = false, signedInServerId = serverId) }
+            when (val result = repository.finish(signInTarget, _state.value.username.trim(), tokens)) {
+                is SignInResult.Saved -> {
+                    pendingTokens = null
+                    _state.update { it.copy(busy = false, signedInServerId = result.serverId) }
+                }
+                is SignInResult.SameInstance -> _state.update { it.copy(busy = false, addressOffer = result) }
+            }
         } catch (e: BridgeException) {
             if (e.code == ErrorCode.BRG_NOT_INSTALLED || e.code == ErrorCode.BRG_UPDATE_REQUIRED) {
                 _state.update { it.copy(stage = SignInStage.BRIDGE, busy = false, error = e.code) }

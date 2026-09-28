@@ -1,8 +1,11 @@
 package com.stacknoise.haac.core.network.di
 
+import android.content.Context
+import android.net.nsd.NsdManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -28,4 +31,9 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideJson(): Json = Json { ignoreUnknownKeys = true }
+
+    /** The system NsdManager for LAN discovery (concept 4.2, 4.5). */
+    @Provides
+    fun provideNsdManager(@ApplicationContext context: Context): NsdManager =
+        context.getSystemService(NsdManager::class.java)
 }
