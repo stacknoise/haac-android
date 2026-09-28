@@ -8,10 +8,15 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
-/** Non-sensitive app settings in the typed DataStore (concept 12); never secrets. */
+/**
+ * Non-sensitive app settings in the typed DataStore (concept 12); never secrets. Whether an instance uses
+ * fingerprint unlock is not stored here: it follows from the key that protects its token (concept 5.4).
+ */
 @Serializable
 data class AppSettings(
     val activeServerId: String? = null,
+    val unlockWindowMinutes: Int = 0,
+    val lockTimeoutMinutes: Int = SecuritySettings.DEFAULT_LOCK_TIMEOUT_MINUTES,
 )
 
 /** Reads and writes [AppSettings] as JSON. */

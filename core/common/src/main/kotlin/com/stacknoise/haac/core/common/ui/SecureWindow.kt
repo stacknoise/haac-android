@@ -18,8 +18,8 @@ fun SecureWindow() {
     }
 }
 
-/** The activity behind this context, unwrapping context wrappers. */
-private tailrec fun Context.findActivity(): Activity? = when (this) {
+/** The activity behind this context, unwrapping context wrappers; e.g. for the fingerprint prompt. */
+tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
     else -> null

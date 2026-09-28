@@ -16,6 +16,8 @@
     <string name="error_auth_user_blocked">Home Assistant does not let this user sign in here. Ask your administrator.</string>
     <string name="error_sec_biometrics_changed">Your fingerprints have changed. Please sign in with your password.</string>
     <string name="error_sec_storage_unavailable">Secure storage on this device is not available.</string>
+    <string name="error_sec_locked">The app is locked. Unlock it with your fingerprint.</string>
+    <string name="error_sec_biometric_unavailable">Fingerprint unlock is not available right now. Try again later or sign in with your password.</string>
     <string name="error_brg_not_installed">HAAC Bridge is not installed on this server.</string>
     <string name="error_brg_update_required">HAAC Bridge on the server needs an update.</string>
     <string name="error_brg_not_allowed">You are not allowed to control this device.</string>

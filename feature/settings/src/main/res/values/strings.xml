@@ -4,4 +4,15 @@
     <string name="settings_instance">Instance</string>
     <string name="settings_signed_in_as">Signed in as %1$s</string>
     <string name="settings_sign_out">Sign out</string>
+    <string name="settings_security">Security</string>
+    <string name="settings_fingerprint">Fingerprint unlock</string>
+    <string name="settings_fingerprint_hint">Ask for your fingerprint when the app opens.</string>
+    <string name="settings_fingerprint_unavailable">Set up a fingerprint in the system settings to use this.</string>
+    <string name="settings_unlock_window">Unlock window</string>
+    <string name="settings_unlock_window_hint">After one fingerprint, other instances open without asking again for this time.</string>
+    <string name="settings_lock_timeout">Lock after</string>
+    <string name="settings_lock_timeout_hint">Time in the background before the app asks for your fingerprint again.</string>
+    <string name="settings_off">Off</string>
+    <string name="settings_immediately">Immediately</string>
+    <string name="settings_minutes">%1$d min</string>
 </resources>

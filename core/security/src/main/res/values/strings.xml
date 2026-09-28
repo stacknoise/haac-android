@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fingerprint prompt (concept 5.4); the subtitle is the instance name. -->
+    <string name="fingerprint_prompt_unlock">Unlock HAAC</string>
+    <string name="fingerprint_prompt_enable">Turn on fingerprint unlock</string>
+    <string name="fingerprint_prompt_disable">Turn off fingerprint unlock</string>
+    <string name="fingerprint_prompt_change_window">Change unlock window</string>
+    <string name="fingerprint_use_password">Use password</string>
+    <string name="fingerprint_cancel">Cancel</string>
+</resources>

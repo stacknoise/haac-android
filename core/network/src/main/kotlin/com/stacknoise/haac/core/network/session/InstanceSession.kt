@@ -62,13 +62,13 @@ class InstanceSession(
 
     /**
      * Logout (concept 5.2): revokes the refresh token in HA, then deletes ciphertext and key.
-     * Returns false if HA could not be reached; the local token is deleted anyway.
+     * Returns false if HA could not be reached or the fingerprint-protected token is locked; the local token
+     * is deleted anyway.
      */
     suspend fun signOut(): Boolean = mutex.withLock {
         cached = null
-        val refreshToken = store.read(serverId)
         val revoked = try {
-            refreshToken?.let { tokens.revoke(baseUrl, it) }
+            store.read(serverId)?.let { tokens.revoke(baseUrl, it) }
             true
         } catch (_: HaacException) {
             false

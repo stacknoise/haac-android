@@ -13,6 +13,7 @@ import com.stacknoise.haac.core.network.bridge.BridgeInfo
 import com.stacknoise.haac.core.network.bridge.BridgeInfoClient
 import com.stacknoise.haac.core.network.bridge.DefaultBridgeMessageFactory
 import com.stacknoise.haac.core.network.http.HaHttpClient
+import com.stacknoise.haac.core.security.token.TokenProtection
 import com.stacknoise.haac.core.security.token.TokenStore
 import com.stacknoise.haac.feature.onboarding.domain.SignInStep
 import com.stacknoise.haac.feature.onboarding.domain.SignInTarget
@@ -66,6 +67,8 @@ class HaSignInRepositoryTest {
         override suspend fun read(serverId: String) = saved[serverId]
 
         override suspend fun contains(serverId: String) = serverId in saved
+
+        override suspend fun protection(serverId: String) = if (serverId in saved) TokenProtection.DeviceKey else null
 
         override suspend fun delete(serverId: String) {
             saved.remove(serverId)
