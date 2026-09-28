@@ -2,6 +2,12 @@ package com.stacknoise.haac.core.network.di
 
 import com.stacknoise.haac.core.network.bridge.BridgeMessageFactory
 import com.stacknoise.haac.core.network.bridge.DefaultBridgeMessageFactory
+import com.stacknoise.haac.core.network.connection.Backoff
+import com.stacknoise.haac.core.network.connection.BridgeConnector
+import com.stacknoise.haac.core.network.connection.ConnectivityNetworkMonitor
+import com.stacknoise.haac.core.network.connection.DefaultBridgeConnector
+import com.stacknoise.haac.core.network.connection.ExponentialBackoff
+import com.stacknoise.haac.core.network.connection.NetworkMonitor
 import com.stacknoise.haac.core.network.discovery.NsdServerDiscovery
 import com.stacknoise.haac.core.network.discovery.ServerDiscovery
 import com.stacknoise.haac.core.network.endpoint.AuthProvidersProbe
@@ -12,6 +18,8 @@ import com.stacknoise.haac.core.network.endpoint.HomeNetworkCheck
 import com.stacknoise.haac.core.network.endpoint.NsdHomeNetworkCheck
 import com.stacknoise.haac.core.network.session.DefaultInstanceSessionFactory
 import com.stacknoise.haac.core.network.session.InstanceSessionFactory
+import com.stacknoise.haac.core.network.websocket.HaWebSocketFactory
+import com.stacknoise.haac.core.network.websocket.OkHttpWebSocketFactory
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -44,4 +52,20 @@ abstract class NetworkBindings {
     /** Address selection (concept 4.5). */
     @Binds
     abstract fun bindEndpointSelector(selector: DefaultEndpointSelector): EndpointSelector
+
+    /** WebSockets to HA via OkHttp. */
+    @Binds
+    abstract fun bindHaWebSocketFactory(factory: OkHttpWebSocketFactory): HaWebSocketFactory
+
+    /** Handshake of the live connection (concept 9.1). */
+    @Binds
+    abstract fun bindBridgeConnector(connector: DefaultBridgeConnector): BridgeConnector
+
+    /** Default network changes (concept 4.5). */
+    @Binds
+    abstract fun bindNetworkMonitor(monitor: ConnectivityNetworkMonitor): NetworkMonitor
+
+    /** Reconnect back-off (concept 11.4). */
+    @Binds
+    abstract fun bindBackoff(backoff: ExponentialBackoff): Backoff
 }

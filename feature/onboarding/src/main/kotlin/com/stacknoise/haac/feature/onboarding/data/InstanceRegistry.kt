@@ -1,12 +1,12 @@
 package com.stacknoise.haac.feature.onboarding.data
 
-import android.database.SQLException
 import com.stacknoise.haac.core.common.ui.theme.InstanceAccents
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.server.ServerEntity
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.HaacException
+import com.stacknoise.haac.core.error.database
 import com.stacknoise.haac.core.network.bridge.BridgeInfo
 import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.core.network.endpoint.InstanceAddresses
@@ -26,11 +26,11 @@ class InstanceRegistry @Inject constructor(
     private val errors: ErrorFactory,
 ) {
     /** The stored instance [id], or null. */
-    suspend fun find(id: String): ServerEntity? = database { servers.get(id) }
+    suspend fun find(id: String): ServerEntity? = errors.database { servers.get(id) }
 
     /** The stored instance of HA installation [instanceId] and [username], or null (concept 4.5). */
     suspend fun findSame(instanceId: String?, username: String): ServerEntity? =
-        instanceId?.let { database { servers.findByInstance(it, username) } }
+        instanceId?.let { errors.database { servers.findByInstance(it, username) } }
 
     /**
      * Creates the instance (or updates the stored one of [target]) and makes it active; returns its id.
@@ -42,7 +42,7 @@ class InstanceRegistry @Inject constructor(
         val id = existing?.id ?: UUID.randomUUID().toString()
         tokens.save(id, refreshToken)
         try {
-            database {
+            errors.database {
                 if (existing == null) {
                     servers.insert(newServer(id, target, username, bridge, now))
                 } else {
@@ -74,7 +74,8 @@ class InstanceRegistry @Inject constructor(
         val saveToken = !tokens.contains(id)
         if (saveToken) tokens.save(id, refreshToken)
         val addresses = server.addresses.with(AddressSlot.of(url), url)
-        database { servers.update(server.withAddresses(addresses).copy(lastActiveAt = System.currentTimeMillis())) }
+        val updated = server.withAddresses(addresses).copy(lastActiveAt = System.currentTimeMillis())
+        errors.database { servers.update(updated) }
         active.setActive(id)
         return saveToken
     }
@@ -96,11 +97,4 @@ class InstanceRegistry @Inject constructor(
         bridgeApiVersion = bridge.apiVersion,
         lastActiveAt = now,
     ).withAddresses(InstanceAddresses.afterSignIn(target.url, bridge.urls))
-
-    /** Runs a database call and converts SQLite errors to HAAC-DB-001. */
-    private suspend fun <T> database(block: suspend () -> T): T = try {
-        block()
-    } catch (e: SQLException) {
-        throw errors.from(e)
-    }
 }

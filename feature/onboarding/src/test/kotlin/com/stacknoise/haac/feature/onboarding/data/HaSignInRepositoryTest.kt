@@ -19,6 +19,7 @@ import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.core.network.endpoint.EndpointSelector
 import com.stacknoise.haac.core.network.endpoint.addresses
 import com.stacknoise.haac.core.network.http.HaHttpClient
+import com.stacknoise.haac.core.network.websocket.OkHttpWebSocketFactory
 import com.stacknoise.haac.core.security.token.TokenProtection
 import com.stacknoise.haac.core.security.token.TokenStore
 import com.stacknoise.haac.feature.onboarding.domain.SignInResult
@@ -101,7 +102,12 @@ class HaSignInRepositoryTest {
     private val repository = HaSignInRepository(
         LoginFlowClient(http, json),
         TokenClient(http, json),
-        BridgeInfoClient(OkHttpClient(), json, DefaultBridgeMessageFactory(), DefaultErrorFactory()),
+        BridgeInfoClient(
+            OkHttpWebSocketFactory(OkHttpClient(), json, DefaultErrorFactory()),
+            json,
+            DefaultBridgeMessageFactory(),
+            DefaultErrorFactory(),
+        ),
         registry,
         firstAddress,
     )
