@@ -3,3 +3,7 @@ Copyright 2026 Anton Graichen-Hartl (stacknoise.com)
 
 This product is licensed under the Apache License, Version 2.0.
 See the LICENSE file for the full license text.
+
+This product bundles the Inter font (Copyright 2016 The Inter Project Authors),
+licensed under the SIL Open Font License, Version 1.1.
+See core/common/FONT-LICENSE-Inter.txt.
