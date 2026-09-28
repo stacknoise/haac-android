@@ -1,10 +1,9 @@
 package com.stacknoise.haac.core.network.auth
 
 import com.stacknoise.haac.core.error.ErrorCode
-import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.NetworkException
-import com.stacknoise.haac.core.network.server.CleartextPolicy
-import java.io.IOException
+import com.stacknoise.haac.core.network.http.HaHttpClient
+import com.stacknoise.haac.core.network.http.endpoint
 import javax.inject.Inject
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -14,9 +13,6 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import okhttp3.HttpUrl
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.coroutines.executeAsync
 
 /** One login provider of a HA server, e.g. type `homeassistant` for username and password. */
 @Serializable
@@ -28,23 +24,14 @@ data class AuthProvider(
 
 /** Reads `GET /auth/providers`, which confirms a HA server and lists its login providers (concept 4.2, 11.1). */
 class AuthProvidersClient @Inject constructor(
-    private val client: OkHttpClient,
+    private val http: HaHttpClient,
     private val json: Json,
-    private val errors: ErrorFactory,
 ) {
     /** Returns the providers of the server at [baseUrl]; errors come as HaacException (NET-00x). */
     suspend fun fetch(baseUrl: HttpUrl): List<AuthProvider> {
-        CleartextPolicy.requireAllowed(baseUrl)
-        val request = Request.Builder().url(baseUrl.newBuilder().addPathSegments("auth/providers").build()).build()
-        val body = try {
-            client.newCall(request).executeAsync().use { response ->
-                if (!response.isSuccessful) throw NetworkException(ErrorCode.NET_NOT_HOME_ASSISTANT)
-                response.body.string()
-            }
-        } catch (e: IOException) {
-            throw errors.from(e)
-        }
-        return parse(body)
+        val response = http.get(baseUrl.endpoint("auth/providers"))
+        if (!response.isSuccessful) throw NetworkException(ErrorCode.NET_NOT_HOME_ASSISTANT)
+        return parse(response.body)
     }
 
     /** Accepts both the current object form `{"providers": [...]}` and the older plain list. */

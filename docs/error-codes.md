@@ -17,6 +17,8 @@ Every error of the app carries one of these codes (format `HAAC-<AREA>-<NNN>`) a
 | HAAC-AUTH-002 | The verification code is wrong. | NONE | HA login flow rejected the MFA code |
 | HAAC-AUTH-003 | Your sign-in has expired. Please sign in again. | SIGN_IN | Refresh token revoked or expired, or the bridge saw no user (HAB-AUTH-001) |
 | HAAC-AUTH-004 | This server does not allow sign-in with username and password. | NONE | Server has no 'homeassistant' auth provider; browser fallback (5.1) not built yet |
+| HAAC-AUTH-005 | Sign-in took too long or had too many wrong codes. Please start again. | NONE | HA aborted the login flow (too_many_retry, login_expired) or no longer knows the flow |
+| HAAC-AUTH-006 | Home Assistant does not let this user sign in here. Ask your administrator. | NONE | HTTP 403 from /auth/login_flow or /auth/token: user inactive, local-only or IP banned |
 | HAAC-SEC-001 | Your fingerprints have changed. Please sign in with your password. | SIGN_IN | Keystore key invalidated by a biometric enrolment change |
 | HAAC-SEC-002 | Secure storage on this device is not available. | NONE | Android Keystore could not create or use the key |
 | HAAC-BRG-001 | HAAC Bridge is not installed on this server. | OPEN_SETTINGS | haac_bridge/info returned unknown_command |

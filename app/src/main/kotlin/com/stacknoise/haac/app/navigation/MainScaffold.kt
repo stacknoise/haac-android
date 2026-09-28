@@ -22,10 +22,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.stacknoise.haac.R
+import com.stacknoise.haac.feature.settings.ui.SettingsScreen
 
-/** Main area after sign-in: bottom bar with Rooms, Places, Settings (concept 15.2). */
+/** Main area after sign-in: bottom bar with Rooms, Places, Settings (concept 15.2); [onSignedOut] after logout. */
 @Composable
-fun MainScaffold() {
+fun MainScaffold(onSignedOut: (String) -> Unit) {
     val navController = rememberNavController()
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
@@ -54,9 +55,9 @@ fun MainScaffold() {
             startDestination = TopLevelDestination.ROOMS.route,
             modifier = Modifier.padding(padding),
         ) {
-            TopLevelDestination.entries.forEach { destination ->
-                composable(destination.route) { PlaceholderScreen(destination.label) }
-            }
+            composable(TopLevelDestination.ROOMS.route) { PlaceholderScreen(TopLevelDestination.ROOMS.label) }
+            composable(TopLevelDestination.PLACES.route) { PlaceholderScreen(TopLevelDestination.PLACES.label) }
+            composable(TopLevelDestination.SETTINGS.route) { SettingsScreen(onSignedOut = onSignedOut) }
         }
     }
 }

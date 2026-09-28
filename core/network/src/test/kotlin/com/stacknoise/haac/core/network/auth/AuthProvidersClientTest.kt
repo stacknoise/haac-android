@@ -3,6 +3,7 @@ package com.stacknoise.haac.core.network.auth
 import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.NetworkException
+import com.stacknoise.haac.core.network.http.HaHttpClient
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import mockwebserver3.MockResponse
@@ -16,7 +17,8 @@ import org.junit.jupiter.api.assertThrows
 
 class AuthProvidersClientTest {
     private val server = MockWebServer()
-    private val client = AuthProvidersClient(OkHttpClient(), Json { ignoreUnknownKeys = true }, DefaultErrorFactory())
+    private val http = HaHttpClient(OkHttpClient(), DefaultErrorFactory())
+    private val client = AuthProvidersClient(http, Json { ignoreUnknownKeys = true })
 
     @BeforeEach
     fun start() = server.start()

@@ -7,7 +7,12 @@ data class OnboardingActions(
     val onServerSelected: (DiscoveredServer) -> Unit = {},
     val onOtherAddress: () -> Unit = {},
     val onManualUrlChanged: (String) -> Unit = {},
-    val onContinue: () -> Unit = {},
+    val onUsernameChanged: (String) -> Unit = {},
+    val onCodeChanged: (String) -> Unit = {},
+    val onSignIn: () -> Unit = {},
+    val onSubmitCode: () -> Unit = {},
+    val onRetryBridgeCheck: () -> Unit = {},
+    val onStartOver: () -> Unit = {},
     val onCleartextConfirmed: () -> Unit = {},
     val onCleartextDismissed: () -> Unit = {},
 )
