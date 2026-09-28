@@ -11,6 +11,8 @@ import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.database.settings.AppSettings
 import com.stacknoise.haac.core.database.settings.AppSettingsSerializer
 import com.stacknoise.haac.core.database.settings.DataStoreActiveInstanceStore
+import com.stacknoise.haac.core.database.settings.DataStoreSecuritySettings
+import com.stacknoise.haac.core.database.settings.SecuritySettings
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -26,6 +28,10 @@ abstract class DatabaseModule {
     /** Active instance in the settings DataStore. */
     @Binds
     abstract fun bindActiveInstanceStore(store: DataStoreActiveInstanceStore): ActiveInstanceStore
+
+    /** Security settings in the settings DataStore. */
+    @Binds
+    abstract fun bindSecuritySettings(settings: DataStoreSecuritySettings): SecuritySettings
 
     /** Singletons that need the app context. */
     companion object {

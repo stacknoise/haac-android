@@ -5,28 +5,22 @@ import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.KeystoreException
 import com.stacknoise.haac.core.security.keystore.CipherFactory
 import com.stacknoise.haac.core.security.keystore.KeyFactory
-import java.io.DataInputStream
-import java.io.DataOutputStream
-import java.io.File
-import java.io.IOException
-import java.security.GeneralSecurityException
-import java.security.ProviderException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
- * One file per instance under `noBackupFilesDir` with format byte, IV and AES-GCM ciphertext (concept 5.3).
- *
- * The key never leaves the Keystore; the file alone is useless on another device.
+ * Token files with the device-bound key (concept 5.3); fingerprint-protected tokens are read from
+ * [UnlockedTokens] after the unlock (5.4). The key never leaves the Keystore; a file alone is useless on
+ * another device.
  */
 class KeystoreTokenStore(
-    private val directory: File,
+    private val files: TokenFiles,
     private val keys: KeyFactory,
     private val ciphers: CipherFactory,
+    private val unlocked: UnlockedTokens,
     private val errors: ErrorFactory,
 ) : TokenStore {
-    /** Encrypts with the instance key and replaces the file atomically. */
-    override suspend fun save(serverId: String, refreshToken: String) = guarded {
+    /** Encrypts with the device-bound key, replaces the file, then drops the fingerprint keys it replaces. */
+    override suspend fun save(serverId: String, refreshToken: String) = keystoreGuarded(errors) {
+        val previous = files.read(serverId)?.protection
         val cipher = ciphers.encrypt(keys.tokenKey(serverId))
         val plain = refreshToken.encodeToByteArray()
         val sealed = try {
@@ -34,61 +28,42 @@ class KeystoreTokenStore(
         } finally {
             plain.fill(0)
         }
-        directory.mkdirs()
-        val temp = File(directory, "$serverId.tmp")
-        DataOutputStream(temp.outputStream()).use { out ->
-            out.writeByte(FORMAT)
-            out.writeByte(cipher.iv.size)
-            out.write(cipher.iv)
-            out.write(sealed)
-        }
-        if (!temp.renameTo(file(serverId))) throw IOException("rename failed")
+        files.write(serverId, SealedToken(TokenProtection.DeviceKey, cipher.iv, sealed))
+        unlocked.remove(serverId)
+        if (previous is TokenProtection.Fingerprint) keys.deleteFingerprintKey(serverId, previous.generation)
     }
 
-    /** Reads and decrypts the file of [serverId]. */
-    override suspend fun read(serverId: String): String? = guarded {
-        val file = file(serverId)
-        if (!file.exists()) return@guarded null
-        DataInputStream(file.inputStream()).use { input ->
-            if (input.readUnsignedByte() != FORMAT) throw IOException("unknown token file format")
-            val iv = ByteArray(input.readUnsignedByte()).also(input::readFully)
-            val sealed = input.readBytes()
-            val plain = ciphers.decrypt(keys.tokenKey(serverId), iv).doFinal(sealed)
-            try {
-                plain.decodeToString()
-            } finally {
-                plain.fill(0)
-            }
+    /** Decrypts a device-key token; a fingerprint token comes from memory or fails with HAAC-SEC-003. */
+    override suspend fun read(serverId: String): String? = keystoreGuarded(errors) {
+        val token = files.read(serverId) ?: return@keystoreGuarded null
+        when (token.protection) {
+            TokenProtection.DeviceKey -> decrypt(serverId, token)
+            is TokenProtection.Fingerprint ->
+                unlocked.get(serverId) ?: throw KeystoreException(ErrorCode.SEC_LOCKED)
         }
     }
 
     /** Checks only that the file exists. */
-    override suspend fun contains(serverId: String): Boolean = guarded { file(serverId).exists() }
+    override suspend fun contains(serverId: String): Boolean = keystoreGuarded(errors) { files.exists(serverId) }
 
-    /** Removes file and key; missing ones are fine. */
-    override suspend fun delete(serverId: String) = guarded {
-        file(serverId).delete()
+    /** Reads only the file header. */
+    override suspend fun protection(serverId: String): TokenProtection? =
+        keystoreGuarded(errors) { files.read(serverId)?.protection }
+
+    /** Removes file, unlocked copy and keys; missing ones are fine. */
+    override suspend fun delete(serverId: String) = keystoreGuarded(errors) {
+        files.delete(serverId)
+        unlocked.remove(serverId)
         keys.deleteKeys(serverId)
     }
 
-    /** Token file of [serverId]. */
-    private fun file(serverId: String) = File(directory, "$serverId.bin")
-
-    /** Runs [block] on the IO dispatcher and converts file and Keystore errors to HAAC-SEC codes. */
-    private suspend fun <T> guarded(block: () -> T): T = withContext(Dispatchers.IO) {
-        try {
-            block()
-        } catch (e: IOException) {
-            throw KeystoreException(ErrorCode.SEC_STORAGE_UNAVAILABLE, e)
-        } catch (e: GeneralSecurityException) {
-            throw errors.from(e)
-        } catch (e: ProviderException) {
-            throw errors.from(e)
+    /** Decrypts [token] with the device-bound key of [serverId] and wipes the plaintext bytes. */
+    private fun decrypt(serverId: String, token: SealedToken): String {
+        val plain = ciphers.decrypt(keys.tokenKey(serverId), token.iv).doFinal(token.ciphertext)
+        return try {
+            plain.decodeToString()
+        } finally {
+            plain.fill(0)
         }
-    }
-
-    /** File format version. */
-    private companion object {
-        const val FORMAT = 1
     }
 }

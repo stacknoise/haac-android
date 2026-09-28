@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -16,12 +18,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.SecureWindow
+import com.stacknoise.haac.core.common.ui.findActivity
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
@@ -34,19 +40,29 @@ fun SettingsScreen(onSignedOut: (String) -> Unit, viewModel: SettingsViewModel =
     SecureWindow()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val signedOut by rememberUpdatedState(onSignedOut)
+    val activity = LocalContext.current.findActivity() as? FragmentActivity
     LaunchedEffect(state.signedOutServerId) {
         state.signedOutServerId?.let(signedOut)
     }
-    SettingsContent(state, onSignOut = viewModel::onSignOut)
+    SettingsContent(
+        state = state,
+        onSignOut = viewModel::onSignOut,
+        security = SecurityActions(
+            onFingerprintChanged = { enabled -> activity?.let { viewModel.onFingerprintChanged(it, enabled) } },
+            onUnlockWindowChanged = { minutes -> activity?.let { viewModel.onUnlockWindowChanged(it, minutes) } },
+            onLockTimeoutChanged = viewModel::onLockTimeoutChanged,
+        ),
+    )
 }
 
 /** Stateless layout of the settings. */
 @Composable
-fun SettingsContent(state: SettingsUiState, onSignOut: () -> Unit) {
+fun SettingsContent(state: SettingsUiState, onSignOut: () -> Unit, security: SecurityActions) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 16.dp),
     ) {
         Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineMedium)
@@ -65,7 +81,10 @@ fun SettingsContent(state: SettingsUiState, onSignOut: () -> Unit) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(32.dp))
+        SecuritySection(state.security, state.busy, security)
+        state.error?.let { ErrorMessage(it) }
+        Spacer(Modifier.height(32.dp))
         OutlinedButton(
             onClick = onSignOut,
             enabled = !state.busy,
@@ -81,14 +100,22 @@ fun SettingsContent(state: SettingsUiState, onSignOut: () -> Unit) {
     }
 }
 
-/** Preview with a signed-in instance. */
+/** Preview with a signed-in instance and fingerprint unlock on. */
 @Preview
 @Composable
 private fun SettingsPreview() {
     HaacTheme {
         SettingsContent(
-            state = SettingsUiState(ActiveInstance("1", "Home", "http://192.168.1.10:8123/", "anna")),
+            state = SettingsUiState(
+                instance = ActiveInstance("1", "Home", "http://192.168.1.10:8123/", "anna"),
+                security = SecurityUiState(
+                    fingerprintAvailable = true,
+                    fingerprintEnabled = true,
+                    unlockWindowSelectable = true,
+                ),
+            ),
             onSignOut = {},
+            security = SecurityActions({}, {}, {}),
         )
     }
 }

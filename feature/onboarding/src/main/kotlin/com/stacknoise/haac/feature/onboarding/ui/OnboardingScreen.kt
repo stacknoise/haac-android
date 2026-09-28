@@ -36,10 +36,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.SecureWindow
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
-import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.feature.onboarding.R
 import com.stacknoise.haac.feature.onboarding.domain.DiscoveredServer
@@ -124,23 +124,6 @@ fun OnboardingContent(state: OnboardingUiState, password: TextFieldState, action
         PrimaryAction(state, actions)
     }
     state.cleartextWarningFor?.let { url -> CleartextDialog(url, actions) }
-}
-
-/** User text of an error code plus the code in the mono font. */
-@Composable
-private fun ErrorMessage(code: ErrorCode) {
-    Column(modifier = Modifier.padding(top = 16.dp)) {
-        Text(
-            stringResource(code.message),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
-        )
-        Text(
-            code.code,
-            style = MaterialTheme.typography.labelSmall.copy(fontFamily = MonoFontFamily),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
 }
 
 /** Sign in, Verify or Try again, depending on the stage. */

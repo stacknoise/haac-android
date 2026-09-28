@@ -4,10 +4,8 @@ import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.KeystoreException
 import com.stacknoise.haac.core.security.keystore.AesGcmCipherFactory
-import com.stacknoise.haac.core.security.keystore.KeyFactory
+import com.stacknoise.haac.core.security.keystore.SoftwareKeyFactory
 import java.io.File
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -21,26 +19,18 @@ class KeystoreTokenStoreTest {
     @TempDir
     lateinit var dir: File
 
-    /** Software AES keys instead of the Android Keystore. */
-    private val keys = object : KeyFactory {
-        val created = mutableMapOf<String, SecretKey>()
+    private val keys = SoftwareKeyFactory()
+    private val unlocked = UnlockedTokens()
 
-        override fun tokenKey(serverId: String): SecretKey = created.getOrPut(serverId) {
-            KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
-        }
-
-        override fun deleteKeys(serverId: String) {
-            created.remove(serverId)
-        }
-    }
-
-    private fun store() = KeystoreTokenStore(dir, keys, AesGcmCipherFactory(), DefaultErrorFactory())
+    private fun store() =
+        KeystoreTokenStore(TokenFiles(dir), keys, AesGcmCipherFactory(), unlocked, DefaultErrorFactory())
 
     @Test
     fun `stores the token encrypted and reads it back`() = runTest {
         val store = store()
         store.save("a", "secret-refresh-token")
         assertTrue(store.contains("a"))
+        assertEquals(TokenProtection.DeviceKey, store.protection("a"))
         assertEquals("secret-refresh-token", store.read("a"))
         val raw = File(dir, "a.bin").readBytes().decodeToString(throwOnInvalidSequence = false)
         assertFalse(raw.contains("secret-refresh-token"))
@@ -53,8 +43,9 @@ class KeystoreTokenStoreTest {
         store.save("b", "token-b")
         store.delete("a")
         assertNull(store.read("a"))
+        assertNull(store.protection("a"))
         assertFalse(store.contains("a"))
-        assertFalse("a" in keys.created)
+        assertFalse("token.a" in keys.keys)
         assertEquals("token-b", store.read("b"))
     }
 
@@ -62,8 +53,32 @@ class KeystoreTokenStoreTest {
     fun `a token encrypted with another key cannot be read`() = runTest {
         val store = store()
         store.save("a", "token-a")
-        keys.created["a"] = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
+        keys.replaceTokenKey("a")
         val error = assertThrows<KeystoreException> { store.read("a") }
         assertEquals(ErrorCode.SEC_STORAGE_UNAVAILABLE, error.code)
+    }
+
+    @Test
+    fun `a fingerprint token is read only while unlocked`() = runTest {
+        val store = store()
+        TokenFiles(dir).write("a", SealedToken(TokenProtection.Fingerprint(1, 0), ByteArray(12), ByteArray(16)))
+        assertEquals(ErrorCode.SEC_LOCKED, assertThrows<KeystoreException> { store.read("a") }.code)
+        unlocked.put("a", "token-a")
+        assertEquals("token-a", store.read("a"))
+        store.delete("a")
+        assertNull(unlocked.get("a"))
+    }
+
+    @Test
+    fun `saving with the device key replaces a fingerprint token and its key`() = runTest {
+        val store = store()
+        keys.newFingerprintKey("a", 3, 0)
+        TokenFiles(dir).write("a", SealedToken(TokenProtection.Fingerprint(3, 0), ByteArray(12), ByteArray(16)))
+        unlocked.put("a", "old")
+        store.save("a", "new")
+        assertEquals(TokenProtection.DeviceKey, store.protection("a"))
+        assertFalse("fp.a.3" in keys.keys)
+        assertNull(unlocked.get("a"))
+        assertEquals("new", store.read("a"))
     }
 }

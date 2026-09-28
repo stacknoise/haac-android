@@ -19,8 +19,10 @@ Every error of the app carries one of these codes (format `HAAC-<AREA>-<NNN>`) a
 | HAAC-AUTH-004 | This server does not allow sign-in with username and password. | NONE | Server has no 'homeassistant' auth provider; browser fallback (5.1) not built yet |
 | HAAC-AUTH-005 | Sign-in took too long or had too many wrong codes. Please start again. | NONE | HA aborted the login flow (too_many_retry, login_expired) or no longer knows the flow |
 | HAAC-AUTH-006 | Home Assistant does not let this user sign in here. Ask your administrator. | NONE | HTTP 403 from /auth/login_flow or /auth/token: user inactive, local-only or IP banned |
-| HAAC-SEC-001 | Your fingerprints have changed. Please sign in with your password. | SIGN_IN | Keystore key invalidated by a biometric enrolment change |
+| HAAC-SEC-001 | Your fingerprints have changed. Please sign in with your password. | SIGN_IN | Fingerprint key invalidated by a biometric enrolment change, or missing |
 | HAAC-SEC-002 | Secure storage on this device is not available. | NONE | Android Keystore could not create or use the key |
+| HAAC-SEC-003 | The app is locked. Unlock it with your fingerprint. | NONE | Refresh token is fingerprint-protected and the app is locked |
+| HAAC-SEC-004 | Fingerprint unlock is not available right now. Try again later or sign in with your password. | NONE | BiometricPrompt error: too many attempts, no strong biometric enrolled or sensor unavailable |
 | HAAC-BRG-001 | HAAC Bridge is not installed on this server. | OPEN_SETTINGS | haac_bridge/info returned unknown_command |
 | HAAC-BRG-002 | HAAC Bridge on the server needs an update. | NONE | Bridge api_version outside the range the app supports |
 | HAAC-BRG-003 | You are not allowed to control this device. | NONE | Bridge rejected a service call to a non-exposed entity (HAB-SVC-001) |

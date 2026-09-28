@@ -3,6 +3,7 @@ package com.stacknoise.haac.app.start
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.server.ServerEntity
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
+import com.stacknoise.haac.core.security.token.TokenProtection
 import com.stacknoise.haac.core.security.token.TokenStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Test
 class StartRouterTest {
     private var activeId: String? = null
     private val instances = mutableListOf<ServerEntity>()
-    private val withToken = mutableSetOf<String>()
+    private val protections = mutableMapOf<String, TokenProtection>()
 
     private val router = StartRouter(
         active = object : ActiveInstanceStore {
@@ -35,7 +36,9 @@ class StartRouterTest {
             override suspend fun count() = instances.size
         },
         tokens = object : TokenStore {
-            override suspend fun contains(serverId: String) = serverId in withToken
+            override suspend fun protection(serverId: String) = protections[serverId]
+
+            override suspend fun contains(serverId: String) = error("not used")
 
             override suspend fun save(serverId: String, refreshToken: String) = error("not used")
 
@@ -59,8 +62,15 @@ class StartRouterTest {
         instances += instance("b", lastActiveAt = 2)
         activeId = "a"
         assertEquals(StartRoute.SignIn("a"), router.route())
-        withToken += "a"
+        protections["a"] = TokenProtection.DeviceKey
         assertEquals(StartRoute.Main("a"), router.route())
+    }
+
+    @Test
+    fun `fingerprint-protected token opens the unlock screen`() = runTest {
+        instances += instance("a", lastActiveAt = 1)
+        protections["a"] = TokenProtection.Fingerprint(generation = 1, unlockWindowSeconds = 0)
+        assertEquals(StartRoute.Unlock("a"), router.route())
     }
 
     @Test

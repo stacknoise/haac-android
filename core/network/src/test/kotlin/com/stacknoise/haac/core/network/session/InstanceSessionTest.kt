@@ -3,8 +3,10 @@ package com.stacknoise.haac.core.network.session
 import com.stacknoise.haac.core.error.AuthException
 import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
+import com.stacknoise.haac.core.error.KeystoreException
 import com.stacknoise.haac.core.network.auth.TokenClient
 import com.stacknoise.haac.core.network.http.HaHttpClient
+import com.stacknoise.haac.core.security.token.TokenProtection
 import com.stacknoise.haac.core.security.token.TokenStore
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -23,15 +25,19 @@ class InstanceSessionTest {
     private val server = MockWebServer()
     private val stored = mutableMapOf("s1" to "ref")
     private var now = 0L
+    private var locked = false
 
     private val store = object : TokenStore {
         override suspend fun save(serverId: String, refreshToken: String) {
             stored[serverId] = refreshToken
         }
 
-        override suspend fun read(serverId: String) = stored[serverId]
+        override suspend fun read(serverId: String) =
+            if (locked) throw KeystoreException(ErrorCode.SEC_LOCKED) else stored[serverId]
 
         override suspend fun contains(serverId: String) = serverId in stored
+
+        override suspend fun protection(serverId: String) = stored[serverId]?.let { TokenProtection.DeviceKey }
 
         override suspend fun delete(serverId: String) {
             stored.remove(serverId)
@@ -84,5 +90,13 @@ class InstanceSessionTest {
         server.close()
         assertFalse(session.signOut())
         assertFalse("s1" in stored)
+    }
+
+    @Test
+    fun `sign out with a locked fingerprint token still deletes it`() = runTest {
+        locked = true
+        assertFalse(session.signOut())
+        assertFalse("s1" in stored)
+        assertEquals(0, server.requestCount)
     }
 }

@@ -95,13 +95,25 @@ enum class ErrorCode(
         "HAAC-SEC-001",
         R.string.error_sec_biometrics_changed,
         ErrorAction.SIGN_IN,
-        "Keystore key invalidated by a biometric enrolment change",
+        "Fingerprint key invalidated by a biometric enrolment change, or missing",
     ),
     SEC_STORAGE_UNAVAILABLE(
         "HAAC-SEC-002",
         R.string.error_sec_storage_unavailable,
         ErrorAction.NONE,
         "Android Keystore could not create or use the key",
+    ),
+    SEC_LOCKED(
+        "HAAC-SEC-003",
+        R.string.error_sec_locked,
+        ErrorAction.NONE,
+        "Refresh token is fingerprint-protected and the app is locked",
+    ),
+    SEC_BIOMETRIC_UNAVAILABLE(
+        "HAAC-SEC-004",
+        R.string.error_sec_biometric_unavailable,
+        ErrorAction.NONE,
+        "BiometricPrompt error: too many attempts, no strong biometric enrolled or sensor unavailable",
     ),
     BRG_NOT_INSTALLED(
         "HAAC-BRG-001",
