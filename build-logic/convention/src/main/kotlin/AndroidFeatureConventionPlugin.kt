@@ -11,7 +11,9 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             dependencies.add("implementation", dependencies.project(mapOf("path" to ":core:common")))
             dependencies.add("implementation", dependencies.project(mapOf("path" to ":core:error")))
             dependencies.add("implementation", libs.findLibrary("androidx-lifecycle-runtime-compose").get())
-            dependencies.add("implementation", libs.findLibrary("androidx-hilt-navigation-compose").get())
+            dependencies.add("implementation", libs.findLibrary("kotlinx-coroutines-core").get())
+            dependencies.add("testImplementation", libs.findLibrary("kotlinx-coroutines-test").get())
+            dependencies.add("implementation", libs.findLibrary("androidx-hilt-lifecycle-viewmodel-compose").get())
         }
     }
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_hello">Hello.</string>
+    <string name="onboarding_intro">Pick your Home Assistant server and sign in with your user.</string>
+    <string name="onboarding_on_this_network">On this network</string>
+    <string name="onboarding_scanning">Scanning</string>
+    <string name="onboarding_nothing_found">No server found yet. You can enter its address instead.</string>
+    <string name="onboarding_other_address">Other address…</string>
+    <string name="onboarding_address_label">Server address</string>
+    <string name="onboarding_address_hint">https://ha.example.com</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_server_ok">Home Assistant found at %1$s. Sign-in follows in the next step.</string>
+    <string name="onboarding_cleartext_title">Unencrypted connection</string>
+    <string name="onboarding_cleartext_text">%1$s does not use https. Anyone on your network could read what the app sends, including your password. Only continue if this is your own home network.</string>
+    <string name="onboarding_cleartext_confirm">Continue anyway</string>
+    <string name="onboarding_cleartext_cancel">Cancel</string>
+    <string name="onboarding_selected">Selected</string>
+</resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Concept 4.3: HTTPS by default, plain http only to private addresses after a warning.
+  Android cannot express address ranges (RFC 1918) here, and OkHttp refuses http entirely when this
+  file forbids it, so cleartext is permitted at this level and the rule is enforced in code by
+  CleartextPolicy before every request. Only system CAs are trusted; self-signed certificates will be
+  handled by per-instance pinning (TOFU), not by user CAs.
+-->
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+    <base-config
+        cleartextTrafficPermitted="true"
+        tools:ignore="InsecureBaseConfiguration">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
