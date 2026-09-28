@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
 import androidx.room.Room
 import com.stacknoise.haac.core.database.HaacDatabase
+import com.stacknoise.haac.core.database.migration.Migration1To2
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.database.settings.AppSettings
@@ -39,7 +40,9 @@ abstract class DatabaseModule {
         @Provides
         @Singleton
         fun provideDatabase(@ApplicationContext context: Context): HaacDatabase =
-            Room.databaseBuilder(context, HaacDatabase::class.java, "haac.db").build()
+            Room.databaseBuilder(context, HaacDatabase::class.java, "haac.db")
+                .addMigrations(Migration1To2)
+                .build()
 
         /** DAO of the `server` table. */
         @Provides

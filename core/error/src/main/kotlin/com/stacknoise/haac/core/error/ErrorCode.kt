@@ -55,6 +55,12 @@ enum class ErrorCode(
         ErrorAction.NONE,
         "TLS handshake failed: certificate not trusted by the system (self-signed pinning comes later)",
     ),
+    NET_WRONG_SERVER(
+        "HAAC-NET-008",
+        R.string.error_net_wrong_server,
+        ErrorAction.OPEN_SETTINGS,
+        "haac_bridge/info returned an instance_id other than the stored one (concept 4.5)",
+    ),
     AUTH_INVALID_CREDENTIALS(
         "HAAC-AUTH-001",
         R.string.error_auth_invalid_credentials,

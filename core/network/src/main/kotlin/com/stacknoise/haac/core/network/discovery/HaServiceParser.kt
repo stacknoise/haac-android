@@ -1,6 +1,6 @@
-package com.stacknoise.haac.feature.onboarding.data
+package com.stacknoise.haac.core.network.discovery
 
-import com.stacknoise.haac.feature.onboarding.domain.DiscoveredServer
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /** Builds a [DiscoveredServer] from a resolved `_home-assistant._tcp` service and its TXT record. */
 object HaServiceParser {
@@ -11,12 +11,18 @@ object HaServiceParser {
     fun parse(serviceName: String, ip: String, port: Int, txt: Map<String, ByteArray?>): DiscoveredServer {
         val attributes = txt.mapValues { (_, value) -> value?.decodeToString()?.takeIf { it.isNotBlank() } }
         val address = if (ip.contains(':')) "[$ip]:$port" else "$ip:$port"
+        val txtHosts = listOf("base_url", "internal_url").mapNotNull { attributes[it]?.toHttpUrlOrNull()?.host }
         return DiscoveredServer(
             id = attributes["uuid"] ?: serviceName,
             name = attributes["location_name"] ?: serviceName,
             address = address,
             url = attributes["base_url"] ?: attributes["internal_url"] ?: "http://$address",
             version = attributes["version"],
+            hosts = (txtHosts + ip).map(::normalizeHost).toSet(),
         )
     }
+
+    /** Lower case without IPv6 brackets and zone, so hosts from URLs and NSD compare equal. */
+    fun normalizeHost(host: String): String =
+        host.removePrefix("[").removeSuffix("]").substringBefore('%').lowercase()
 }

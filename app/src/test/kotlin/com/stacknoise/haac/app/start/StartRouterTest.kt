@@ -25,6 +25,8 @@ class StartRouterTest {
         servers = object : ServerDao {
             override suspend fun get(id: String) = instances.firstOrNull { it.id == id }
 
+            override suspend fun findByInstance(uuid: String, user: String) = error("not used")
+
             override suspend fun mostRecent() = instances.maxByOrNull { it.lastActiveAt }
 
             override suspend fun insert(server: ServerEntity) = error("not used")
@@ -49,7 +51,16 @@ class StartRouterTest {
     )
 
     private fun instance(id: String, lastActiveAt: Long) =
-        ServerEntity(id, "https://$id.example.com/", id, 0xFF4DFF7A, "anna", "2026.9.0", 1, lastActiveAt = lastActiveAt)
+        ServerEntity(
+            id = id,
+            externalUrl = "https://$id.example.com/",
+            displayName = id,
+            accentColor = 0xFF4DFF7A,
+            haUserName = "anna",
+            haVersion = "2026.9.0",
+            bridgeApiVersion = 1,
+            lastActiveAt = lastActiveAt,
+        )
 
     @Test
     fun `no instance opens the onboarding`() = runTest {

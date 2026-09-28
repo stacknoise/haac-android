@@ -5,18 +5,27 @@ import com.stacknoise.haac.core.database.server.ServerEntity
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.error.AuthException
 import com.stacknoise.haac.core.error.DefaultErrorFactory
+import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.StorageException
+import com.stacknoise.haac.core.network.auth.AuthTokens
 import com.stacknoise.haac.core.network.auth.LoginFlowClient
 import com.stacknoise.haac.core.network.auth.TokenClient
 import com.stacknoise.haac.core.network.bridge.BridgeInfo
 import com.stacknoise.haac.core.network.bridge.BridgeInfoClient
+import com.stacknoise.haac.core.network.bridge.BridgeUrls
 import com.stacknoise.haac.core.network.bridge.DefaultBridgeMessageFactory
+import com.stacknoise.haac.core.network.endpoint.AddressSlot
+import com.stacknoise.haac.core.network.endpoint.EndpointSelector
+import com.stacknoise.haac.core.network.endpoint.addresses
 import com.stacknoise.haac.core.network.http.HaHttpClient
 import com.stacknoise.haac.core.security.token.TokenProtection
 import com.stacknoise.haac.core.security.token.TokenStore
+import com.stacknoise.haac.feature.onboarding.domain.SignInResult
 import com.stacknoise.haac.feature.onboarding.domain.SignInStep
 import com.stacknoise.haac.feature.onboarding.domain.SignInTarget
+import io.mockk.coEvery
+import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -24,6 +33,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -51,6 +61,10 @@ class HaSignInRepositoryTest {
         }
 
         override suspend fun get(id: String) = rows[id]
+
+        override suspend fun findByInstance(uuid: String, user: String) = rows.values.firstOrNull {
+            it.instanceUuid == uuid && it.haUserName.equals(user, ignoreCase = true)
+        }
 
         override suspend fun mostRecent() = rows.values.maxByOrNull { it.lastActiveAt }
 
@@ -83,11 +97,13 @@ class HaSignInRepositoryTest {
     }
 
     private val registry = InstanceRegistry(dao, tokenStore, active, DefaultErrorFactory())
+    private val firstAddress = EndpointSelector { row -> row.addresses.external ?: row.addresses.internal!! }
     private val repository = HaSignInRepository(
         LoginFlowClient(http, json),
         TokenClient(http, json),
         BridgeInfoClient(OkHttpClient(), json, DefaultBridgeMessageFactory(), DefaultErrorFactory()),
         registry,
+        firstAddress,
     )
 
     @BeforeEach
@@ -159,5 +175,75 @@ class HaSignInRepositoryTest {
         assertThrows<StorageException> { registry.save(SignInTarget(server.url("/"), "Home"), "anna", bridge, "ref") }
         assertTrue(saved.isEmpty())
         assertEquals(null, active.activeServerId.value)
+    }
+
+    private val info = BridgeInfo(
+        "0.1.0",
+        1,
+        listOf("switch"),
+        "2026.9.0",
+        instanceId = "f00d",
+        urls = BridgeUrls(internal = "http://192.168.1.10:8123", cloud = "https://abc.ui.nabu.casa"),
+    )
+
+    /** A repository whose bridge check answers with [bridge] without a WebSocket. */
+    private fun repositoryWith(bridge: BridgeInfo) = HaSignInRepository(
+        LoginFlowClient(http, json),
+        TokenClient(http, json),
+        mockk<BridgeInfoClient> { coEvery { fetch(any(), any()) } returns bridge },
+        registry,
+        firstAddress,
+    )
+
+    private val newTokens = AuthTokens("acc", "ref-new", 1800)
+
+    @Test
+    fun `new instance stores instance ID and both addresses`() = runTest {
+        val url = "https://abc.ui.nabu.casa/".toHttpUrl()
+        val result = repositoryWith(info).finish(SignInTarget(url, "Home"), "anna", newTokens)
+        val row = rows.getValue((result as SignInResult.Saved).serverId)
+        assertEquals("f00d", row.instanceUuid)
+        assertEquals("http://192.168.1.10:8123/", row.internalUrl)
+        assertEquals("https://abc.ui.nabu.casa/", row.externalUrl)
+    }
+
+    @Test
+    fun `same server and user becomes an address offer, another user a new instance`() = runTest {
+        val lan = "http://homeassistant.local:8123/".toHttpUrl()
+        val first = repositoryWith(info).finish(SignInTarget(lan, "Home"), "anna", newTokens) as SignInResult.Saved
+
+        val offer = repositoryWith(info).finish(SignInTarget(lan, "Home 2"), "Anna", newTokens)
+        assertEquals(SignInResult.SameInstance(first.serverId, "Home", AddressSlot.INTERNAL, null), offer)
+        assertEquals(1, rows.size)
+
+        val guest = repositoryWith(info).finish(SignInTarget(lan, "Home"), "guest", newTokens)
+        assertInstanceOf(SignInResult.Saved::class.java, guest)
+        assertEquals(2, rows.size)
+    }
+
+    @Test
+    fun `adding an address keeps the stored token and revokes the new one`() = runTest {
+        val cloud = "https://abc.ui.nabu.casa/".toHttpUrl()
+        val id = registry.save(SignInTarget(cloud, "Home"), "anna", info.copy(urls = BridgeUrls()), "ref")
+        server.enqueue(MockResponse.Builder().code(200).build())
+
+        val lan = server.url("/")
+        repositoryWith(info).addAddress(id, lan, newTokens)
+
+        assertEquals(lan.toString(), rows.getValue(id).internalUrl)
+        assertEquals("https://abc.ui.nabu.casa/", rows.getValue(id).externalUrl)
+        assertEquals("ref", saved[id])
+        assertTrue(server.takeRequest().body!!.utf8().contains("token=ref-new"))
+    }
+
+    @Test
+    fun `stored instance answering with another instance ID is NET-008`() = runTest {
+        val url = "https://abc.ui.nabu.casa/".toHttpUrl()
+        val id = registry.save(SignInTarget(url, "Home"), "anna", info, "ref")
+        val error = assertThrows<NetworkException> {
+            repositoryWith(info.copy(instanceId = "beef")).finish(SignInTarget(url, "Home", id), "anna", newTokens)
+        }
+        assertEquals(ErrorCode.NET_WRONG_SERVER, error.code)
+        assertEquals("ref", saved[id])
     }
 }

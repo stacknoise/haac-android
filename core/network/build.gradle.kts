@@ -7,6 +7,7 @@ plugins {
 dependencies {
     implementation(project(":core:error"))
     implementation(project(":core:security"))
+    implementation(project(":core:database"))
     api(libs.okhttp)
     implementation(libs.okhttp.coroutines)
     implementation(libs.kotlinx.serialization.json)

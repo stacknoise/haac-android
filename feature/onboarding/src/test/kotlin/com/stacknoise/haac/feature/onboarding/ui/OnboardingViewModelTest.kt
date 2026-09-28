@@ -6,11 +6,13 @@ import com.stacknoise.haac.core.error.BridgeException
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.network.auth.AuthTokens
-import com.stacknoise.haac.feature.onboarding.domain.DiscoveredServer
+import com.stacknoise.haac.core.network.discovery.DiscoveredServer
+import com.stacknoise.haac.core.network.discovery.ServerDiscovery
+import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.feature.onboarding.domain.KnownServer
-import com.stacknoise.haac.feature.onboarding.domain.ServerDiscovery
 import com.stacknoise.haac.feature.onboarding.domain.ServerValidator
 import com.stacknoise.haac.feature.onboarding.domain.SignInRepository
+import com.stacknoise.haac.feature.onboarding.domain.SignInResult
 import com.stacknoise.haac.feature.onboarding.domain.SignInStep
 import com.stacknoise.haac.feature.onboarding.domain.SignInTarget
 import com.stacknoise.haac.feature.onboarding.domain.ValidatedServer
@@ -55,6 +57,8 @@ class OnboardingViewModelTest {
         val passwords = mutableListOf<CharArray>()
         val finished = mutableListOf<SignInTarget>()
         var discarded = 0
+        var sameInstance: SignInResult.SameInstance? = null
+        val added = mutableListOf<Pair<String, HttpUrl>>()
 
         override suspend fun knownServer(serverId: String) =
             KnownServer(serverId, "https://ha.example.com/", "Home", "anna").takeIf { serverId == "s1" }
@@ -70,10 +74,14 @@ class OnboardingViewModelTest {
             return SignInStep.Authorized(tokens)
         }
 
-        override suspend fun finish(target: SignInTarget, username: String, tokens: AuthTokens): String {
+        override suspend fun finish(target: SignInTarget, username: String, tokens: AuthTokens): SignInResult {
             if (bridgeMissing) throw BridgeException(ErrorCode.BRG_NOT_INSTALLED)
             finished += target
-            return target.serverId ?: "new-id"
+            return sameInstance ?: SignInResult.Saved(target.serverId ?: "new-id")
+        }
+
+        override suspend fun addAddress(serverId: String, url: HttpUrl, tokens: AuthTokens) {
+            added += serverId to url
         }
 
         override suspend fun discard(url: HttpUrl, tokens: AuthTokens): Boolean {
@@ -187,6 +195,34 @@ class OnboardingViewModelTest {
         viewModel.onStartOver()
         assertEquals(SignInStage.CREDENTIALS, viewModel.state.value.stage)
         assertEquals(1, repository.discarded)
+    }
+
+    @Test
+    fun `a known server and user becomes an address of the stored instance`() {
+        repository.sameInstance = SignInResult.SameInstance("s1", "Home", AddressSlot.EXTERNAL, null)
+        val viewModel = manual()
+        viewModel.onSignIn("secret".toCharArray())
+        assertEquals(repository.sameInstance, viewModel.state.value.addressOffer)
+        assertNull(viewModel.state.value.signedInServerId)
+
+        viewModel.onAddAddress()
+        assertEquals(listOf("s1" to validated.single()), repository.added)
+        assertEquals("s1", viewModel.state.value.signedInServerId)
+        assertNull(viewModel.state.value.addressOffer)
+        assertEquals(0, repository.discarded)
+    }
+
+    @Test
+    fun `declining the address offer revokes the new tokens`() {
+        repository.sameInstance =
+            SignInResult.SameInstance("s1", "Home", AddressSlot.EXTERNAL, "https://old.example.com/")
+        val viewModel = manual()
+        viewModel.onSignIn("secret".toCharArray())
+        viewModel.onAddressOfferDismissed()
+        assertNull(viewModel.state.value.addressOffer)
+        assertEquals(SignInStage.CREDENTIALS, viewModel.state.value.stage)
+        assertEquals(1, repository.discarded)
+        assertTrue(repository.added.isEmpty())
     }
 
     @Test

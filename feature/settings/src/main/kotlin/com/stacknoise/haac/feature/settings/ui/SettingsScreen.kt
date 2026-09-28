@@ -30,7 +30,6 @@ import com.stacknoise.haac.core.common.ui.SecureWindow
 import com.stacknoise.haac.core.common.ui.findActivity
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
-import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.feature.settings.R
 
@@ -47,6 +46,7 @@ fun SettingsScreen(onSignedOut: (String) -> Unit, viewModel: SettingsViewModel =
     SettingsContent(
         state = state,
         onSignOut = viewModel::onSignOut,
+        addresses = { AddressesSection() },
         security = SecurityActions(
             onFingerprintChanged = { enabled -> activity?.let { viewModel.onFingerprintChanged(it, enabled) } },
             onUnlockWindowChanged = { minutes -> activity?.let { viewModel.onUnlockWindowChanged(it, minutes) } },
@@ -55,9 +55,14 @@ fun SettingsScreen(onSignedOut: (String) -> Unit, viewModel: SettingsViewModel =
     )
 }
 
-/** Stateless layout of the settings. */
+/** Stateless layout of the settings; [addresses] is the addresses section (concept 4.5). */
 @Composable
-fun SettingsContent(state: SettingsUiState, onSignOut: () -> Unit, security: SecurityActions) {
+fun SettingsContent(
+    state: SettingsUiState,
+    onSignOut: () -> Unit,
+    security: SecurityActions,
+    addresses: @Composable () -> Unit = {},
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -72,15 +77,12 @@ fun SettingsContent(state: SettingsUiState, onSignOut: () -> Unit, security: Sec
         val instance = state.instance ?: return@Column
         Text(instance.name, style = MaterialTheme.typography.titleMedium)
         Text(
-            instance.url,
-            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFontFamily),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
             stringResource(R.string.settings_signed_in_as, instance.userName),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Spacer(Modifier.height(32.dp))
+        addresses()
         Spacer(Modifier.height(32.dp))
         SecuritySection(state.security, state.busy, security)
         state.error?.let { ErrorMessage(it) }
@@ -107,7 +109,7 @@ private fun SettingsPreview() {
     HaacTheme {
         SettingsContent(
             state = SettingsUiState(
-                instance = ActiveInstance("1", "Home", "http://192.168.1.10:8123/", "anna"),
+                instance = ActiveInstance("1", "Home", "anna"),
                 security = SecurityUiState(
                     fingerprintAvailable = true,
                     fingerprintEnabled = true,
@@ -116,6 +118,12 @@ private fun SettingsPreview() {
             ),
             onSignOut = {},
             security = SecurityActions({}, {}, {}),
+            addresses = {
+                AddressesContent(
+                    AddressesUiState(internal = "http://192.168.1.10:8123/", external = "https://abc.ui.nabu.casa/"),
+                    AddressActions({}, {}, {}, {}, {}, {}, {}),
+                )
+            },
         )
     }
 }

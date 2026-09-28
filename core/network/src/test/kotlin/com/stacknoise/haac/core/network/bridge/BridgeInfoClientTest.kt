@@ -61,10 +61,12 @@ class BridgeInfoClientTest {
     fun `reads the bridge info after auth`() = runTest {
         fakeHa(authOk) { id ->
             """{"id":$id,"type":"result","success":true,"result":{"bridge_version":"0.1.0","api_version":1,""" +
-                """"domains":["climate","sensor","switch"],"ha_version":"2026.9.0"}}"""
+                """"domains":["climate","sensor","switch"],"ha_version":"2026.9.0","instance_id":"f00d",""" +
+                """"urls":{"internal":"http://192.168.1.10:8123","external":null,"cloud":"https://x.ui.nabu.casa"}}}"""
         }
         val info = client.fetch(server.url("/"), "acc")
-        assertEquals(BridgeInfo("0.1.0", 1, listOf("climate", "sensor", "switch"), "2026.9.0"), info)
+        val urls = BridgeUrls(internal = "http://192.168.1.10:8123", cloud = "https://x.ui.nabu.casa")
+        assertEquals(BridgeInfo("0.1.0", 1, listOf("climate", "sensor", "switch"), "2026.9.0", "f00d", urls), info)
         assertEquals("""{"type":"auth","access_token":"acc"}""", received.first())
         assertEquals("/api/websocket", server.takeRequest().url.encodedPath)
     }

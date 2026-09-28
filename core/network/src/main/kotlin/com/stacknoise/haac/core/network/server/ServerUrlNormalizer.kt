@@ -1,4 +1,4 @@
-package com.stacknoise.haac.feature.onboarding.domain
+package com.stacknoise.haac.core.network.server
 
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.NetworkException

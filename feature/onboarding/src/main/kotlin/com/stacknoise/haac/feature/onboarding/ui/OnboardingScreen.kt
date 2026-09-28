@@ -41,8 +41,10 @@ import com.stacknoise.haac.core.common.ui.SecureWindow
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.error.ErrorCode
+import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.feature.onboarding.R
-import com.stacknoise.haac.feature.onboarding.domain.DiscoveredServer
+import com.stacknoise.haac.feature.onboarding.domain.SignInResult
+import com.stacknoise.haac.core.network.discovery.DiscoveredServer
 /** M-01: pick a HA server, sign in, optional MFA code (concept 4.2, 5.1, 15.3); [onSignedIn] after success. */
 @Composable
 fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hiltViewModel()) {
@@ -78,6 +80,8 @@ fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hi
                 signIn()
             },
             onCleartextDismissed = viewModel::onCleartextDismissed,
+            onAddAddress = viewModel::onAddAddress,
+            onAddressOfferDismissed = viewModel::onAddressOfferDismissed,
         ),
     )
 }
@@ -124,6 +128,7 @@ fun OnboardingContent(state: OnboardingUiState, password: TextFieldState, action
         PrimaryAction(state, actions)
     }
     state.cleartextWarningFor?.let { url -> CleartextDialog(url, actions) }
+    state.addressOffer?.let { offer -> AddressOfferDialog(offer, actions) }
 }
 
 /** Sign in, Verify or Try again, depending on the stage. */
@@ -176,6 +181,30 @@ private fun CleartextDialog(url: String, actions: OnboardingActions) {
         },
         dismissButton = {
             TextButton(onClick = actions.onCleartextDismissed) {
+                Text(stringResource(R.string.onboarding_cleartext_cancel))
+            }
+        },
+    )
+}
+
+/** The server already belongs to a stored instance: add the address to it instead (concept 4.5). */
+@Composable
+private fun AddressOfferDialog(offer: SignInResult.SameInstance, actions: OnboardingActions) {
+    val internal = offer.slot == AddressSlot.INTERNAL
+    val slot = stringResource(if (internal) R.string.onboarding_slot_internal else R.string.onboarding_slot_external)
+    val text = stringResource(R.string.onboarding_address_offer_text, offer.displayName, slot)
+    val replaces = offer.replaces?.let { stringResource(R.string.onboarding_address_offer_replaces, it) }
+    AlertDialog(
+        onDismissRequest = actions.onAddressOfferDismissed,
+        title = { Text(stringResource(R.string.onboarding_address_offer_title)) },
+        text = { Text(listOfNotNull(text, replaces).joinToString("\n\n")) },
+        confirmButton = {
+            TextButton(onClick = actions.onAddAddress) {
+                Text(stringResource(R.string.onboarding_address_offer_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = actions.onAddressOfferDismissed) {
                 Text(stringResource(R.string.onboarding_cleartext_cancel))
             }
         },

@@ -21,6 +21,10 @@ interface ServerDao {
     @Query("SELECT * FROM server WHERE id = :id")
     suspend fun get(id: String): ServerEntity?
 
+    /** The instance of HA installation [uuid] signed in as HA user [user] (any case), or null (concept 4.5). */
+    @Query("SELECT * FROM server WHERE instance_uuid = :uuid AND ha_user_name = :user COLLATE NOCASE LIMIT 1")
+    suspend fun findByInstance(uuid: String, user: String): ServerEntity?
+
     /** The instance used last, or null if there is none. */
     @Query("SELECT * FROM server ORDER BY last_active_at DESC LIMIT 1")
     suspend fun mostRecent(): ServerEntity?

@@ -8,6 +8,7 @@ import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.database.settings.SecuritySettings
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
+import com.stacknoise.haac.core.network.endpoint.EndpointSelector
 import com.stacknoise.haac.core.network.session.InstanceSessionFactory
 import com.stacknoise.haac.core.security.biometric.FingerprintOutcome
 import com.stacknoise.haac.core.security.biometric.FingerprintTarget
@@ -27,10 +28,10 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.HttpUrl
 
 /** The active instance as the settings show it. */
-data class ActiveInstance(val id: String, val name: String, val url: String, val userName: String)
+data class ActiveInstance(val id: String, val name: String, val userName: String)
 
 /** Settings → Security (concept 5.4, 5.5). */
 data class SecurityUiState(
@@ -54,8 +55,9 @@ data class SettingsUiState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     active: ActiveInstanceStore,
-    servers: ServerDao,
+    private val servers: ServerDao,
     private val sessions: InstanceSessionFactory,
+    private val endpoints: EndpointSelector,
     private val tokens: TokenStore,
     private val fingerprint: FingerprintUnlock,
     private val security: SecuritySettings,
@@ -73,7 +75,7 @@ class SettingsViewModel @Inject constructor(
         security.lockTimeoutMinutes,
     ) { server, current, enabled, window, timeout ->
         current.copy(
-            instance = server?.let { ActiveInstance(it.id, it.displayName, it.baseUrl, it.haUserName) },
+            instance = server?.let { ActiveInstance(it.id, it.displayName, it.haUserName) },
             security = SecurityUiState(
                 fingerprintAvailable = fingerprint.isAvailable(),
                 fingerprintEnabled = enabled,
@@ -99,16 +101,31 @@ class SettingsViewModel @Inject constructor(
 
     /**
      * Logout: revokes the refresh token in HA and deletes it locally (concept 5.2). The instance and its
-     * layout stay, so the next start asks for the login of this instance (4.1). If HA is unreachable the
-     * token is deleted anyway and expires in HA later.
+     * layout stay, so the next start asks for the login of this instance (4.1). The token is revoked at the
+     * address chosen by 4.5; if no address answers it is deleted anyway and expires in HA later.
      */
     fun onSignOut() {
         val instance = state.value.instance ?: return
         if (progress.value.busy) return
         progress.update { it.copy(busy = true, error = null) }
         viewModelScope.launch {
-            sessions.create(instance.id, instance.url.toHttpUrl()).signOut()
-            progress.update { it.copy(busy = false, signedOutServerId = instance.id) }
+            try {
+                val url = signOutAddress(instance.id)
+                if (url == null) tokens.delete(instance.id) else sessions.create(instance.id, url).signOut()
+                progress.update { it.copy(busy = false, signedOutServerId = instance.id) }
+            } catch (e: HaacException) {
+                progress.update { it.copy(busy = false, error = e.code) }
+            }
+        }
+    }
+
+    /** The address to revoke the token at (concept 4.5), or null if none answers. */
+    private suspend fun signOutAddress(serverId: String): HttpUrl? {
+        val server = servers.get(serverId) ?: return null
+        return try {
+            endpoints.select(server)
+        } catch (_: HaacException) {
+            null
         }
     }
 

@@ -202,7 +202,7 @@ A HA instance is often reachable under two addresses: in the home network, e.g. 
 **Addresses.** Each instance has an *internal* and an *external* address; at least one is set.
 
 - On sign-in, the entered URL goes into the internal slot if its host is private (4.3), otherwise into the external slot. The other slot is filled from `haac_bridge/info`: internal ← `urls.internal`; external ← `urls.external`, else `urls.cloud`. Only addresses that `CleartextPolicy` allows are taken.
-- *Settings → Instance → Addresses* shows both addresses. The user can edit or remove each one and take them over from HA again (*Use addresses from Home Assistant*). A changed address is validated like in 4.2 and must report the same `instance_id`.
+- *Settings → Addresses* shows both addresses of the active instance. The user can edit or remove each one (one address always remains) and take them over from HA again (*Use addresses from Home Assistant*). A changed address is probed and must report the same `instance_id`; the access token for this check is refreshed at the working address, so the refresh token never goes to the new address while another one answers.
 
 **Choosing the address.** The app picks the address on app start, on an instance switch and when the network changes (`ConnectivityManager.NetworkCallback`). A change of the chosen address rebuilds the WebSocket like a reconnect (11.4).
 
@@ -219,7 +219,7 @@ A HA instance is often reachable under two addresses: in the home network, e.g. 
 
 **Identity check after connecting.** After every WebSocket connection the app compares the `instance_id` from `haac_bridge/info` with `instanceUuid`. On a mismatch it closes the connection at once, does not delete the refresh token and reports `HAAC-NET-008`.
 
-**Duplicate detection.** When a sign-in returns an `instance_id` that already belongs to a stored instance with the same HA user, no new instance is created. A dialog asks: *"This address belongs to «Home». Add it as its internal (or external) address?"* If that slot is already set, the dialog says which address it replaces. *Add* stores the address in the existing instance and revokes the tokens of the new sign-in; *Cancel* revokes them too. The same `instance_id` with a different HA user is a separate instance (4.4).
+**Duplicate detection.** When a sign-in returns an `instance_id` that already belongs to a stored instance with the same HA user, no new instance is created. A dialog asks: *"This address belongs to «Home». Add it as its internal (or external) address?"* If that slot is already set, the dialog says which address it replaces. *Add* stores the address in the existing instance and revokes the tokens of the new sign-in (they replace the token only if the instance has none); *Cancel* revokes them too. The same `instance_id` with a different HA user is a separate instance (4.4).
 
 ## 5. Authentication, credential storage and biometric login
 
@@ -700,8 +700,8 @@ Mitigations:
 | Fingerprint check bypassed by patched app | Key only usable after `BiometricPrompt` with `CryptoObject` (Class 3); no UI-only check |
 | New fingerprint added by attacker | `setInvalidatedByBiometricEnrollment(true)` → password required |
 | Man-in-the-middle | HTTPS by default; cleartext only on private networks after warning; key pinning for self-signed certs |
-| Foreign device at the internal address (another Wi-Fi uses the same private IP) and receives the token | An http:// internal address is used only after the home network check (mDNS uuid of this instance at this host, 4.5); https:// addresses need a trusted or pinned certificate; instance_id is checked after every connection (HAAC-NET-008) |
-| Faked mDNS announcement with the instance's uuid | Needs the uuid, which is only announced in the home network, and an attacker in the same network; residual risk of cleartext, documented in the warning dialog. *Always use the internal address* skips the check and warns about it |
+| Foreign device at the internal address (another Wi-Fi uses the same private IP) and receives the token | An `http://` internal address is used only after the home network check (mDNS `uuid` of this instance at this host, 4.5); `https://` addresses need a trusted or pinned certificate; `instance_id` is checked after every connection (`HAAC-NET-008`) |
+| Faked mDNS announcement with the instance's `uuid` | Needs the `uuid`, which is only announced in the home network, and an attacker in the same network; residual risk of cleartext, documented in the warning dialog. *Always use the internal address* skips the check and warns about it |
 | Access to other users' entities via the bridge | Bridge resolves user from token (`connection.user`), ignores any user field from the client, deny by default |
 | Manipulated service call to a non-exposed entity | Bridge checks `entity_id` against exposure and service against domain before calling HA |
 | Credentials in logs or crash reports | No logging of `/auth/*`; crash reporting (if any) strips headers and bodies |
@@ -1060,10 +1060,10 @@ com.stacknoise.haac
 │   ├── common               # shared helpers, dispatchers, time, result types
 │   ├── error                # ErrorCode, HaacException hierarchy, ErrorFactory, ErrorReporter (17.3)
 │   ├── security             # keystore, crypto, biometric
-│   ├── network              # http, websocket, auth, bridge
+│   ├── network              # http, websocket, auth, bridge, LAN discovery, address selection (4.5)
 │   └── database             # Room database, DAOs, entities
 └── feature
-    ├── onboarding           # server entry, LAN discovery, login
+    ├── onboarding           # server entry, login
     ├── instance             # instances, switching
     ├── layout               # homes, floors, rooms
     ├── entities             # picker, room grid, controls (switch, sensor, climate), sync
@@ -1087,8 +1087,8 @@ Whenever the kind of object depends on a type or on runtime data, it is created 
 | `ServiceCallFactory` | Typed `haac_bridge/call_service` requests, checked against `supported_features` | Only valid service calls leave the app (8) |
 | `BridgeMessageFactory` | WebSocket commands with message IDs | Message format and ID sequence in one place (11) |
 | `KeyFactory` / `CipherFactory` | Keystore keys (plain, biometric, unlock window) and ciphers | Key parameters from 5.3 and 5.4 in one place |
-| InstanceSessionFactory | Per-instance session: HTTP client, WebSocket, token store for one serverId | Strict instance isolation (4.4) |
-| EndpointSelector | The address of an instance to connect to, from its addresses, the home network check and the probes | Selection rules of 4.5 in one place |
+| `InstanceSessionFactory` | Per-instance session: HTTP client, WebSocket, token store for one `serverId` | Strict instance isolation (4.4) |
+| `EndpointSelector` | The address of an instance to connect to, from its addresses, the home network check and the probes | Selection rules of 4.5 in one place |
 | `ErrorFactory` | `HaacException` from any caught `Throwable` | Error mapping in one place (17.3) |
 | ViewModel factories (`@AssistedFactory`) | ViewModels with runtime parameters (`roomId`, `entityId`) | Hilt standard for runtime arguments |
 
