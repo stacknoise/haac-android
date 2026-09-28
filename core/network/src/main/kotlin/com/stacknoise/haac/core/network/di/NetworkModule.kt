@@ -9,6 +9,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 
@@ -36,4 +39,10 @@ object NetworkModule {
     @Provides
     fun provideNsdManager(@ApplicationContext context: Context): NsdManager =
         context.getSystemService(NsdManager::class.java)
+
+    /** Scope of [com.stacknoise.haac.core.network.connection.ConnectionSupervisor]; lives as long as the app. */
+    @Provides
+    @Singleton
+    @ConnectionScope
+    fun provideConnectionScope(): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 }

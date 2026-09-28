@@ -2,6 +2,7 @@ package com.stacknoise.haac.core.network.bridge
 
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
@@ -13,8 +14,14 @@ interface BridgeMessageFactory {
     /** The `auth` message; contains the access token and must never be logged. */
     fun auth(accessToken: String): String
 
-    /** A command such as `haac_bridge/info` with the next message id. */
-    fun command(type: String): BridgeCommand
+    /** A command such as `haac_bridge/info` with the next message id and the request [fields]. */
+    fun command(type: String, fields: JsonObject = NO_FIELDS): BridgeCommand
+
+    /** Shared constants. */
+    companion object {
+        /** A command without request fields. */
+        val NO_FIELDS = JsonObject(emptyMap())
+    }
 }
 
 /** Message ids grow per factory; HA only requires them to increase on one connection. */
@@ -27,10 +34,11 @@ class DefaultBridgeMessageFactory @Inject constructor() : BridgeMessageFactory {
         put("access_token", accessToken)
     }.toString()
 
-    /** `{"id": n, "type": …}`. */
-    override fun command(type: String): BridgeCommand {
+    /** `{"id": n, "type": …, <fields>}`; [fields] cannot replace `id` or `type`. */
+    override fun command(type: String, fields: JsonObject): BridgeCommand {
         val id = ids.incrementAndGet()
         val json = buildJsonObject {
+            fields.forEach { (key, value) -> put(key, value) }
             put("id", id)
             put("type", type)
         }

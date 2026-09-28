@@ -28,4 +28,8 @@
     <string name="error_ent_not_found">This device no longer exists in Home Assistant.</string>
     <string name="error_db_save_failed">Your changes could not be saved. Please try again.</string>
     <string name="error_app_unexpected">Something went wrong.</string>
+    <!-- Action buttons of ErrorAction (concept 17.4). -->
+    <string name="error_action_retry">Try again</string>
+    <string name="error_action_sign_in">Sign in</string>
+    <string name="error_action_open_settings">Open settings</string>
 </resources>

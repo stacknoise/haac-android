@@ -19,6 +19,13 @@ interface ErrorFactory {
     fun fromBridgeError(habCode: String): HaacException
 }
 
+/** Runs a Room call and converts SQLite errors to HAAC-DB-001 (concept 17.3). */
+suspend fun <T> ErrorFactory.database(block: suspend () -> T): T = try {
+    block()
+} catch (e: SQLException) {
+    throw from(e)
+}
+
 /** Default mapping; the only place that decides which code an error gets. */
 class DefaultErrorFactory @Inject constructor() : ErrorFactory {
     /** Maps low-level exceptions by type; everything unknown becomes HAAC-APP-000. */

@@ -5,6 +5,7 @@ import com.stacknoise.haac.core.error.BridgeException
 import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
+import com.stacknoise.haac.core.network.websocket.OkHttpWebSocketFactory
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import mockwebserver3.MockResponse
@@ -22,9 +23,10 @@ import org.junit.jupiter.api.assertThrows
 class BridgeInfoClientTest {
     private val server = MockWebServer()
     private val received = mutableListOf<String>()
+    private val json = Json { ignoreUnknownKeys = true }
     private val client = BridgeInfoClient(
-        OkHttpClient(),
-        Json { ignoreUnknownKeys = true },
+        OkHttpWebSocketFactory(OkHttpClient(), json, DefaultErrorFactory()),
+        json,
         DefaultBridgeMessageFactory(),
         DefaultErrorFactory(),
     )

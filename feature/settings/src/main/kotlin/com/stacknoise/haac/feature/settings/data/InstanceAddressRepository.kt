@@ -1,6 +1,5 @@
 package com.stacknoise.haac.feature.settings.data
 
-import android.database.SQLException
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.server.ServerEntity
 import com.stacknoise.haac.core.error.AuthException
@@ -9,6 +8,7 @@ import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.error.UnexpectedException
+import com.stacknoise.haac.core.error.database
 import com.stacknoise.haac.core.network.bridge.BridgeInfo
 import com.stacknoise.haac.core.network.bridge.BridgeInfoClient
 import com.stacknoise.haac.core.network.endpoint.AddressSlot
@@ -88,16 +88,9 @@ class InstanceAddressRepository @Inject constructor(
     private fun ServerEntity.withInstanceId(info: BridgeInfo) = copy(instanceUuid = instanceUuid ?: info.instanceId)
 
     /** The stored instance [serverId]; it exists while its settings are shown. */
-    private suspend fun load(serverId: String): ServerEntity = database { servers.get(serverId) }
+    private suspend fun load(serverId: String): ServerEntity = errors.database { servers.get(serverId) }
         ?: throw UnexpectedException()
 
     /** Writes [server]. */
-    private suspend fun save(server: ServerEntity) = database { servers.update(server) }
-
-    /** Runs a database call and converts SQLite errors to HAAC-DB-001. */
-    private suspend fun <T> database(block: suspend () -> T): T = try {
-        block()
-    } catch (e: SQLException) {
-        throw errors.from(e)
-    }
+    private suspend fun save(server: ServerEntity) = errors.database { servers.update(server) }
 }

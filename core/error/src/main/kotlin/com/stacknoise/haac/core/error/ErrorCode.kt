@@ -181,10 +181,10 @@ enum class ErrorCode(
     val area: String get() = code.split('-')[1]
 }
 
-/** The one action button an error entry offers besides Dismiss (concept 17.4). */
-enum class ErrorAction {
-    RETRY,
-    SIGN_IN,
-    OPEN_SETTINGS,
-    NONE,
+/** The one action button an error entry offers besides Dismiss (concept 17.4); [label] is null for none. */
+enum class ErrorAction(@param:StringRes val label: Int?) {
+    RETRY(R.string.error_action_retry),
+    SIGN_IN(R.string.error_action_sign_in),
+    OPEN_SETTINGS(R.string.error_action_open_settings),
+    NONE(null),
 }
