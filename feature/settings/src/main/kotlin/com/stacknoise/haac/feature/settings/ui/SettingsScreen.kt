@@ -1,0 +1,94 @@
+package com.stacknoise.haac.feature.settings.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stacknoise.haac.core.common.ui.SecureWindow
+import com.stacknoise.haac.core.common.ui.theme.HaacShapes
+import com.stacknoise.haac.core.common.ui.theme.HaacTheme
+import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
+import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.feature.settings.R
+
+/** Settings (concept 15.4); [onSignedOut] receives the id of the instance that was signed out. */
+@Composable
+fun SettingsScreen(onSignedOut: (String) -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
+    SecureWindow()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val signedOut by rememberUpdatedState(onSignedOut)
+    LaunchedEffect(state.signedOutServerId) {
+        state.signedOutServerId?.let(signedOut)
+    }
+    SettingsContent(state, onSignOut = viewModel::onSignOut)
+}
+
+/** Stateless layout of the settings. */
+@Composable
+fun SettingsContent(state: SettingsUiState, onSignOut: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+    ) {
+        Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(24.dp))
+        Text(stringResource(R.string.settings_instance).uppercase(), style = SectionLabelStyle)
+        Spacer(Modifier.height(8.dp))
+        val instance = state.instance ?: return@Column
+        Text(instance.name, style = MaterialTheme.typography.titleMedium)
+        Text(
+            instance.url,
+            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFontFamily),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            stringResource(R.string.settings_signed_in_as, instance.userName),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(24.dp))
+        OutlinedButton(
+            onClick = onSignOut,
+            enabled = !state.busy,
+            shape = HaacShapes.Medium,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+        ) {
+            if (state.busy) {
+                CircularProgressIndicator(modifier = Modifier.height(20.dp), strokeWidth = 2.dp)
+            } else {
+                Text(stringResource(R.string.settings_sign_out), style = MaterialTheme.typography.titleMedium)
+            }
+        }
+    }
+}
+
+/** Preview with a signed-in instance. */
+@Preview
+@Composable
+private fun SettingsPreview() {
+    HaacTheme {
+        SettingsContent(
+            state = SettingsUiState(ActiveInstance("1", "Home", "http://192.168.1.10:8123/", "anna")),
+            onSignOut = {},
+        )
+    }
+}

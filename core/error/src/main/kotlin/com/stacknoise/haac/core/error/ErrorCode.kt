@@ -79,6 +79,18 @@ enum class ErrorCode(
         ErrorAction.NONE,
         "Server has no 'homeassistant' auth provider; browser fallback (5.1) not built yet",
     ),
+    AUTH_SIGN_IN_ABORTED(
+        "HAAC-AUTH-005",
+        R.string.error_auth_sign_in_aborted,
+        ErrorAction.NONE,
+        "HA aborted the login flow (too_many_retry, login_expired) or no longer knows the flow",
+    ),
+    AUTH_USER_BLOCKED(
+        "HAAC-AUTH-006",
+        R.string.error_auth_user_blocked,
+        ErrorAction.NONE,
+        "HTTP 403 from /auth/login_flow or /auth/token: user inactive, local-only or IP banned",
+    ),
     SEC_BIOMETRICS_CHANGED(
         "HAAC-SEC-001",
         R.string.error_sec_biometrics_changed,

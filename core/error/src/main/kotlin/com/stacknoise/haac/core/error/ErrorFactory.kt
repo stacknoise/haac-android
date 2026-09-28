@@ -3,6 +3,8 @@ package com.stacknoise.haac.core.error
 import android.database.SQLException
 import android.security.keystore.KeyPermanentlyInvalidatedException
 import java.io.IOException
+import java.security.GeneralSecurityException
+import java.security.ProviderException
 import javax.inject.Inject
 import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLPeerUnverifiedException
@@ -24,6 +26,8 @@ class DefaultErrorFactory @Inject constructor() : ErrorFactory {
         is CancellationException -> throw throwable
         is HaacException -> throwable
         is KeyPermanentlyInvalidatedException -> KeystoreException(ErrorCode.SEC_BIOMETRICS_CHANGED, throwable)
+        is GeneralSecurityException, is ProviderException ->
+            KeystoreException(ErrorCode.SEC_STORAGE_UNAVAILABLE, throwable)
         is SQLException -> StorageException(ErrorCode.DB_SAVE_FAILED, throwable)
         is SSLHandshakeException, is SSLPeerUnverifiedException ->
             NetworkException(ErrorCode.NET_CERTIFICATE_UNTRUSTED, throwable)

@@ -17,6 +17,8 @@ detekt = "2.0.0-alpha.6"
 okhttp = "5.5.0"
 kotlinx-serialization = "1.11.0"
 kotlinx-coroutines = "1.11.0"
+room = "2.8.5"
+datastore = "1.2.1"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
@@ -42,6 +44,9 @@ okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver3", version
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 
 # Plugins used by the convention plugins in build-logic
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }

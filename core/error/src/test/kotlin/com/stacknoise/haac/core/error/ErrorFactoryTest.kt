@@ -2,6 +2,8 @@ package com.stacknoise.haac.core.error
 
 import java.io.IOException
 import java.net.UnknownHostException
+import java.security.KeyStoreException
+import java.security.ProviderException
 import javax.net.ssl.SSLHandshakeException
 import kotlin.coroutines.cancellation.CancellationException
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -36,6 +38,12 @@ class ErrorFactoryTest {
     @Test
     fun `untrusted certificates become NET-007`() {
         assertEquals(ErrorCode.NET_CERTIFICATE_UNTRUSTED, factory.from(SSLHandshakeException("self-signed")).code)
+    }
+
+    @Test
+    fun `keystore failures become SEC-002`() {
+        assertEquals(ErrorCode.SEC_STORAGE_UNAVAILABLE, factory.from(KeyStoreException("no key")).code)
+        assertEquals(ErrorCode.SEC_STORAGE_UNAVAILABLE, factory.from(ProviderException("keystore")).code)
     }
 
     @Test

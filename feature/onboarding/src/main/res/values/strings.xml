@@ -8,8 +8,18 @@
     <string name="onboarding_other_address">Other address…</string>
     <string name="onboarding_address_label">Server address</string>
     <string name="onboarding_address_hint">https://ha.example.com</string>
-    <string name="onboarding_continue">Continue</string>
-    <string name="onboarding_server_ok">Home Assistant found at %1$s. Sign-in follows in the next step.</string>
+    <string name="onboarding_sign_in_again">Sign in again</string>
+    <string name="onboarding_username">Username</string>
+    <string name="onboarding_password">Password</string>
+    <string name="onboarding_sign_in">Sign in</string>
+    <string name="onboarding_code_title">Verification</string>
+    <string name="onboarding_code_text">Enter the code from your authenticator app.</string>
+    <string name="onboarding_code_hint">Code</string>
+    <string name="onboarding_verify">Verify</string>
+    <string name="onboarding_bridge_text">Your sign-in worked, but the HAAC Bridge integration is missing or outdated on this server. Ask the Home Assistant administrator to install or update it via HACS and to share entities with your user. Then try again.</string>
+    <string name="onboarding_bridge_link" translatable="false">github.com/stacknoise/haac-bridge</string>
+    <string name="onboarding_try_again">Try again</string>
+    <string name="onboarding_start_over">Start over</string>
     <string name="onboarding_cleartext_title">Unencrypted connection</string>
     <string name="onboarding_cleartext_text">%1$s does not use https. Anyone on your network could read what the app sends, including your password. Only continue if this is your own home network.</string>
     <string name="onboarding_cleartext_confirm">Continue anyway</string>
