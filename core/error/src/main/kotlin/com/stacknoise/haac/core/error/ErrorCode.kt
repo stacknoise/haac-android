@@ -31,6 +31,30 @@ enum class ErrorCode(
         ErrorAction.OPEN_SETTINGS,
         "Pinned certificate key does not match the server's key",
     ),
+    NET_NOT_HOME_ASSISTANT(
+        "HAAC-NET-004",
+        R.string.error_net_not_home_assistant,
+        ErrorAction.NONE,
+        "GET /auth/providers did not return a HA auth provider list",
+    ),
+    NET_INVALID_ADDRESS(
+        "HAAC-NET-005",
+        R.string.error_net_invalid_address,
+        ErrorAction.NONE,
+        "Server URL could not be parsed after normalisation",
+    ),
+    NET_CLEARTEXT_NOT_ALLOWED(
+        "HAAC-NET-006",
+        R.string.error_net_cleartext_not_allowed,
+        ErrorAction.NONE,
+        "http:// to a host outside private address ranges and .local (concept 4.3)",
+    ),
+    NET_CERTIFICATE_UNTRUSTED(
+        "HAAC-NET-007",
+        R.string.error_net_certificate_untrusted,
+        ErrorAction.NONE,
+        "TLS handshake failed: certificate not trusted by the system (self-signed pinning comes later)",
+    ),
     AUTH_INVALID_CREDENTIALS(
         "HAAC-AUTH-001",
         R.string.error_auth_invalid_credentials,
@@ -48,6 +72,12 @@ enum class ErrorCode(
         R.string.error_auth_session_expired,
         ErrorAction.SIGN_IN,
         "Refresh token revoked or expired, or the bridge saw no user (HAB-AUTH-001)",
+    ),
+    AUTH_PASSWORD_LOGIN_UNAVAILABLE(
+        "HAAC-AUTH-004",
+        R.string.error_auth_password_login_unavailable,
+        ErrorAction.NONE,
+        "Server has no 'homeassistant' auth provider; browser fallback (5.1) not built yet",
     ),
     SEC_BIOMETRICS_CHANGED(
         "HAAC-SEC-001",

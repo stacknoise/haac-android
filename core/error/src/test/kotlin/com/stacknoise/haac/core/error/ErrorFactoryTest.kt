@@ -2,6 +2,7 @@ package com.stacknoise.haac.core.error
 
 import java.io.IOException
 import java.net.UnknownHostException
+import javax.net.ssl.SSLHandshakeException
 import kotlin.coroutines.cancellation.CancellationException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -30,6 +31,11 @@ class ErrorFactoryTest {
     fun `io errors become NET-001`() {
         assertEquals(ErrorCode.NET_UNREACHABLE, factory.from(IOException()).code)
         assertEquals(ErrorCode.NET_UNREACHABLE, factory.from(UnknownHostException()).code)
+    }
+
+    @Test
+    fun `untrusted certificates become NET-007`() {
+        assertEquals(ErrorCode.NET_CERTIFICATE_UNTRUSTED, factory.from(SSLHandshakeException("self-signed")).code)
     }
 
     @Test

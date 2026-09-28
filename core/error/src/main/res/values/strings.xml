@@ -4,6 +4,11 @@
     <string name="error_net_unreachable">The server is not reachable. Check your connection and try again.</string>
     <string name="error_net_connection_lost">The connection to the server was lost. Reconnecting…</string>
     <string name="error_net_certificate_changed">The server\'s certificate has changed. For your safety the connection was blocked.</string>
+    <string name="error_net_not_home_assistant">This address is not a Home Assistant server. Check the address and try again.</string>
+    <string name="error_net_invalid_address">This is not a valid address. Check it and try again.</string>
+    <string name="error_net_cleartext_not_allowed">Unencrypted connections are only allowed in your home network. Use an https address.</string>
+    <string name="error_net_certificate_untrusted">The server\'s certificate is not trusted, so the connection was blocked.</string>
+    <string name="error_auth_password_login_unavailable">This server does not allow sign-in with username and password.</string>
     <string name="error_auth_invalid_credentials">Username or password is wrong.</string>
     <string name="error_auth_invalid_mfa_code">The verification code is wrong.</string>
     <string name="error_auth_session_expired">Your sign-in has expired. Please sign in again.</string>
