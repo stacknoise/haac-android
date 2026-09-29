@@ -41,8 +41,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.error.ErrorCode
+import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.feature.entities.R
+import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.RoomGroup
+import kotlinx.coroutines.flow.Flow
 
 /**
  * The Rooms tab (M-05, M-08, concept 7, 8): header with *Home · Level* menu, room chips, banner for entities no
@@ -56,14 +59,14 @@ fun RoomsScreen(navigation: RoomsNavigation, viewModel: RoomsViewModel = hiltVie
         RoomsContent(navigation, viewModel)
         SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter))
     }
-    FailureSnackbar(viewModel, snackbar)
+    FailureSnackbar(viewModel.failed, snackbar)
 }
 
-/** Shows each failed service call as a snackbar: message and code (concept 14.1, 17.4). */
+/** Shows each of the [failed] service calls as a snackbar: message and code (concept 14.1, 17.4). */
 @Composable
-private fun FailureSnackbar(viewModel: RoomsViewModel, snackbar: SnackbarHostState) {
+internal fun FailureSnackbar(failed: Flow<HaacException>, snackbar: SnackbarHostState) {
     var failure by remember { mutableStateOf<ErrorCode?>(null) }
-    LaunchedEffect(viewModel) { viewModel.failed.collect { failure = it.code } }
+    LaunchedEffect(failed) { failed.collect { failure = it.code } }
     val code = failure ?: return
     val text = stringResource(R.string.tile_failed, stringResource(code.message), code.code)
     LaunchedEffect(code, text) {
@@ -100,7 +103,11 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
         } else {
             val actions = TileActions(
                 onClick = { tile ->
-                    if (tile.withdrawn) sheet = RoomSheet.Withdrawn(tile) else viewModel.onToggle(tile)
+                    when {
+                        tile.withdrawn -> sheet = RoomSheet.Withdrawn(tile)
+                        tile.control is EntityControl.Toggle -> viewModel.onToggle(tile)
+                        else -> navigation.onOpenEntity(tile.entityId)
+                    }
                 },
                 onLongClick = { tile ->
                     sheet = if (tile.withdrawn) RoomSheet.Withdrawn(tile) else RoomSheet.Menu(tile)
@@ -111,12 +118,17 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
             RoomGrid(state.tiles, state.connected, actions, Modifier.padding(vertical = 16.dp))
         }
     }
-    sheet?.let { open -> Sheets(open, viewModel, onChange = { sheet = it }) }
+    sheet?.let { open -> Sheets(open, viewModel, navigation.onOpenEntity, onChange = { sheet = it }) }
 }
 
 /** The open sheet or rename dialog; [onChange] switches to another one or closes it (null). */
 @Composable
-private fun Sheets(open: RoomSheet, viewModel: RoomsViewModel, onChange: (RoomSheet?) -> Unit) {
+private fun Sheets(
+    open: RoomSheet,
+    viewModel: RoomsViewModel,
+    onOpenEntity: (String) -> Unit,
+    onChange: (RoomSheet?) -> Unit,
+) {
     if (open is RoomSheet.Rename) {
         RenameDialog(
             tile = open.tile,
@@ -131,6 +143,10 @@ private fun Sheets(open: RoomSheet, viewModel: RoomsViewModel, onChange: (RoomSh
     RoomSheetContent(
         open,
         SheetActions(
+            onDetails = {
+                onChange(null)
+                onOpenEntity(it.entityId)
+            },
             onRename = { onChange(RoomSheet.Rename(it)) },
             onRemoveHere = {
                 viewModel.onRemoveHere(it)

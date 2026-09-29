@@ -7,6 +7,7 @@ import com.stacknoise.haac.core.database.entity.EntityStatus
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.feature.entities.domain.CatalogEntry
+import com.stacknoise.haac.feature.entities.domain.EntityDetail
 import com.stacknoise.haac.feature.entities.domain.Tile
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -54,6 +55,19 @@ class EntityCatalog @Inject constructor(
                     CatalogEntry(entity.domain, tile, rooms[entity.entityId].orEmpty().toSet())
                 }
                 .sortedBy { it.tile.name.lowercase() }
+        }.databaseErrors()
+    }
+
+    /**
+     * The detail of [entityId] of instance [serverId] with live state and pending requests (concept 8.1, 15.4);
+     * null while the cache does not know it.
+     */
+    fun detail(serverId: String, entityId: String): Flow<EntityDetail?> {
+        val cache = entities.observe(serverId)
+        return combine(cache, aliases.observe(serverId), pending.of(serverId)) { cached, names, sent ->
+            cached.firstOrNull { it.entityId == entityId }?.let { entity ->
+                builder.detail(entity, names.firstOrNull { it.entityId == entityId }?.alias, sent[entityId])
+            }
         }.databaseErrors()
     }
 

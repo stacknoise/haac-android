@@ -31,7 +31,7 @@ import kotlinx.serialization.json.Json
  * Carries out control requests (concept 8.1, 8.4, 11.2): shows the expected state at once ([PendingStates]),
  * sends `haac_bridge/call_service` and keeps the expected state until HA confirms it; a failed call or a
  * different confirmed state rolls it back. A newer request of the same entity replaces the older one; target
- * temperatures are debounced so tapping + several times sends one call.
+ * temperatures and humidity are debounced so tapping + or dragging a slider sends one call.
  */
 @Singleton
 class EntityController @Inject constructor(
@@ -58,7 +58,7 @@ class EntityController @Inject constructor(
         // Started after it is stored, so a call that ends at once still removes itself from [jobs].
         val job = scope.launch(start = CoroutineStart.LAZY) {
             try {
-                if (request is ControlRequest.SetTemperature) delay(DEBOUNCE_MS)
+                if (request.debounced) delay(DEBOUNCE_MS)
                 perform(key, request)
             } catch (e: HaacException) {
                 failures.handle(serverId, e)

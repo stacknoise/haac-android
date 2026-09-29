@@ -23,6 +23,9 @@ sealed interface TileContent {
     /** A sensor value, rounded as HA suggests, with its unit. */
     data class Sensor(val value: String, val unit: String?) : TileContent
 
+    /** A timestamp sensor: the time [at] in milliseconds, shown relative ("in 3 h") and absolute (concept 8.3). */
+    data class Timestamp(val at: Long) : TileContent
+
     /** A climate entity: target and current temperature (formatted) and whether it heats right now. */
     data class Climate(val target: String?, val current: String?, val heating: Boolean) : TileContent
 
@@ -46,4 +49,7 @@ data class Tile(
     val withdrawn: Boolean = false,
     val defaultName: String = name,
     val control: EntityControl? = null,
-)
+) {
+    /** True if HA reports a usable state and the entity is still shared; only then controls work. */
+    val active: Boolean get() = available && !withdrawn
+}

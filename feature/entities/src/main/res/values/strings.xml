@@ -21,6 +21,39 @@
     <string name="tile_failed">%1$s (%2$s)</string>
     <string name="tile_removed">Removed in HA · tap to remove</string>
 
+    <!-- Entity detail (concept 8, 15.4). -->
+    <string name="detail_back">Back</string>
+    <string name="detail_rename">Rename</string>
+    <string name="detail_missing">This entity is not known on this instance.</string>
+    <string name="detail_controls">Controls</string>
+    <string name="detail_offline">Controls work again once the connection is back.</string>
+    <string name="detail_info">Information</string>
+    <string name="detail_attributes">Attributes</string>
+    <string name="detail_no_attributes">Home Assistant reports no attributes.</string>
+    <string name="detail_ha_name">Name in Home Assistant</string>
+    <string name="detail_configured_name">Name from HAAC Bridge</string>
+    <string name="detail_entity_id">Entity ID</string>
+    <string name="detail_last_changed">Last changed</string>
+    <string name="detail_last_updated">Last updated</string>
+    <string name="detail_time">%1$s · %2$s</string>
+    <string name="detail_current_temperature">Current temperature</string>
+    <string name="detail_current_humidity">Current humidity</string>
+    <string name="detail_hvac_action">Currently</string>
+    <string name="detail_power">Power</string>
+    <string name="detail_turn_on">Turn on</string>
+    <string name="detail_turn_off">Turn off</string>
+    <string name="detail_mode">Mode</string>
+    <string name="detail_target">Target temperature</string>
+    <string name="detail_range">Target range</string>
+    <string name="detail_range_value">%1$s – %2$s</string>
+    <string name="detail_humidity">Target humidity</string>
+    <string name="detail_humidity_value">%1$s %%</string>
+    <string name="detail_fan_mode">Fan mode</string>
+    <string name="detail_preset">Preset</string>
+    <string name="detail_swing">Swing</string>
+    <string name="detail_swing_horizontal">Horizontal swing</string>
+    <string name="tile_details">Details</string>
+
     <!-- Tile sheets and rename dialog (M-07, M-08). -->
     <string name="tile_rename">Rename</string>
     <string name="tile_remove_here">Remove from this room</string>

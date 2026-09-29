@@ -9,6 +9,8 @@ import com.stacknoise.haac.feature.entities.ui.AddEntitiesScreen
 import com.stacknoise.haac.feature.entities.ui.AddEntitiesViewModel
 import com.stacknoise.haac.feature.entities.ui.AssignScreen
 import com.stacknoise.haac.feature.entities.ui.AssignViewModel
+import com.stacknoise.haac.feature.entities.ui.EntityDetailScreen
+import com.stacknoise.haac.feature.entities.ui.EntityDetailViewModel
 import com.stacknoise.haac.feature.entities.ui.RoomsNavigation
 import com.stacknoise.haac.feature.entities.ui.RoomsScreen
 import com.stacknoise.haac.feature.layout.ui.PlaceEditorScreen
@@ -22,6 +24,7 @@ internal fun NavGraphBuilder.roomsDestination(navController: NavController) {
         RoomsScreen(
             RoomsNavigation(
                 onAddEntities = { roomId -> navController.navigate(EntityRoutes.add(roomId)) },
+                onOpenEntity = { entityId -> navController.navigate(EntityRoutes.detail(entityId)) },
                 onOpenPlaces = { navController.openTopLevel(TopLevelDestination.PLACES) },
                 headerActions = { NotificationBell(onClick = { navController.navigate(NotificationsRoute) }) },
             ),
@@ -49,8 +52,14 @@ internal fun NavGraphBuilder.placeDestinations(navController: NavController) {
     }
 }
 
-/** *Add entities* (M-04) and *Add to room* from the notification list (M-09). */
+/** *Add entities* (M-04), the detail screen (15.4) and *Add to room* from the notification list (M-09). */
 internal fun NavGraphBuilder.entityDestinations(navController: NavController) {
+    composable(
+        EntityRoutes.DETAIL,
+        arguments = listOf(navArgument(EntityDetailViewModel.ENTITY_ARG) { type = NavType.StringType }),
+    ) {
+        EntityDetailScreen(onClose = { navController.popBackStack() })
+    }
     composable(
         EntityRoutes.ADD,
         arguments = listOf(navArgument(AddEntitiesViewModel.ROOM_ARG) { type = NavType.StringType }),

@@ -9,7 +9,6 @@ import com.stacknoise.haac.feature.entities.domain.EntityDomains.ON
 import com.stacknoise.haac.feature.entities.domain.EntityDomains.SENSOR
 import com.stacknoise.haac.feature.entities.domain.EntityDomains.SWITCH
 import com.stacknoise.haac.feature.entities.domain.EntityDomains.UNAVAILABLE
-import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlinx.serialization.json.JsonObject
@@ -37,7 +36,7 @@ class DefaultTileFactory @Inject constructor() : TileFactory {
         val raw = state?.state
         val content = when (entity.domain) {
             SWITCH -> TileContent.Switch(if (raw == ON || raw == OFF) raw == ON else null)
-            SENSOR -> TileContent.Sensor(sensorValue(raw.orEmpty(), entity.displayPrecision), entity.unit)
+            SENSOR -> sensor(entity, raw.orEmpty())
             CLIMATE -> climate(state?.attributes)
             else -> TileContent.Other(raw.orEmpty())
         }
@@ -59,6 +58,14 @@ class DefaultTileFactory @Inject constructor() : TileFactory {
         else -> SENSOR_ICONS[deviceClass] ?: TileIcon.SENSOR
     }
 
+    /** A timestamp sensor as a time, any other sensor as its rounded value with unit (concept 8.3). */
+    private fun sensor(entity: ExposedEntity, raw: String): TileContent {
+        val at = if (entity.deviceClass == EntityDomains.TIMESTAMP) isoEpochMillis(raw) else null
+        return at?.let(TileContent::Timestamp)
+            ?: TileContent.Sensor(sensorValue(raw, entity.displayPrecision), entity.unit)
+    }
+
+
     /** A numeric state rounded to [precision] digits (`suggested_display_precision`), other states unchanged. */
     private fun sensorValue(raw: String, precision: Int?): String {
         val number = raw.toBigDecimalOrNull() ?: return raw
@@ -73,9 +80,6 @@ class DefaultTileFactory @Inject constructor() : TileFactory {
     )
 
 
-    /** A temperature with one decimal, e.g. 21.5°. */
-    private fun degrees(value: Double): String =
-        BigDecimal.valueOf(value).setScale(1, RoundingMode.HALF_UP).toPlainString() + "°"
 
     /** Sensor icons by device class. */
     private companion object {

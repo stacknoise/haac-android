@@ -2,8 +2,7 @@ package com.stacknoise.haac.feature.entities.data
 
 import com.stacknoise.haac.core.database.entity.ExposedEntity
 import com.stacknoise.haac.feature.entities.domain.EntityState
-import java.time.OffsetDateTime
-import java.time.format.DateTimeParseException
+import com.stacknoise.haac.feature.entities.domain.isoEpochMillis
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
@@ -36,7 +35,9 @@ internal class EntityDescriptor(
 ) {
     /** The state part of the descriptor. */
     fun entityState(): EntityState =
-        EntityState(state, attributes, epochMillis(lastChanged), epochMillis(lastUpdated) ?: epochMillis(lastChanged))
+        isoEpochMillis(lastChanged).let { changed ->
+            EntityState(state, attributes, changed, isoEpochMillis(lastUpdated) ?: changed)
+        }
 
     /** The cache row of instance [serverId] with [lastState] as its JSON state; always active. */
     fun toRow(serverId: String, lastState: String): ExposedEntity = ExposedEntity(
@@ -54,13 +55,4 @@ internal class EntityDescriptor(
         lastState = lastState,
     )
 
-    /** Companion with the time parser. */
-    private companion object {
-        /** HA's ISO time such as `2026-09-26T07:12:03.123456+00:00` in milliseconds, or null. */
-        fun epochMillis(iso: String?): Long? = try {
-            iso?.let { OffsetDateTime.parse(it).toInstant().toEpochMilli() }
-        } catch (_: DateTimeParseException) {
-            null
-        }
-    }
 }
