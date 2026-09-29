@@ -55,6 +55,7 @@ fun SettingsScreen(
         onSignOut = viewModel::onSignOut,
         instances = instances,
         addresses = { AddressesSection() },
+        diagnostics = { DiagnosticsSection() },
         security = SecurityActions(
             onFingerprintChanged = { enabled -> activity?.let { viewModel.onFingerprintChanged(it, enabled) } },
             onUnlockWindowChanged = { minutes -> activity?.let { viewModel.onUnlockWindowChanged(it, minutes) } },
@@ -63,7 +64,10 @@ fun SettingsScreen(
     )
 }
 
-/** Stateless layout of the settings; [instances] is the instance list (4.4), [addresses] the address section (4.5). */
+/**
+ * Stateless layout of the settings; [instances] is the instance list (4.4), [addresses] the address section (4.5)
+ * and [diagnostics] the diagnostics (9.3).
+ */
 @Composable
 fun SettingsContent(
     state: SettingsUiState,
@@ -71,6 +75,7 @@ fun SettingsContent(
     security: SecurityActions,
     instances: @Composable () -> Unit = {},
     addresses: @Composable () -> Unit = {},
+    diagnostics: @Composable () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -97,6 +102,8 @@ fun SettingsContent(
         Spacer(Modifier.height(32.dp))
         SecuritySection(state.security, state.busy, security)
         state.error?.let { ErrorMessage(it) }
+        Spacer(Modifier.height(32.dp))
+        diagnostics()
         Spacer(Modifier.height(32.dp))
         OutlinedButton(
             onClick = onSignOut,

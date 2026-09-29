@@ -12,6 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
@@ -42,6 +44,20 @@ class EntityController @Inject constructor(
 
     /** True while a connection is open; controls are disabled otherwise (concept 14.1). */
     val connected: Flow<Boolean> = live.connection.map { it != null }.distinctUntilChanged()
+
+    /**
+     * True once the connection has been down for [STALE_DELAY_MS]: the cached states are then marked "stale"
+     * (concept 14.1). The delay keeps the marking away while the app is just connecting after a start.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val stale: Flow<Boolean> = connected.transformLatest { open ->
+        if (open) {
+            emit(false)
+        } else {
+            delay(STALE_DELAY_MS)
+            emit(true)
+        }
+    }.distinctUntilChanged()
 
     /** Failed calls for the snackbar (concept 14.1). */
     val failed: SharedFlow<HaacException> = failures.failures
@@ -86,6 +102,9 @@ class EntityController @Inject constructor(
 
         /** How long the expected state is shown without confirmation before HA's state shows again. */
         const val CONFIRM_MS = 5_000L
+
+        /** How long the connection may be down before the cached states are marked "stale" (concept 14.1). */
+        const val STALE_DELAY_MS = 3_000L
 
         /** The service call command. */
         const val CALL_SERVICE = "haac_bridge/call_service"

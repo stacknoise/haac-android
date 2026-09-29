@@ -27,4 +27,15 @@
     <string name="settings_use_ha_addresses">Use addresses from Home Assistant</string>
     <string name="settings_save">Save</string>
     <string name="settings_cancel">Cancel</string>
+    <string name="settings_diagnostics">Diagnostics</string>
+    <string name="diagnostics_connection">Connection</string>
+    <string name="diagnostics_last_sync">Last sync</string>
+    <string name="diagnostics_ha_version">Home Assistant</string>
+    <string name="diagnostics_bridge_api">Bridge API</string>
+    <string name="diagnostics_revision">Exposure revision</string>
+    <string name="diagnostics_connected">Connected</string>
+    <string name="diagnostics_connecting">Connecting…</string>
+    <string name="diagnostics_reconnecting">Reconnecting…</string>
+    <string name="diagnostics_failed">Not connected</string>
+    <string name="diagnostics_idle">Not connected</string>
 </resources>
