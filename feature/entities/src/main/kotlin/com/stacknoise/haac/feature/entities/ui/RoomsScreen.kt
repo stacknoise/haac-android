@@ -204,6 +204,9 @@ private fun Header(
         }
         navigation.headerActions()
         state.room?.let { room ->
+            IconButton(onClick = { navigation.onEditLayout(room.id) }) {
+                Icon(painterResource(R.drawable.ic_entities_edit), stringResource(R.string.rooms_edit_layout))
+            }
             IconButton(onClick = { navigation.onAddEntities(room.id) }) {
                 Icon(painterResource(R.drawable.ic_entities_add), stringResource(R.string.rooms_add_entities))
             }

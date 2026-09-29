@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 class RoomsNavigation(
     val onAddEntities: (roomId: String) -> Unit,
     val onOpenEntity: (entityId: String) -> Unit,
+    val onEditLayout: (roomId: String) -> Unit,
     val onOpenPlaces: () -> Unit,
     val headerActions: @Composable () -> Unit,
 )
