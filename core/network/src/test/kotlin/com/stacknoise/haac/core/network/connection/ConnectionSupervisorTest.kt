@@ -27,6 +27,7 @@ class ConnectionSupervisorTest {
     private val internal = "http://192.168.1.10:8123/".toHttpUrl()
     private val external = "https://abc.ui.nabu.casa/".toHttpUrl()
     private val networkChanges = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val reported = mutableListOf<Pair<ErrorCode, String?>>()
 
     /** Fake connector: [selected] is the chosen address, [failures] are thrown by the next connects. */
     private inner class FakeConnector : BridgeConnector {
@@ -49,7 +50,13 @@ class ConnectionSupervisorTest {
     private val connector = FakeConnector()
 
     private fun TestScope.supervisor() =
-        ConnectionSupervisor(connector, { networkChanges }, { failures -> 1_000L * failures }, backgroundScope)
+        ConnectionSupervisor(
+            connector,
+            { networkChanges },
+            { failures -> 1_000L * failures },
+            { error, serverId -> reported += error.code to serverId },
+            backgroundScope,
+        )
 
     @Test
     fun `start connects and publishes the connection`() = runTest {
@@ -100,6 +107,7 @@ class ConnectionSupervisorTest {
         supervisor.start("s1")
         runCurrent()
         assertEquals(ErrorCode.NET_WRONG_SERVER, (supervisor.state.value as ConnectionState.Failed).error.code)
+        assertEquals(listOf(ErrorCode.NET_WRONG_SERVER to "s1"), reported)
         advanceTimeBy(600_000)
         assertEquals(1, connector.attempts.size)
         networkChanges.emit(Unit)

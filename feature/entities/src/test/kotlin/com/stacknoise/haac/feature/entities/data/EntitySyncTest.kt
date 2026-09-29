@@ -80,7 +80,15 @@ class EntitySyncTest {
     }
 
     private var now = 100L
-    private val sync = EntitySync(dao, json, DefaultErrorFactory()) { now }
+    private val reportedErrors = mutableListOf<ErrorCode>()
+    private val reportedChanges = mutableListOf<Pair<List<String>, List<String>>>()
+    private val sync = EntitySync(
+        dao,
+        json,
+        DefaultErrorFactory(),
+        { error, _ -> reportedErrors += error.code },
+        { _, added, removed -> reportedChanges += added to removed },
+    ) { now }
     private val channel = FakeChannel()
 
     private fun parse(text: String): JsonElement = json.parseToJsonElement(text)
@@ -104,6 +112,7 @@ class EntitySyncTest {
         assertEquals("r1", storedRevision)
         assertEquals(100L, syncedAt)
         assertEquals(SyncResult(added = listOf("sensor.b", "switch.a")), sync.status.value.result)
+        assertEquals(emptyList<Pair<List<String>, List<String>>>(), reportedChanges)
         assertEquals(EntityState("on", lastChanged = 1790406723000, lastUpdated = 1790406723000), stateOf("switch.a"))
     }
 
@@ -141,6 +150,7 @@ class EntitySyncTest {
         assertEquals(200L, cache["sensor.b"]?.withdrawnAt)
         assertEquals("21", stateOf("sensor.b")?.state)
         assertEquals("r2", storedRevision)
+        assertEquals(listOf(listOf("climate.c") to listOf("sensor.b")), reportedChanges)
     }
 
     @Test
@@ -149,10 +159,12 @@ class EntitySyncTest {
         channel.isOpen = false
         follow()
         assertNull(sync.status.value.error)
+        assertEquals(emptyList<ErrorCode>(), reportedErrors)
         channel.isOpen = true
         channel.failure = null
         channel.listed = listOf("""{"entity_id":"switch.a"}""")
         follow()
         assertEquals(ErrorCode.APP_UNEXPECTED, sync.status.value.error?.code)
+        assertEquals(listOf(ErrorCode.APP_UNEXPECTED), reportedErrors)
     }
 }

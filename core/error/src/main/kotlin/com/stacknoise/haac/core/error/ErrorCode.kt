@@ -179,6 +179,12 @@ enum class ErrorCode(
 
     /** Area part of the code, e.g. `NET` for `HAAC-NET-001`. */
     val area: String get() = code.split('-')[1]
+
+    /** Lookup by code. */
+    companion object {
+        /** The entry with [code], e.g. `HAAC-NET-001`, or null for a code this version does not know. */
+        fun of(code: String): ErrorCode? = entries.firstOrNull { it.code == code }
+    }
 }
 
 /** The one action button an error entry offers besides Dismiss (concept 17.4); [label] is null for none. */

@@ -1,7 +1,9 @@
 package com.stacknoise.haac.feature.entities.data
 
+import com.stacknoise.haac.core.common.sync.EntityChangeReporter
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.error.ErrorFactory
+import com.stacknoise.haac.core.error.ErrorReporter
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.error.database
 import com.stacknoise.haac.core.network.connection.BridgeChannel
@@ -23,19 +25,27 @@ import kotlinx.serialization.json.JsonObject
 /**
  * Sync of the active instance on every new connection (concept 9.1, 9.2, 11.4): revision check, entity list
  * and diff when the revision changed, then the live states of `haac_bridge/subscribe_entities` into the cache.
- * `exposure_changed` runs the revision check again. The sync never assigns entities to rooms (9.3).
+ * `exposure_changed` runs the revision check again. The sync never assigns entities to rooms (9.3). Changes
+ * and errors go to the notification list (M-09, 17.4).
  */
 @Singleton
 class EntitySync internal constructor(
     private val entities: ExposedEntityDao,
     private val json: Json,
     private val errors: ErrorFactory,
+    private val reporter: ErrorReporter,
+    private val changes: EntityChangeReporter,
     private val clock: () -> Long,
 ) {
     /** Uses the wall clock for sync and withdrawal times. */
     @Inject
-    constructor(entities: ExposedEntityDao, json: Json, errors: ErrorFactory) :
-        this(entities, json, errors, System::currentTimeMillis)
+    constructor(
+        entities: ExposedEntityDao,
+        json: Json,
+        errors: ErrorFactory,
+        reporter: ErrorReporter,
+        changes: EntityChangeReporter,
+    ) : this(entities, json, errors, reporter, changes, System::currentTimeMillis)
 
     private val _status = MutableStateFlow(SyncStatus())
 
@@ -59,7 +69,10 @@ class EntitySync internal constructor(
                 }
             }
         } catch (e: HaacException) {
-            if (channel.isOpen) _status.update { it.copy(error = e) }
+            if (channel.isOpen) {
+                _status.update { it.copy(error = e) }
+                reporter.report(e, serverId)
+            }
         }
     }
 
@@ -74,10 +87,20 @@ class EntitySync internal constructor(
         }
         val list = json.decodeOrUnexpected(EntityList.serializer(), channel.request(LIST))
         val listed = list.entities.map { it.toRow(serverId, encode(it.entityState())) }
-        val change = ExposureDiff.compute(errors.database { entities.all(serverId) }, listed, now)
+        val cached = errors.database { entities.all(serverId) }
+        val change = ExposureDiff.compute(cached, listed, now)
         errors.database { entities.applySync(serverId, change.rows, list.revision, now) }
         _status.value = SyncStatus(change.result, now)
+        // On the first sync every entity is new; the list would only repeat the picker.
+        if (cached.isNotEmpty()) report(serverId, change.result)
         return list.revision
+    }
+
+    /** Adds the entries for [result] to the notification list, if anything was added or withdrawn (concept 9.1). */
+    private suspend fun report(serverId: String, result: SyncResult) {
+        if (result.added.isNotEmpty() || result.removed.isNotEmpty()) {
+            changes.report(serverId, result.added, result.removed)
+        }
     }
 
     /** Writes the states of an `a` (full) or `c` (changed) event; `r` is followed by `exposure_changed`. */
