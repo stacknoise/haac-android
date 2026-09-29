@@ -10,6 +10,9 @@ import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.feature.entities.data.AssignmentWriter
 import com.stacknoise.haac.feature.entities.data.EntityCatalog
+import com.stacknoise.haac.feature.entities.data.EntityController
+import com.stacknoise.haac.feature.entities.domain.ControlRequest
+import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.RoomGroup
 import com.stacknoise.haac.feature.entities.domain.Tile
 import com.stacknoise.haac.feature.entities.domain.groupOf
@@ -30,18 +33,22 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/** What the room grid shows; [groups] is null until the places are read, empty without rooms. */
+/**
+ * What the room grid shows; [groups] is null until the places are read, empty without rooms. Controls work only
+ * while [connected] (concept 14.1).
+ */
 data class RoomsUiState(
     val groups: List<RoomGroup>? = null,
     val room: Room? = null,
     val tiles: List<Tile> = emptyList(),
     val error: ErrorCode? = null,
+    val connected: Boolean = false,
 ) {
     /** The level (or home) of the shown room, for the header and the chips. */
     val group: RoomGroup? get() = groups?.groupOf(room?.id)
 }
 
-/** The Rooms tab (M-05, M-08, concept 7): one room of the active instance with its tiles. */
+/** The Rooms tab (M-05, M-08, concept 7, 8): one room of the active instance with its tiles and controls. */
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class RoomsViewModel @Inject constructor(
@@ -50,6 +57,7 @@ class RoomsViewModel @Inject constructor(
     places: PlaceRepository,
     catalog: EntityCatalog,
     private val writer: AssignmentWriter,
+    private val controller: EntityController,
 ) : ViewModel() {
     private val serverId = active.activeServerId.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     private val failure = MutableStateFlow<ErrorCode?>(null)
@@ -72,9 +80,31 @@ class RoomsViewModel @Inject constructor(
         }
 
     /** The current screen state. */
-    val state: StateFlow<RoomsUiState> = combine(groups, room, tiles, failure) { list, current, shown, error ->
-        RoomsUiState(list, current, shown, error)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), RoomsUiState())
+    val state: StateFlow<RoomsUiState> =
+        combine(groups, room, tiles, failure, controller.connected) { list, current, shown, error, connected ->
+            RoomsUiState(list, current, shown, error, connected)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), RoomsUiState())
+
+    /** Failed service calls, shown as a snackbar with the code (concept 14.1, 17.4). */
+    val failed: Flow<HaacException> = controller.failed
+
+    /** Tap on a switch tile or its toggle: turns it to the other state (concept 8.2). */
+    fun onToggle(tile: Tile) {
+        val toggle = tile.control as? EntityControl.Toggle ?: return
+        onControl(tile, toggle.flipped())
+    }
+
+    /** − or + of a climate tile (concept 8.4). */
+    fun onStep(tile: Tile, up: Boolean) {
+        val temperature = tile.control as? EntityControl.TargetTemperature ?: return
+        temperature.stepped(up)?.let { onControl(tile, it) }
+    }
+
+    /** Sends [request] for [tile] while connected. */
+    private fun onControl(tile: Tile, request: ControlRequest) {
+        val id = serverId.value ?: return
+        if (state.value.connected) controller.send(id, tile.entityId, request)
+    }
 
     /** Shows room [roomId] (chips, level menu). */
     fun onSelectRoom(roomId: String) {

@@ -15,9 +15,13 @@ import com.stacknoise.haac.feature.entities.domain.SyncResult
 import com.stacknoise.haac.feature.entities.domain.SyncStatus
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -48,6 +52,7 @@ class EntitySync internal constructor(
     ) : this(entities, json, errors, reporter, changes, System::currentTimeMillis)
 
     private val _status = MutableStateFlow(SyncStatus())
+    private val rechecks = Channel<Unit>(Channel.CONFLATED)
 
     /** Result and time of the last sync, or the error that stopped it. */
     val status: StateFlow<SyncStatus> = _status.asStateFlow()
@@ -60,9 +65,10 @@ class EntitySync internal constructor(
     suspend fun follow(serverId: String, channel: BridgeChannel) {
         try {
             var revision = syncExposure(serverId, channel)
-            channel.subscribe(SUBSCRIBE).collect { event ->
+            rechecks.tryReceive() // A request from before this sync is answered by it.
+            merge(channel.subscribe(SUBSCRIBE), rechecks.receiveAsFlow().map { Recheck }).collect { event ->
                 val changed = (event[EXPOSURE_CHANGED] as? JsonObject)?.text("revision")
-                if (changed != null && changed != revision) {
+                if (event === Recheck || (changed != null && changed != revision)) {
                     revision = syncExposure(serverId, channel)
                 } else {
                     applyStates(serverId, event)
@@ -74,6 +80,14 @@ class EntitySync internal constructor(
                 reporter.report(e, serverId)
             }
         }
+    }
+
+    /**
+     * Runs the revision check again on the running connection, e.g. after the bridge rejected a service call
+     * (concept 14.1); without a connection the next one checks anyway.
+     */
+    fun recheck() {
+        rechecks.trySend(Unit)
     }
 
     /** Steps 2–4 and 6 of concept 9.1; returns the revision now in the cache. */
@@ -135,5 +149,8 @@ class EntitySync internal constructor(
         const val ADDED = "a"
         const val CHANGED = "c"
         const val EXPOSURE_CHANGED = "exposure_changed"
+
+        /** Marks a [recheck] among the subscription events. */
+        val Recheck = JsonObject(emptyMap())
     }
 }

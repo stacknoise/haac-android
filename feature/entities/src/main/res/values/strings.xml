@@ -16,6 +16,9 @@
     <string name="tile_unavailable">Unavailable</string>
     <string name="tile_now">now %1$s</string>
     <string name="tile_heating">Heating</string>
+    <string name="tile_colder">Lower target temperature</string>
+    <string name="tile_warmer">Raise target temperature</string>
+    <string name="tile_failed">%1$s (%2$s)</string>
     <string name="tile_removed">Removed in HA · tap to remove</string>
 
     <!-- Tile sheets and rename dialog (M-07, M-08). -->

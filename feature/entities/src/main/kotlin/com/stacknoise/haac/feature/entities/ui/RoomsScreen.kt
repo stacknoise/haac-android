@@ -20,9 +20,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,15 +40,41 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
+import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.RoomGroup
 
 /**
- * The Rooms tab (M-05, M-08, concept 7): header with *Home · Level* menu, room chips, banner for entities no
- * longer in HA and the tile grid. A long press opens *Rename* and *Remove from this room*.
+ * The Rooms tab (M-05, M-08, concept 7, 8): header with *Home · Level* menu, room chips, banner for entities no
+ * longer in HA and the tile grid with its controls. A long press opens *Rename* and *Remove from this room*;
+ * failed service calls show a snackbar with the code.
  */
 @Composable
 fun RoomsScreen(navigation: RoomsNavigation, viewModel: RoomsViewModel = hiltViewModel()) {
+    val snackbar = remember { SnackbarHostState() }
+    Box(modifier = Modifier.fillMaxSize()) {
+        RoomsContent(navigation, viewModel)
+        SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter))
+    }
+    FailureSnackbar(viewModel, snackbar)
+}
+
+/** Shows each failed service call as a snackbar: message and code (concept 14.1, 17.4). */
+@Composable
+private fun FailureSnackbar(viewModel: RoomsViewModel, snackbar: SnackbarHostState) {
+    var failure by remember { mutableStateOf<ErrorCode?>(null) }
+    LaunchedEffect(viewModel) { viewModel.failed.collect { failure = it.code } }
+    val code = failure ?: return
+    val text = stringResource(R.string.tile_failed, stringResource(code.message), code.code)
+    LaunchedEffect(code, text) {
+        snackbar.showSnackbar(text)
+        failure = null
+    }
+}
+
+/** Header, chips, banner and grid of the shown room. */
+@Composable
+private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var sheet by remember { mutableStateOf<RoomSheet?>(null) }
     val groups = state.groups ?: return
@@ -69,14 +98,17 @@ fun RoomsScreen(navigation: RoomsNavigation, viewModel: RoomsViewModel = hiltVie
         if (state.tiles.isEmpty()) {
             EmptyRoom { navigation.onAddEntities(room.id) }
         } else {
-            RoomGrid(
-                tiles = state.tiles,
-                onClick = { tile -> if (tile.withdrawn) sheet = RoomSheet.Withdrawn(tile) },
+            val actions = TileActions(
+                onClick = { tile ->
+                    if (tile.withdrawn) sheet = RoomSheet.Withdrawn(tile) else viewModel.onToggle(tile)
+                },
                 onLongClick = { tile ->
                     sheet = if (tile.withdrawn) RoomSheet.Withdrawn(tile) else RoomSheet.Menu(tile)
                 },
-                modifier = Modifier.padding(vertical = 16.dp),
+                onToggle = viewModel::onToggle,
+                onStep = viewModel::onStep,
             )
+            RoomGrid(state.tiles, state.connected, actions, Modifier.padding(vertical = 16.dp))
         }
     }
     sheet?.let { open -> Sheets(open, viewModel, onChange = { sheet = it }) }

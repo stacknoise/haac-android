@@ -12,20 +12,13 @@ import com.stacknoise.haac.feature.entities.domain.packGrid
 
 /**
  * The two-column room grid (concept 7.2, M-05): tiles in their order, placed densely by [packGrid]; a 1×1 tile
- * is one column wide and one row high.
+ * is one column wide and one row high. Controls work only while [enabled].
  */
 @Composable
-internal fun RoomGrid(
-    tiles: List<Tile>,
-    onClick: (Tile) -> Unit,
-    onLongClick: (Tile) -> Unit,
-    modifier: Modifier = Modifier,
-) {
+internal fun RoomGrid(tiles: List<Tile>, enabled: Boolean, actions: TileActions, modifier: Modifier = Modifier) {
     val cells = remember(tiles) { packGrid(tiles.map { it.size }) }
     Layout(
-        content = {
-            tiles.forEach { tile -> TileCard(tile, onClick = { onClick(tile) }, onLongClick = { onLongClick(tile) }) }
-        },
+        content = { tiles.forEach { tile -> TileCard(tile, enabled, actions) } },
         modifier = modifier,
     ) { measurables, constraints ->
         val gap = 12.dp.roundToPx()

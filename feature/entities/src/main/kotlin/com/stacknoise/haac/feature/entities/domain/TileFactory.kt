@@ -3,12 +3,17 @@ package com.stacknoise.haac.feature.entities.domain
 import com.stacknoise.haac.core.database.assignment.TileSize
 import com.stacknoise.haac.core.database.entity.EntityStatus
 import com.stacknoise.haac.core.database.entity.ExposedEntity
+import com.stacknoise.haac.feature.entities.domain.EntityDomains.CLIMATE
+import com.stacknoise.haac.feature.entities.domain.EntityDomains.OFF
+import com.stacknoise.haac.feature.entities.domain.EntityDomains.ON
+import com.stacknoise.haac.feature.entities.domain.EntityDomains.SENSOR
+import com.stacknoise.haac.feature.entities.domain.EntityDomains.SWITCH
+import com.stacknoise.haac.feature.entities.domain.EntityDomains.UNAVAILABLE
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.doubleOrNull
 
 /**
  * Builds tiles per entity domain (concept 7.2, 17.2): default size, icon and content. The only place that
@@ -62,26 +67,18 @@ class DefaultTileFactory @Inject constructor() : TileFactory {
 
     /** Target and current temperature with one decimal, heating from `hvac_action` (concept 8.4). */
     private fun climate(attributes: JsonObject?): TileContent.Climate = TileContent.Climate(
-        target = attributes?.number("temperature")?.let(::degrees),
+        target = attributes?.number(EntityDomains.TEMPERATURE)?.let(::degrees),
         current = attributes?.number("current_temperature")?.let(::degrees),
         heating = (attributes?.get("hvac_action") as? JsonPrimitive)?.content == "heating",
     )
 
-    /** Attribute [key] as a number, or null. */
-    private fun JsonObject.number(key: String): Double? = (get(key) as? JsonPrimitive)?.doubleOrNull
 
     /** A temperature with one decimal, e.g. 21.5°. */
     private fun degrees(value: Double): String =
         BigDecimal.valueOf(value).setScale(1, RoundingMode.HALF_UP).toPlainString() + "°"
 
-    /** Domains, states and sensor icons of v1. */
+    /** Sensor icons by device class. */
     private companion object {
-        const val SWITCH = "switch"
-        const val SENSOR = "sensor"
-        const val CLIMATE = "climate"
-        const val ON = "on"
-        const val OFF = "off"
-        val UNAVAILABLE = setOf("unavailable", "unknown")
         val SENSOR_ICONS = mapOf(
             "temperature" to TileIcon.TEMPERATURE,
             "humidity" to TileIcon.HUMIDITY,

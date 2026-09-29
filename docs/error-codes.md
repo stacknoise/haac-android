@@ -31,6 +31,7 @@ Every error of the app carries one of these codes (format `HAAC-<AREA>-<NNN>`) a
 | HAAC-BRG-005 | Home Assistant could not carry out the action. Please try again. | RETRY | Bridge or HA failed to carry out a request, or an unknown HAB code |
 | HAAC-BRG-006 | History is not available on this server. | NONE | Recorder or history not available on the server (HAB-HIST-001) |
 | HAAC-ENT-001 | This device no longer exists in Home Assistant. | NONE | Entity no longer exists in HA (HAB-ENT-001) |
+| HAAC-ENT-002 | This device does not support this action. | NONE | ServiceCallFactory rejected a control for the entity's domain or supported_features (concept 8, 17.2) |
 | HAAC-DB-001 | Your changes could not be saved. Please try again. | RETRY | Room write failed (SQLiteException) |
 | HAAC-LAY-001 | This home, level or room no longer exists. Please check your places. | NONE | Home, floor or room to save into no longer exists, or the floor belongs to another home (concept 6.1) |
 | HAAC-LAY-002 | Please enter a name. | NONE | Home, floor or room saved with a blank name |
