@@ -1,0 +1,149 @@
+package com.stacknoise.haac.feature.notifications.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.theme.HaacTheme
+import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.database.notification.NotificationType
+import com.stacknoise.haac.core.error.ErrorAction
+import com.stacknoise.haac.core.error.ErrorCode
+import com.stacknoise.haac.feature.notifications.R
+import com.stacknoise.haac.feature.notifications.domain.EntityLabel
+import com.stacknoise.haac.feature.notifications.domain.NotificationDay
+import com.stacknoise.haac.feature.notifications.domain.NotificationItem
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+
+/**
+ * Notification list (M-09, concept 9.1, 17.4). [onErrorAction] receives the action of an error entry
+ * (*Try again*, *Sign in*, *Open settings*) and the instance it belongs to (null for global entries).
+ */
+@Composable
+fun NotificationsScreen(
+    onBack: () -> Unit,
+    onErrorAction: (ErrorAction, String?) -> Unit,
+    viewModel: NotificationsViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    NotificationsContent(
+        state = state,
+        actions = NotificationActions(
+            onBack = onBack,
+            onOpen = viewModel::onOpen,
+            onMarkAllRead = viewModel::onMarkAllRead,
+            onResolve = viewModel::onResolve,
+            onErrorAction = { item -> item.error?.let { onErrorAction(it.action, item.serverId) } },
+        ),
+    )
+    state.detail?.let { ErrorDetailSheet(it, state.instanceName, onDismiss = viewModel::onCloseDetail) }
+}
+
+/** Stateless layout: header, then the entries grouped by day. */
+@Composable
+fun NotificationsContent(state: NotificationsUiState, actions: NotificationActions) {
+    val today = LocalDate.now()
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 16.dp),
+    ) {
+        item { Header(actions) }
+        state.error?.let { item { ErrorMessage(it) } }
+        if (state.days.isEmpty()) item { EmptyHint() }
+        state.days.forEach { day ->
+            item(key = "day-${day.date}") { DayLabel(day.date, today) }
+            items(day.items, key = { it.id }) { entry ->
+                NotificationRow(entry, actions)
+                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+            }
+        }
+    }
+}
+
+/** Back arrow, *Mark all read* and the title. */
+@Composable
+private fun Header(actions: NotificationActions) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        IconButton(onClick = actions.onBack) {
+            Icon(painterResource(R.drawable.ic_notifications_back), stringResource(R.string.notifications_back))
+        }
+        Spacer(Modifier.weight(1f))
+        TextButton(onClick = actions.onMarkAllRead) { Text(stringResource(R.string.notifications_mark_all_read)) }
+    }
+    Text(
+        stringResource(R.string.notifications_title),
+        style = MaterialTheme.typography.headlineMedium,
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+    )
+}
+
+/** *Today*, *Yesterday* or the date, as a section label. */
+@Composable
+private fun DayLabel(date: LocalDate, today: LocalDate) {
+    val label = when (date) {
+        today -> stringResource(R.string.notifications_today)
+        today.minusDays(1) -> stringResource(R.string.notifications_yesterday)
+        else -> date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
+    }
+    Text(
+        label.uppercase(),
+        style = SectionLabelStyle,
+        modifier = Modifier.padding(start = 8.dp, top = 24.dp, bottom = 8.dp),
+    )
+}
+
+/** Shown while the list is empty. */
+@Composable
+private fun EmptyHint() {
+    Text(
+        stringResource(R.string.notifications_empty),
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(8.dp),
+    )
+}
+
+/** Preview with an added entity, a removed one and an error. */
+@Preview
+@Composable
+private fun NotificationsPreview() {
+    val now = System.currentTimeMillis()
+    val items = listOf(
+        NotificationItem(1, NotificationType.ADDED, now, unread = true, resolved = false,
+            entities = listOf(EntityLabel("switch.hallway_light", "Hallway light"))),
+        NotificationItem(2, NotificationType.REMOVED, now, unread = true, resolved = false,
+            entities = listOf(EntityLabel("sensor.humidity", "Humidity"))),
+        NotificationItem(3, NotificationType.ERROR, now, unread = false, resolved = false, count = 3,
+            error = ErrorCode.NET_UNREACHABLE),
+    )
+    HaacTheme {
+        NotificationsContent(
+            NotificationsUiState(days = listOf(NotificationDay(LocalDate.now(), items))),
+            NotificationActions({}, {}, {}, {}, {}),
+        )
+    }
+}

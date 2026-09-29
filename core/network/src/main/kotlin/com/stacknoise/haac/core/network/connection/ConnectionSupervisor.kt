@@ -1,6 +1,7 @@
 package com.stacknoise.haac.core.network.connection
 
 import com.stacknoise.haac.core.error.ErrorCode
+import com.stacknoise.haac.core.error.ErrorReporter
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.network.di.ConnectionScope
 import javax.inject.Inject
@@ -45,6 +46,7 @@ class ConnectionSupervisor @Inject constructor(
     private val connector: BridgeConnector,
     private val network: NetworkMonitor,
     private val backoff: Backoff,
+    private val reporter: ErrorReporter,
     @param:ConnectionScope private val scope: CoroutineScope,
 ) {
     private val _state = MutableStateFlow<ConnectionState>(ConnectionState.Idle)
@@ -98,7 +100,7 @@ class ConnectionSupervisor @Inject constructor(
                 Outcome.Ended(e)
             }
             url = (outcome as? Outcome.Moved)?.url
-            if (outcome is Outcome.Ended) pause(outcome.reason, ++failures)
+            if (outcome is Outcome.Ended) pause(serverId, outcome.reason, ++failures)
         }
     }
 
@@ -129,8 +131,12 @@ class ConnectionSupervisor @Inject constructor(
         null
     }
 
-    /** Waits after [failures] failures: the back-off, or for a network change or [retry] if waiting cannot help. */
-    private suspend fun pause(reason: HaacException, failures: Int) {
+    /**
+     * Reports [reason] to the notification list (concept 14.1, 17.4) and waits after [failures] failures: the
+     * back-off, or for a network change or [retry] if waiting cannot help.
+     */
+    private suspend fun pause(serverId: String, reason: HaacException, failures: Int) {
+        reporter.report(reason, serverId)
         if (reason.code in NEEDS_CHANGE) {
             _state.value = ConnectionState.Failed(reason)
             wakeUps.receive()

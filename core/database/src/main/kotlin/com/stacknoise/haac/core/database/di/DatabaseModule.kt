@@ -9,6 +9,8 @@ import com.stacknoise.haac.core.database.HaacDatabase
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.database.migration.Migration1To2
 import com.stacknoise.haac.core.database.migration.Migration2To3
+import com.stacknoise.haac.core.database.migration.Migration3To4
+import com.stacknoise.haac.core.database.notification.NotificationDao
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.database.settings.AppSettings
@@ -43,7 +45,7 @@ abstract class DatabaseModule {
         @Singleton
         fun provideDatabase(@ApplicationContext context: Context): HaacDatabase =
             Room.databaseBuilder(context, HaacDatabase::class.java, "haac.db")
-                .addMigrations(Migration1To2, Migration2To3)
+                .addMigrations(Migration1To2, Migration2To3, Migration3To4)
                 .build()
 
         /** DAO of the `server` table. */
@@ -53,6 +55,10 @@ abstract class DatabaseModule {
         /** DAO of the `exposed_entity` table. */
         @Provides
         fun provideExposedEntityDao(database: HaacDatabase): ExposedEntityDao = database.exposedEntityDao()
+
+        /** DAO of the `notification` table. */
+        @Provides
+        fun provideNotificationDao(database: HaacDatabase): NotificationDao = database.notificationDao()
 
         /** The single DataStore instance for [AppSettings]. */
         @Provides
