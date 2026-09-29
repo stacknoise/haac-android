@@ -35,7 +35,7 @@ import kotlinx.coroutines.launch
 
 /**
  * What the room grid shows; [groups] is null until the places are read, empty without rooms. Controls work only
- * while [connected] (concept 14.1).
+ * while [connected]; [stale] marks the cached states after a longer outage (concept 14.1).
  */
 data class RoomsUiState(
     val groups: List<RoomGroup>? = null,
@@ -43,6 +43,7 @@ data class RoomsUiState(
     val tiles: List<Tile> = emptyList(),
     val error: ErrorCode? = null,
     val connected: Boolean = false,
+    val stale: Boolean = false,
 ) {
     /** The level (or home) of the shown room, for the header and the chips. */
     val group: RoomGroup? get() = groups?.groupOf(room?.id)
@@ -79,10 +80,14 @@ class RoomsViewModel @Inject constructor(
             }
         }
 
+    /** Whether the connection is open and whether the cached states count as stale (concept 14.1). */
+    private val link: Flow<Pair<Boolean, Boolean>> =
+        combine(controller.connected, controller.stale) { connected, stale -> connected to stale }
+
     /** The current screen state. */
     val state: StateFlow<RoomsUiState> =
-        combine(groups, room, tiles, failure, controller.connected) { list, current, shown, error, connected ->
-            RoomsUiState(list, current, shown, error, connected)
+        combine(groups, room, tiles, failure, link) { list, current, shown, error, (connected, stale) ->
+            RoomsUiState(list, current, shown, error, connected, stale)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), RoomsUiState())
 
     /** Failed service calls, shown as a snackbar with the code (concept 14.1, 17.4). */

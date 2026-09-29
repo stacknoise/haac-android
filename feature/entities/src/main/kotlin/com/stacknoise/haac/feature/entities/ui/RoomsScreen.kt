@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -96,6 +97,7 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
             return@Column
         }
         RoomChips(state.group, room.id, viewModel::onSelectRoom)
+        if (state.stale) StaleBanner()
         val withdrawn = state.tiles.filter { it.withdrawn }
         if (withdrawn.isNotEmpty()) WithdrawnBanner(withdrawn.size) { sheet = RoomSheet.Review(withdrawn) }
         if (state.tiles.isEmpty()) {
@@ -115,7 +117,8 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
                 onToggle = viewModel::onToggle,
                 onStep = viewModel::onStep,
             )
-            RoomGrid(state.tiles, state.connected, actions, Modifier.padding(vertical = 16.dp))
+            val grid = Modifier.padding(vertical = 16.dp)
+            RoomGrid(state.tiles, state.connected, actions, if (state.stale) grid.alpha(StaleAlpha) else grid)
         }
     }
     sheet?.let { open -> Sheets(open, viewModel, navigation.onOpenEntity, onChange = { sheet = it }) }
@@ -235,6 +238,29 @@ private fun RoomChips(group: RoomGroup?, selected: String, onSelect: (String) ->
                 shape = HaacShapes.Medium,
             )
         }
+    }
+}
+
+/** Opacity of the tiles while their states are stale. */
+private const val StaleAlpha = 0.6f
+
+/** "Offline: showing the last known states" while the connection has been down for a while (concept 14.1). */
+@Composable
+private fun StaleBanner() {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+            .background(MaterialTheme.colorScheme.surface, HaacShapes.Medium)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+    ) {
+        Icon(painterResource(R.drawable.ic_entities_warning), contentDescription = null, Modifier.size(20.dp))
+        Text(
+            stringResource(R.string.rooms_stale),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(start = 12.dp),
+        )
     }
 }
 

@@ -15,6 +15,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -151,5 +154,19 @@ class EntityControllerTest {
         assertEquals(listOf(ErrorCode.NET_CONNECTION_LOST), reported)
         assertEquals(0, rechecks)
         assertEquals(null, shown("switch.lamp"))
+    }
+
+    @Test
+    fun `the states count as stale only after the connection was down for a while`() = runTest {
+        val seen = mutableListOf<Boolean>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { controller().stale.toList(seen) }
+        live.connection.value = null
+        advanceTimeBy(EntityController.STALE_DELAY_MS - 1)
+        assertEquals(listOf(false), seen)
+        advanceTimeBy(2)
+        assertEquals(listOf(false, true), seen)
+        live.connection.value = channel
+        runCurrent()
+        assertEquals(listOf(false, true, false), seen)
     }
 }

@@ -142,4 +142,5 @@
     <string name="assign_button">Add to %1$s</string>
     <string name="assign_choose">Choose a room</string>
     <string name="assign_gone">These entities are no longer shared.</string>
+    <string name="rooms_stale">Offline: showing the last known states. Controls work again once the connection is back.</string>
 </resources>
