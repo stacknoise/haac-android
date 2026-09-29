@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Places overview (M-02). -->
+    <string name="places_title">Places</string>
+    <string name="places_filter_all">All</string>
+    <string name="places_filter_homes">Homes</string>
+    <string name="places_filter_levels">Levels</string>
+    <string name="places_filter_rooms">Rooms</string>
+    <string name="places_type_home">Home</string>
+    <string name="places_type_level">Level</string>
+    <string name="places_type_room">Room</string>
+    <plurals name="places_levels">
+        <item quantity="one">%1$d level</item>
+        <item quantity="other">%1$d levels</item>
+    </plurals>
+    <plurals name="places_rooms">
+        <item quantity="one">%1$d room</item>
+        <item quantity="other">%1$d rooms</item>
+    </plurals>
+    <string name="places_empty">No places yet. Start with a home, then add its levels and rooms.</string>
+    <string name="places_create">Create</string>
+    <string name="places_close_menu">Close menu</string>
+    <string name="places_new_home">New home</string>
+    <string name="places_new_level">New level</string>
+    <string name="places_new_room">New room</string>
+    <string name="places_deleted">%1$s deleted</string>
+    <string name="places_undo">Undo</string>
+
+    <!-- Form for homes, levels and rooms (M-03). -->
+    <string name="editor_title_new_home">New home</string>
+    <string name="editor_title_new_level">New level</string>
+    <string name="editor_title_new_room">New room</string>
+    <string name="editor_title_edit_home">Edit home</string>
+    <string name="editor_title_edit_level">Edit level</string>
+    <string name="editor_title_edit_room">Edit room</string>
+    <string name="editor_name_hint">Name</string>
+    <string name="editor_close">Close</string>
+    <string name="editor_delete">Delete</string>
+    <string name="editor_home_section">Belongs to home</string>
+    <string name="editor_level_section">Level</string>
+    <string name="editor_no_level">No level</string>
+    <string name="editor_level_number">Level number</string>
+    <string name="editor_level_number_hint">Sorts the levels, e.g. -1 for the basement.</string>
+    <string name="editor_level_down">Lower level number</string>
+    <string name="editor_level_up">Higher level number</string>
+    <string name="editor_rooms_on_level">Rooms on this level</string>
+    <string name="editor_rooms_in_home">Rooms in this home</string>
+    <string name="editor_room_directly_in">directly in %1$s</string>
+    <string name="editor_room_moves_from">moves from %1$s</string>
+    <string name="editor_room_new">new</string>
+    <string name="editor_new_room_on">New room on %1$s</string>
+    <string name="editor_new_room_in">New room in %1$s</string>
+    <string name="editor_this_level">this level</string>
+    <string name="editor_this_home">this home</string>
+    <string name="editor_new_room_hint">Room name</string>
+    <string name="editor_add">Add</string>
+    <string name="editor_summary_home">Saving creates %1$s.</string>
+    <plurals name="editor_summary_home_rooms">
+        <item quantity="one">Saving creates %1$s with %2$d room.</item>
+        <item quantity="other">Saving creates %1$s with %2$d rooms.</item>
+    </plurals>
+    <string name="editor_summary_level">Saving creates %1$s in %2$s.</string>
+    <plurals name="editor_summary_level_rooms">
+        <item quantity="one">Saving creates %1$s in %2$s with %3$d room.</item>
+        <item quantity="other">Saving creates %1$s in %2$s with %3$d rooms.</item>
+    </plurals>
+    <string name="editor_summary_room">Saving creates %1$s in %2$s.</string>
+    <string name="editor_create_home">Create home</string>
+    <string name="editor_create_level">Create level</string>
+    <string name="editor_create_room">Create room</string>
+    <string name="editor_save">Save</string>
+
+    <!-- Delete confirmations (concept 6.2). -->
+    <string name="delete_title">Delete %1$s?</string>
+    <string name="delete_home_text">This deletes %1$s with %2$s and %3$s, and removes the entities placed there. You can undo it for a few seconds.</string>
+    <string name="delete_floor_keep_rooms">Keep its rooms, directly in the home</string>
+    <string name="delete_floor_with_rooms">Delete its rooms too</string>
+    <string name="delete_confirm">Delete</string>
+    <string name="delete_cancel">Cancel</string>
+</resources>

@@ -32,4 +32,6 @@ Every error of the app carries one of these codes (format `HAAC-<AREA>-<NNN>`) a
 | HAAC-BRG-006 | History is not available on this server. | NONE | Recorder or history not available on the server (HAB-HIST-001) |
 | HAAC-ENT-001 | This device no longer exists in Home Assistant. | NONE | Entity no longer exists in HA (HAB-ENT-001) |
 | HAAC-DB-001 | Your changes could not be saved. Please try again. | RETRY | Room write failed (SQLiteException) |
+| HAAC-LAY-001 | This home, level or room no longer exists. Please check your places. | NONE | Home, floor or room to save into no longer exists, or the floor belongs to another home (concept 6.1) |
+| HAAC-LAY-002 | Please enter a name. | NONE | Home, floor or room saved with a blank name |
 | HAAC-APP-000 | Something went wrong. | NONE | Exception without an error code reached ErrorFactory |
