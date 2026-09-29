@@ -60,7 +60,7 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
         topBar = {
             // The bar draws under the status bar; the banner inside it then adds no second inset.
             Column(Modifier.statusBarsPadding()) {
-                InstanceBar(onSwitched = actions.onSwitched, onAdd = actions.onAddInstance)
+                InstanceBar(onSwitched = actions.instances.onSwitched, onAdd = actions.instances.onAdd)
                 ConnectionBanner(
                     state = connectionState,
                     onRetry = connection::retry,
@@ -86,7 +86,7 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
             composable(TopLevelDestination.SETTINGS.route) {
                 SettingsScreen(
                     onSignedOut = actions.onSignedOut,
-                    instances = { InstancesSection(onSwitched = actions.onSwitched, onAdd = actions.onAddInstance) },
+                    instances = { InstancesSection(actions.instances) },
                 )
             }
             composable(NotificationsRoute) {

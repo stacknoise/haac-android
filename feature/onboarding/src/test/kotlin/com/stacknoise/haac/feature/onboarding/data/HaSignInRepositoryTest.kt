@@ -77,6 +77,14 @@ class HaSignInRepositoryTest {
             rows[id]?.let { rows[id] = it.copy(lastActiveAt = at) }
         }
 
+        override suspend fun setAppearance(id: String, name: String, accent: Long) {
+            rows[id]?.let { rows[id] = it.copy(displayName = name, accentColor = accent) }
+        }
+
+        override suspend fun delete(id: String) {
+            rows.remove(id)
+        }
+
         override suspend fun count() = rows.size
     }
     private val saved = mutableMapOf<String, String>()

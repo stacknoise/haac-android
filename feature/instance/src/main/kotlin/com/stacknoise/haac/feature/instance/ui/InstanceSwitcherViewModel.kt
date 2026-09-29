@@ -8,8 +8,10 @@ import com.stacknoise.haac.core.error.ErrorReporter
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.network.connection.ConnectionState
 import com.stacknoise.haac.core.network.connection.ConnectionSupervisor
+import com.stacknoise.haac.feature.instance.data.InstanceEditor
 import com.stacknoise.haac.feature.instance.data.InstanceSwitcher
 import com.stacknoise.haac.feature.instance.domain.InstanceItem
+import com.stacknoise.haac.feature.instance.domain.RemoveOutcome
 import com.stacknoise.haac.feature.instance.domain.SwitchStep
 import com.stacknoise.haac.feature.instance.domain.toItems
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +29,7 @@ class InstanceSwitcherViewModel @Inject constructor(
     servers: ServerDao,
     supervisor: ConnectionSupervisor,
     private val switcher: InstanceSwitcher,
+    private val editor: InstanceEditor,
     private val reporter: ErrorReporter,
 ) : ViewModel() {
     /** All instances with the active one marked. */
@@ -40,9 +43,20 @@ class InstanceSwitcherViewModel @Inject constructor(
     /** Switches to [id]; [onStep] tells what follows (main area, unlock or login). Errors go to the list. */
     fun onSelect(id: String, onStep: (SwitchStep) -> Unit) {
         if (items.value.firstOrNull { it.id == id }?.active == true) return
+        report(id) { onStep(switcher.switchTo(id)) }
+    }
+
+    /** Stores the local [name] and [accent] colour of instance [id]. */
+    fun onSave(id: String, name: String, accent: Long) = report(id) { editor.setAppearance(id, name, accent) }
+
+    /** Removes instance [id]; [onRemoved] tells what follows (concept 4.4). */
+    fun onRemove(id: String, onRemoved: (RemoveOutcome) -> Unit) = report(id) { onRemoved(editor.remove(id)) }
+
+    /** Runs [block] in the background; an error goes to the notification list for instance [id]. */
+    private fun report(id: String, block: suspend () -> Unit) {
         viewModelScope.launch {
             try {
-                onStep(switcher.switchTo(id))
+                block()
             } catch (e: HaacException) {
                 reporter.report(e, id)
             }

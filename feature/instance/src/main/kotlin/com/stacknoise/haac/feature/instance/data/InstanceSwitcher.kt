@@ -20,13 +20,16 @@ class InstanceSwitcher @Inject constructor(
 ) {
     /** Activates [id] if its token is usable now; otherwise tells what is missing and changes nothing. */
     suspend fun switchTo(id: String): SwitchStep {
-        val step = when (tokens.protection(id)) {
-            null -> SwitchStep.SIGN_IN
-            TokenProtection.DeviceKey -> SwitchStep.READY
-            is TokenProtection.Fingerprint -> if (unlocked.get(id) != null) SwitchStep.READY else SwitchStep.UNLOCK
-        }
+        val step = step(id)
         if (step == SwitchStep.READY) activate(id)
         return step
+    }
+
+    /** What [id] needs before it can be used: nothing, the fingerprint unlock or the HA login. */
+    suspend fun step(id: String): SwitchStep = when (tokens.protection(id)) {
+        null -> SwitchStep.SIGN_IN
+        TokenProtection.DeviceKey -> SwitchStep.READY
+        is TokenProtection.Fingerprint -> if (unlocked.get(id) != null) SwitchStep.READY else SwitchStep.UNLOCK
     }
 
     /** Makes [id] the active instance and remembers when it was used. */

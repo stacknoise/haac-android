@@ -39,6 +39,10 @@ class StartRouterTest {
 
             override suspend fun touch(id: String, at: Long) = error("not used")
 
+            override suspend fun setAppearance(id: String, name: String, accent: Long) = error("not used")
+
+            override suspend fun delete(id: String) = error("not used")
+
             override suspend fun count() = instances.size
         },
         tokens = object : TokenStore {

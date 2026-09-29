@@ -9,4 +9,12 @@
     <string name="instance_status_reconnecting">Reconnecting…</string>
     <string name="instance_status_failed">Not connected</string>
     <string name="instance_status_inactive">Not connected while inactive</string>
+    <string name="instance_more">More actions</string>
+    <string name="instance_edit">Edit instance</string>
+    <string name="instance_name">Name</string>
+    <string name="instance_save">Save</string>
+    <string name="instance_cancel">Cancel</string>
+    <string name="instance_remove">Remove</string>
+    <string name="instance_remove_title">Remove %1$s?</string>
+    <string name="instance_remove_text">The login is revoked in Home Assistant if it is reachable. Layout, assignments and names of this instance are deleted from this device.</string>
 </resources>
