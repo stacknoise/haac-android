@@ -1,12 +1,8 @@
 package com.stacknoise.haac.feature.entities.data
 
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
-import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.HaacException
-import com.stacknoise.haac.core.error.NetworkException
-import com.stacknoise.haac.core.error.ValidationException
-import com.stacknoise.haac.core.error.database
 import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.core.network.di.ConnectionScope
 import com.stacknoise.haac.feature.entities.domain.ControlRequest
@@ -73,10 +69,8 @@ class EntityController @Inject constructor(
 
     /** Sends the call, then waits up to [CONFIRM_MS] for HA's state to show the result. */
     private suspend fun perform(key: EntityKey, request: ControlRequest) {
-        val entity = tools.errors.database { entities.all(key.serverId) }.firstOrNull { it.entityId == key.entityId }
-            ?: throw ValidationException(ErrorCode.ENT_NOT_FOUND)
-        val channel = live.connection.value?.takeIf { it.isOpen }
-            ?: throw NetworkException(ErrorCode.NET_CONNECTION_LOST)
+        val entity = entities.require(key.serverId, key.entityId, tools.errors)
+        val channel = live.requireOpen()
         channel.request(CALL_SERVICE, tools.calls.create(entity, request).fields())
         withTimeoutOrNull(CONFIRM_MS) {
             entities.observe(key.serverId)
