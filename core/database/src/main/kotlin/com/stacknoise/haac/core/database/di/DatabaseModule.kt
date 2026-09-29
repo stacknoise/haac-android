@@ -6,7 +6,9 @@ import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
 import androidx.room.Room
 import com.stacknoise.haac.core.database.HaacDatabase
+import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.database.migration.Migration1To2
+import com.stacknoise.haac.core.database.migration.Migration2To3
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.database.settings.AppSettings
@@ -41,12 +43,16 @@ abstract class DatabaseModule {
         @Singleton
         fun provideDatabase(@ApplicationContext context: Context): HaacDatabase =
             Room.databaseBuilder(context, HaacDatabase::class.java, "haac.db")
-                .addMigrations(Migration1To2)
+                .addMigrations(Migration1To2, Migration2To3)
                 .build()
 
         /** DAO of the `server` table. */
         @Provides
         fun provideServerDao(database: HaacDatabase): ServerDao = database.serverDao()
+
+        /** DAO of the `exposed_entity` table. */
+        @Provides
+        fun provideExposedEntityDao(database: HaacDatabase): ExposedEntityDao = database.exposedEntityDao()
 
         /** The single DataStore instance for [AppSettings]. */
         @Provides

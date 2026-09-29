@@ -6,24 +6,27 @@ import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.error.ErrorAction
 import com.stacknoise.haac.core.network.connection.ConnectionState
 import com.stacknoise.haac.core.network.connection.ConnectionSupervisor
+import com.stacknoise.haac.feature.entities.data.EntitySync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
- * Connects the active instance while the main area is visible (concept 9.1, 11.4): the WebSocket is closed
- * in the background and rebuilt with the reconnect steps when the app returns.
+ * Connects the active instance while the main area is visible and syncs it on every new connection (concept
+ * 9.1, 11.4): the WebSocket is closed in the background and rebuilt with the reconnect steps when the app returns.
  */
 @HiltViewModel
 class ConnectionViewModel @Inject constructor(
     private val supervisor: ConnectionSupervisor,
     private val active: ActiveInstanceStore,
+    private val sync: EntitySync,
 ) : ViewModel() {
     private val serverId = MutableStateFlow<String?>(null)
     private var following: Job? = null
@@ -36,10 +39,16 @@ class ConnectionViewModel @Inject constructor(
         id.takeIf { (state as? ConnectionState.Failed)?.error?.code?.action == ErrorAction.SIGN_IN }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    /** The main area is visible: follow the active instance, also when it changes. */
+    /** The main area is visible: follow the active instance, also when it changes, and sync each connection. */
     fun onForeground() {
         following?.cancel()
         following = viewModelScope.launch {
+            launch {
+                supervisor.connection.collectLatest { connection ->
+                    val id = serverId.value
+                    if (connection != null && id != null) sync.follow(id, connection)
+                }
+            }
             active.activeServerId.collect { id ->
                 serverId.value = id
                 if (id == null) supervisor.stop() else supervisor.start(id)

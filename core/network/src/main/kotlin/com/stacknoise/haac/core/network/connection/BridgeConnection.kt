@@ -45,7 +45,7 @@ class BridgeConnection(
     private val messages: BridgeMessageFactory,
     private val errors: ErrorFactory,
     parent: CoroutineScope,
-) {
+) : BridgeChannel {
     private val scope = CoroutineScope(parent.coroutineContext + SupervisorJob(parent.coroutineContext[Job]))
     private val replies = ConcurrentHashMap<Int, CompletableDeferred<JsonObject>>()
     private val subscriptions = ConcurrentHashMap<Int, Channel<JsonObject>>()
@@ -54,20 +54,20 @@ class BridgeConnection(
     /** Completes with the reason when the connection ends. */
     val end: Deferred<HaacException> get() = ended
 
+    /** True until the connection ends. */
+    override val isOpen: Boolean get() = !ended.isCompleted
+
     init {
         scope.launch { read() }
         scope.launch { heartbeat() }
     }
 
-    /** Sends command [type] with [fields] and returns its `result`; a bridge error reply is thrown (18.3). */
-    suspend fun request(type: String, fields: JsonObject = BridgeMessageFactory.NO_FIELDS): JsonElement =
+    /** Sends the command and waits for the reply with its message id. */
+    override suspend fun request(type: String, fields: JsonObject): JsonElement =
         exchange(messages.command(type, fields)).resultOrThrow(errors)
 
-    /**
-     * Subscribes with command [type] and emits the `event` objects until the collector stops, which sends
-     * `unsubscribe_events` (concept 11.3). The flow fails with the reason when the connection ends.
-     */
-    fun subscribe(type: String, fields: JsonObject = BridgeMessageFactory.NO_FIELDS): Flow<JsonObject> = flow {
+    /** Events arrive in a channel registered before the command is sent; stopping sends `unsubscribe_events`. */
+    override fun subscribe(type: String, fields: JsonObject): Flow<JsonObject> = flow {
         val command = messages.command(type, fields)
         val events = Channel<JsonObject>(Channel.UNLIMITED)
         subscriptions[command.id] = events
