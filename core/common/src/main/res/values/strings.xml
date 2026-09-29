@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="certificate_title_new">Trust this certificate?</string>
+    <string name="certificate_title_changed">The certificate has changed</string>
+    <string name="certificate_title_pinned">Pinned certificate</string>
+    <string name="certificate_text_new">Your device does not know the certificate of %1$s. Compare the fingerprint with the one your server or browser shows and trust it only if they match. The app then accepts only this server key for %1$s.</string>
+    <string name="certificate_text_changed">The certificate of %1$s differs from the one you trusted before. That happens when you renew it with a new key, but also when someone else answers at this address. Trust it only if you know why it changed.</string>
+    <string name="certificate_text_pinned">The app accepts only this server key for %1$s.</string>
+    <string name="certificate_fingerprint">SHA-256 fingerprint</string>
+    <string name="certificate_subject">Issued to</string>
+    <string name="certificate_expires">Valid until</string>
+    <string name="certificate_trust">Trust</string>
+    <string name="certificate_trust_new">Trust new certificate</string>
+    <string name="certificate_remove_pin">Remove pin</string>
+    <string name="certificate_cancel">Cancel</string>
+    <string name="certificate_close">Close</string>
+</resources>

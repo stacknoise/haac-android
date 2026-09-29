@@ -5,6 +5,7 @@ import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.network.bridge.BridgeUrls
 import com.stacknoise.haac.core.network.server.PrivateAddress
+import com.stacknoise.haac.core.network.tls.PinRegistry
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
@@ -71,3 +72,17 @@ fun requireSameInstance(expected: String?, reported: String?) {
         throw NetworkException(ErrorCode.NET_WRONG_SERVER)
     }
 }
+
+/** A copy that also carries the pins [pins] knows for the stored addresses; other pins stay (concept 4.3). */
+fun ServerEntity.pinnedBy(pins: PinRegistry): ServerEntity = copy(
+    internalPinnedKeyHash = internalUrl?.toHttpUrlOrNull()?.let(pins::pinFor) ?: internalPinnedKeyHash,
+    externalPinnedKeyHash = externalUrl?.toHttpUrlOrNull()?.let(pins::pinFor) ?: externalPinnedKeyHash,
+)
+
+/** A copy with the pin of [slot] set to [keyHash], or removed if it is null (concept 4.3). */
+fun ServerEntity.withPin(slot: AddressSlot, keyHash: String?): ServerEntity =
+    if (slot == AddressSlot.INTERNAL) copy(internalPinnedKeyHash = keyHash) else copy(externalPinnedKeyHash = keyHash)
+
+/** The pinned key hash of [slot], or null. */
+fun ServerEntity.pinOf(slot: AddressSlot): String? =
+    if (slot == AddressSlot.INTERNAL) internalPinnedKeyHash else externalPinnedKeyHash

@@ -9,6 +9,9 @@ import com.stacknoise.haac.core.network.auth.AuthTokens
 import com.stacknoise.haac.core.network.discovery.DiscoveredServer
 import com.stacknoise.haac.core.network.discovery.ServerDiscovery
 import com.stacknoise.haac.core.network.endpoint.AddressSlot
+import com.stacknoise.haac.core.network.tls.CertificateProbe
+import com.stacknoise.haac.core.network.tls.PeerCertificate
+import com.stacknoise.haac.core.network.tls.PinRegistry
 import com.stacknoise.haac.feature.onboarding.domain.KnownServer
 import com.stacknoise.haac.feature.onboarding.domain.ServerValidator
 import com.stacknoise.haac.feature.onboarding.domain.SignInRepository
@@ -90,6 +93,10 @@ class OnboardingViewModelTest {
         }
     }
 
+    private val certificate = PeerCertificate("ab".repeat(32), "AA:BB", "CN=ha", 0L)
+    private val probe = CertificateProbe { certificate }
+    private val pins = PinRegistry()
+
     private val home = DiscoveredServer("1", "Home", "192.168.1.10:8123", "http://192.168.1.10:8123", "2026.9.0")
 
     @BeforeEach
@@ -102,6 +109,8 @@ class OnboardingViewModelTest {
         discovery,
         validator,
         repository,
+        probe,
+        pins,
         SavedStateHandle(if (serverId == null) emptyMap() else mapOf(OnboardingViewModel.SERVER_ID_ARG to serverId)),
     )
 
@@ -235,5 +244,31 @@ class OnboardingViewModelTest {
         viewModel.onSignIn("secret".toCharArray())
         assertEquals(SignInTarget(validated.single(), "Home", "s1"), repository.finished.single())
         assertEquals("s1", viewModel.state.value.signedInServerId)
+    }
+
+    @Test
+    fun `an untrusted https certificate is offered and trusting pins its key`() {
+        failValidation = ErrorCode.NET_CERTIFICATE_UNTRUSTED
+        val viewModel = manual()
+        viewModel.onSignIn("secret".toCharArray())
+        val offer = viewModel.state.value.certificateOffer
+        assertEquals(certificate, offer?.certificate)
+        assertNull(viewModel.state.value.error)
+        assertFalse(viewModel.state.value.busy)
+
+        viewModel.onCertificateTrusted()
+        assertNull(viewModel.state.value.certificateOffer)
+        assertEquals(certificate.keyHash, pins.pinFor(offer!!.url))
+    }
+
+    @Test
+    fun `declining the certificate keeps HAAC-NET-007`() {
+        failValidation = ErrorCode.NET_CERTIFICATE_UNTRUSTED
+        val viewModel = manual()
+        viewModel.onSignIn("secret".toCharArray())
+        viewModel.onCertificateDismissed()
+        assertNull(viewModel.state.value.certificateOffer)
+        assertEquals(ErrorCode.NET_CERTIFICATE_UNTRUSTED, viewModel.state.value.error)
+        assertNull(pins.pinFor("ha.example.com", 443))
     }
 }

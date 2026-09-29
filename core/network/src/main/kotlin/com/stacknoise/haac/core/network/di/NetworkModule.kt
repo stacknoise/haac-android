@@ -13,6 +13,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
+import com.stacknoise.haac.core.network.tls.PinRegistry
+import com.stacknoise.haac.core.network.tls.pinnedBy
 import okhttp3.OkHttpClient
 
 /** Shared HTTP client and JSON settings; no logging interceptor, so auth requests are never logged (concept 5.1). */
@@ -21,10 +23,11 @@ import okhttp3.OkHttpClient
 object NetworkModule {
     private const val TIMEOUT_SECONDS = 10L
 
-    /** The base client for requests before an instance exists (server validation, login). */
+    /** The one client of the app; trusts by pin or by system certificates (concept 4.3). */
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
+    fun provideOkHttpClient(pins: PinRegistry): OkHttpClient = OkHttpClient.Builder()
+        .pinnedBy(pins)
         .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .followRedirects(false)

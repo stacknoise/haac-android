@@ -139,7 +139,7 @@ private fun SettingsPreview() {
             addresses = {
                 AddressesContent(
                     AddressesUiState(internal = "http://192.168.1.10:8123/", external = "https://abc.ui.nabu.casa/"),
-                    AddressActions({}, {}, {}, {}, {}, {}, {}),
+                    AddressActions({}, {}, {}, {}, {}, {}, {}, {}, {}, {}),
                 )
             },
         )

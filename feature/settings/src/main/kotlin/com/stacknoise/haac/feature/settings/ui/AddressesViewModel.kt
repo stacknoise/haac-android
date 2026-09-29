@@ -2,6 +2,7 @@ package com.stacknoise.haac.feature.settings.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.stacknoise.haac.core.common.ui.CertificateDialogKind
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.error.ErrorCode
@@ -9,6 +10,9 @@ import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.core.network.server.CleartextPolicy
 import com.stacknoise.haac.core.network.server.ServerUrlNormalizer
+import com.stacknoise.haac.core.network.tls.CertificateProbe
+
+import com.stacknoise.haac.feature.settings.data.CertificatePins
 import com.stacknoise.haac.feature.settings.data.InstanceAddressRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -22,6 +26,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /** *Settings → Addresses* of the active instance (concept 4.5). */
 data class AddressesUiState(
@@ -33,14 +39,18 @@ data class AddressesUiState(
     val input: String = "",
     val busy: Boolean = false,
     val error: ErrorCode? = null,
+    val certificate: CertificateReview? = null,
 )
 
 /** Addresses of the active instance: edit, remove, take over from HA, always use the internal address. */
+@Suppress("TooManyFunctions") // one small handler per action of the addresses section
 @HiltViewModel
 class AddressesViewModel @Inject constructor(
     active: ActiveInstanceStore,
     servers: ServerDao,
     private val repository: InstanceAddressRepository,
+    private val certificates: CertificatePins,
+    private val probe: CertificateProbe,
 ) : ViewModel() {
     private val progress = MutableStateFlow(AddressesUiState())
 
@@ -83,9 +93,56 @@ class AddressesViewModel @Inject constructor(
         val input = state.value.input
         perform { id ->
             val url = ServerUrlNormalizer.normalize(input).also(CleartextPolicy::requireAllowed)
-            repository.change(id, slot, url)
-            progress.update { it.copy(editing = null, input = "") }
+            try {
+                repository.change(id, slot, url)
+                progress.update { it.copy(editing = null, input = "") }
+            } catch (e: HaacException) {
+                // A certificate the device does not know can be trusted on first use (concept 4.3).
+                if (e.code != ErrorCode.NET_CERTIFICATE_UNTRUSTED || !url.isHttps) throw e
+                review(id, slot, url, saving = true)
+            }
         }
+    }
+
+    /** *Certificate* of the address in [slot]: shows what the server presents and whether it is pinned. */
+    fun onCertificate(slot: AddressSlot) = perform { id ->
+        val current = state.value
+        val address = if (slot == AddressSlot.INTERNAL) current.internal else current.external
+        address?.toHttpUrlOrNull()?.let { review(id, slot, it, saving = false) }
+    }
+
+    /** Confirms the certificate dialog: pins, re-pins or unpins the address, or continues a pending save. */
+    fun onCertificateConfirm() {
+        val review = state.value.certificate ?: return
+        progress.update { it.copy(certificate = null) }
+        val hash = review.certificate.keyHash
+        when {
+            review.saving -> {
+                certificates.trustForNow(review.url, hash)
+                onSave()
+            }
+            review.kind == CertificateDialogKind.PINNED -> perform { id ->
+                certificates.removePin(id, review.slot, review.url)
+            }
+            else -> perform { id -> certificates.pin(id, review.slot, review.url, hash) }
+        }
+    }
+
+    /** Closes the certificate dialog; a pending new address stays unsaved. */
+    fun onCertificateDismiss() {
+        progress.update { it.copy(certificate = null) }
+    }
+
+    /** Reads the certificate of [url] and opens the dialog for it: new, changed or the pinned one. */
+    private suspend fun review(id: String, slot: AddressSlot, url: HttpUrl, saving: Boolean) {
+        val certificate = probe.inspect(url)
+        val pinned = if (saving) null else certificates.pinOf(id, slot)
+        val kind = when (pinned) {
+            null -> CertificateDialogKind.TRUST_NEW
+            certificate.keyHash -> CertificateDialogKind.PINNED
+            else -> CertificateDialogKind.TRUST_CHANGED
+        }
+        progress.update { it.copy(certificate = CertificateReview(slot, url, certificate, kind, saving)) }
     }
 
     /** Removes the address in [slot]. */

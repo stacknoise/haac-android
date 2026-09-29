@@ -55,6 +55,7 @@ abstract class NetworkBindings {
     @Binds
     abstract fun bindEndpointSelector(selector: DefaultEndpointSelector): EndpointSelector
 
+
     /** WebSockets to HA via OkHttp. */
     @Binds
     abstract fun bindHaWebSocketFactory(factory: OkHttpWebSocketFactory): HaWebSocketFactory

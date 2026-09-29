@@ -41,6 +41,12 @@ class ErrorFactoryTest {
     }
 
     @Test
+    fun `a handshake that failed on the pinned key becomes NET-003`() {
+        val failure = SSLHandshakeException("pin").apply { initCause(CertificatePinException()) }
+        assertEquals(ErrorCode.NET_CERTIFICATE_CHANGED, factory.from(failure).code)
+    }
+
+    @Test
     fun `keystore failures become SEC-002`() {
         assertEquals(ErrorCode.SEC_STORAGE_UNAVAILABLE, factory.from(KeyStoreException("no key")).code)
         assertEquals(ErrorCode.SEC_STORAGE_UNAVAILABLE, factory.from(ProviderException("keystore")).code)

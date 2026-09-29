@@ -16,9 +16,11 @@ import com.stacknoise.haac.core.network.endpoint.EndpointProbe
 import com.stacknoise.haac.core.network.endpoint.EndpointSelector
 import com.stacknoise.haac.core.network.endpoint.InstanceAddresses
 import com.stacknoise.haac.core.network.endpoint.addresses
+import com.stacknoise.haac.core.network.endpoint.pinnedBy
 import com.stacknoise.haac.core.network.endpoint.requireSameInstance
 import com.stacknoise.haac.core.network.endpoint.withAddresses
 import com.stacknoise.haac.core.network.session.InstanceSessionFactory
+import com.stacknoise.haac.core.network.tls.PinRegistry
 import javax.inject.Inject
 import okhttp3.HttpUrl
 
@@ -30,6 +32,7 @@ class InstanceAddressRepository @Inject constructor(
     private val bridge: BridgeInfoClient,
     private val probe: EndpointProbe,
     private val errors: ErrorFactory,
+    private val pins: PinRegistry,
 ) {
     /** Turns *Always use the internal address* of instance [serverId] on or off. */
     suspend fun setAlwaysUseInternal(serverId: String, enabled: Boolean) {
@@ -57,7 +60,7 @@ class InstanceAddressRepository @Inject constructor(
             url
         }
         val info = infoAt(server, url, tokenUrl)
-        save(server.withAddresses(server.addresses.with(slot, url)).withInstanceId(info))
+        save(server.withAddresses(server.addresses.with(slot, url)).pinnedBy(pins).withInstanceId(info))
     }
 
     /** Takes the internal and external address from HA; a slot HA leaves empty keeps its address. */
@@ -68,7 +71,7 @@ class InstanceAddressRepository @Inject constructor(
         val fromHa = InstanceAddresses.fromHa(info.urls)
         val current = server.addresses
         val merged = InstanceAddresses(fromHa.internal ?: current.internal, fromHa.external ?: current.external)
-        save(server.withAddresses(merged).withInstanceId(info))
+        save(server.withAddresses(merged).pinnedBy(pins).withInstanceId(info))
     }
 
     /** `haac_bridge/info` at [url] with an access token refreshed at [tokenUrl]; checks the instance ID. */
