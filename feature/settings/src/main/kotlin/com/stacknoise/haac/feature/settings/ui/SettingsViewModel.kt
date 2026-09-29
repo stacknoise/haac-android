@@ -8,8 +8,7 @@ import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.database.settings.SecuritySettings
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
-import com.stacknoise.haac.core.network.endpoint.EndpointSelector
-import com.stacknoise.haac.core.network.session.InstanceSessionFactory
+import com.stacknoise.haac.core.network.session.InstanceSignOut
 import com.stacknoise.haac.core.security.biometric.FingerprintOutcome
 import com.stacknoise.haac.core.security.biometric.FingerprintTarget
 import com.stacknoise.haac.core.security.biometric.FingerprintUnlock
@@ -28,7 +27,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.HttpUrl
 
 /** The active instance as the settings show it. */
 data class ActiveInstance(val id: String, val name: String, val userName: String)
@@ -56,8 +54,7 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     active: ActiveInstanceStore,
     private val servers: ServerDao,
-    private val sessions: InstanceSessionFactory,
-    private val endpoints: EndpointSelector,
+    private val signOut: InstanceSignOut,
     private val tokens: TokenStore,
     private val fingerprint: FingerprintUnlock,
     private val security: SecuritySettings,
@@ -110,22 +107,11 @@ class SettingsViewModel @Inject constructor(
         progress.update { it.copy(busy = true, error = null) }
         viewModelScope.launch {
             try {
-                val url = signOutAddress(instance.id)
-                if (url == null) tokens.delete(instance.id) else sessions.create(instance.id, url).signOut()
+                signOut.signOut(instance.id)
                 progress.update { it.copy(busy = false, signedOutServerId = instance.id) }
             } catch (e: HaacException) {
                 progress.update { it.copy(busy = false, error = e.code) }
             }
-        }
-    }
-
-    /** The address to revoke the token at (concept 4.5), or null if none answers. */
-    private suspend fun signOutAddress(serverId: String): HttpUrl? {
-        val server = servers.get(serverId) ?: return null
-        return try {
-            endpoints.select(server)
-        } catch (_: HaacException) {
-            null
         }
     }
 

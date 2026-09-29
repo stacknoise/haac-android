@@ -41,6 +41,14 @@ interface ServerDao {
     @Query("UPDATE server SET last_active_at = :at WHERE id = :id")
     suspend fun touch(id: String, at: Long)
 
+    /** Sets the local display name and accent colour of instance [id] (concept 4.4; never sent to HA). */
+    @Query("UPDATE server SET display_name = :name, accent_color = :accent WHERE id = :id")
+    suspend fun setAppearance(id: String, name: String, accent: Long)
+
+    /** Deletes instance [id]; its cache, layout, assignments and aliases follow by cascade (concept 12). */
+    @Query("DELETE FROM server WHERE id = :id")
+    suspend fun delete(id: String)
+
     /** Number of instances; used to pick the accent colour of a new one. */
     @Query("SELECT COUNT(*) FROM server")
     suspend fun count(): Int

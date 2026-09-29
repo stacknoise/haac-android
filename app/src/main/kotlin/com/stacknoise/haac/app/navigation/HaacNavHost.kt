@@ -15,7 +15,9 @@ import androidx.navigation.navArgument
 import com.stacknoise.haac.app.lock.UnlockScreen
 import com.stacknoise.haac.app.lock.UnlockViewModel
 import com.stacknoise.haac.app.start.StartViewModel
+import com.stacknoise.haac.feature.instance.domain.RemoveOutcome
 import com.stacknoise.haac.feature.instance.domain.SwitchStep
+import com.stacknoise.haac.feature.instance.ui.InstanceListActions
 import com.stacknoise.haac.feature.onboarding.ui.OnboardingScreen
 import com.stacknoise.haac.feature.onboarding.ui.OnboardingViewModel
 
@@ -64,8 +66,11 @@ fun HaacNavHost(start: StartViewModel = hiltViewModel()) {
             MainScaffold(
                 MainActions(
                     onSignedOut = { serverId -> navController.replaceAll(Routes.onboarding(serverId)) },
-                    onSwitched = { serverId, step -> navController.onSwitched(serverId, step) },
-                    onAddInstance = { navController.navigate(Routes.onboarding()) },
+                    instances = InstanceListActions(
+                        onSwitched = { serverId, step -> navController.onSwitched(serverId, step) },
+                        onAdd = { navController.navigate(Routes.onboarding()) },
+                        onRemoved = navController::onRemoved,
+                    ),
                 ),
             )
         }
@@ -81,6 +86,22 @@ private fun NavController.onSwitched(serverId: String, step: SwitchStep) {
         SwitchStep.READY -> Unit
         SwitchStep.UNLOCK -> navigate(Routes.unlock(serverId))
         SwitchStep.SIGN_IN -> navigate(Routes.onboarding(serverId))
+    }
+}
+
+/**
+ * Continues after an instance was removed (concept 4.4): the next instance opens directly, needs its unlock or
+ * login, or the app returns to the first-start screen when none is left. The old screens are replaced.
+ */
+private fun NavController.onRemoved(outcome: RemoveOutcome) {
+    when (outcome) {
+        RemoveOutcome.Kept -> Unit
+        RemoveOutcome.NoneLeft -> replaceAll(Routes.onboarding())
+        is RemoveOutcome.Next -> when (outcome.step) {
+            SwitchStep.READY -> Unit
+            SwitchStep.UNLOCK -> replaceAll(Routes.unlock(outcome.serverId))
+            SwitchStep.SIGN_IN -> replaceAll(Routes.onboarding(outcome.serverId))
+        }
     }
 }
 
