@@ -163,6 +163,12 @@ enum class ErrorCode(
         ErrorAction.NONE,
         "Entity no longer exists in HA (HAB-ENT-001)",
     ),
+    ENT_ACTION_NOT_SUPPORTED(
+        "HAAC-ENT-002",
+        R.string.error_ent_action_not_supported,
+        ErrorAction.NONE,
+        "ServiceCallFactory rejected a control for the entity's domain or supported_features (concept 8, 17.2)",
+    ),
     DB_SAVE_FAILED(
         "HAAC-DB-001",
         R.string.error_db_save_failed,

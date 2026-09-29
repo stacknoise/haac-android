@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,17 +33,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.feature.entities.R
+import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.Tile
 import com.stacknoise.haac.feature.entities.domain.TileContent
 import com.stacknoise.haac.feature.entities.domain.TileIcon
 
+
 /**
- * One tile of the room grid (M-05, M-08): icon, name and state; "on" switches use the accent container, tiles of
- * withdrawn entities are dashed and struck through (concept 7.4). Controls follow with chapter 8.
+ * One tile of the room grid (M-05, M-08): icon, name, state and control; "on" switches use the accent container,
+ * tiles of withdrawn entities are dashed and struck through (concept 7.4). Controls are disabled unless
+ * [enabled] (no connection, concept 14.1).
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun TileCard(tile: Tile, onClick: () -> Unit, onLongClick: () -> Unit, modifier: Modifier = Modifier) {
+internal fun TileCard(tile: Tile, enabled: Boolean, actions: TileActions, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val on = (tile.content as? TileContent.Switch)?.on == true && tile.available && !tile.withdrawn
     val frame = when {
@@ -55,28 +60,38 @@ internal fun TileCard(tile: Tile, onClick: () -> Unit, onLongClick: () -> Unit, 
         modifier = modifier
             .clip(HaacShapes.Medium)
             .then(frame)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            .combinedClickable(onClick = { actions.onClick(tile) }, onLongClick = { actions.onLongClick(tile) })
             .padding(16.dp),
     ) {
         when {
             tile.withdrawn -> WithdrawnContent(tile)
-            tile.content is TileContent.Climate -> ClimateContent(tile, tile.content)
-            else -> PlainContent(tile, on)
+            tile.content is TileContent.Climate -> ClimateTile(tile, tile.content, enabled, actions)
+            else -> PlainContent(tile, on, enabled, actions)
         }
     }
 }
 
-/** Icon, then value or name and state (switch, sensor, other domains). */
+/** Icon (with the toggle of a switch), then value or name and state (switch, sensor, other domains). */
 @Composable
-private fun PlainContent(tile: Tile, on: Boolean) {
+private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: TileActions) {
     val accent = if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
     Column(modifier = Modifier.fillMaxSize()) {
-        Icon(
-            painterResource(iconOf(tile.icon)),
-            contentDescription = null,
-            tint = accent,
-            modifier = Modifier.size(24.dp),
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Icon(
+                painterResource(iconOf(tile.icon)),
+                contentDescription = null,
+                tint = accent,
+                modifier = Modifier.size(24.dp),
+            )
+            Spacer(Modifier.weight(1f))
+            if (tile.content is TileContent.Switch) {
+                Switch(
+                    checked = on,
+                    onCheckedChange = { actions.onToggle(tile) },
+                    enabled = enabled && tile.control is EntityControl.Toggle,
+                )
+            }
+        }
         Spacer(Modifier.weight(1f))
         val sensor = tile.content as? TileContent.Sensor
         if (sensor != null && tile.available) {
@@ -94,37 +109,6 @@ private fun PlainContent(tile: Tile, on: Boolean) {
                 maxLines = 1,
             )
         }
-    }
-}
-
-/** Name, heating mark, target temperature large and the current one below (M-05; dial and ± follow later). */
-@Composable
-private fun ClimateContent(tile: Tile, climate: TileContent.Climate) {
-    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(tile.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, modifier = Modifier.weight(1f))
-            if (climate.heating && tile.available) {
-                Icon(
-                    painterResource(R.drawable.ic_entities_heating),
-                    stringResource(R.string.tile_heating),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-        }
-        Spacer(Modifier.weight(1f))
-        Text(
-            if (tile.available) climate.target ?: "–" else stringResource(R.string.tile_unavailable),
-            style = if (tile.available) MaterialTheme.typography.displaySmall else MaterialTheme.typography.bodyMedium,
-        )
-        climate.current?.takeIf { tile.available }?.let {
-            Text(
-                stringResource(R.string.tile_now, it),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Spacer(Modifier.weight(1f))
     }
 }
 
@@ -196,7 +180,7 @@ internal fun iconOf(icon: TileIcon): Int = when (icon) {
 
 /** Secondary text colour of a tile. */
 @Composable
-private fun secondaryColor(): Color = MaterialTheme.colorScheme.onSurfaceVariant
+internal fun secondaryColor(): Color = MaterialTheme.colorScheme.onSurfaceVariant
 
 /** Dash and gap of the removed-entity border, in px. */
 private val DashPattern = floatArrayOf(12f, 8f)

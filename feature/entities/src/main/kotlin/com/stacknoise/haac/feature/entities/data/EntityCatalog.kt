@@ -19,16 +19,21 @@ class EntityCatalog @Inject constructor(
     private val aliases: EntityAliasDao,
     private val assignments: RoomAssignmentDao,
     private val builder: TileBuilder,
+    private val pending: PendingStates,
     private val errors: ErrorFactory,
 ) {
-    /** The tiles of room [roomId] of instance [serverId] in their order, with live states (M-05, M-08). */
+    /**
+     * The tiles of room [roomId] of instance [serverId] in their order, with live states and the result of
+     * requests HA has not confirmed yet (M-05, M-08, concept 8.1).
+     */
     fun roomTiles(serverId: String, roomId: String): Flow<List<Tile>> {
+        val rooms = assignments.observe(roomId)
         val cache = entities.observe(serverId)
-        return combine(assignments.observe(roomId), cache, aliases.observe(serverId)) { rows, cached, names ->
+        return combine(rooms, cache, aliases.observe(serverId), pending.of(serverId)) { rows, cached, aliased, sent ->
             val byId = cached.associateBy { it.entityId }
-            val alias = names.associate { it.entityId to it.alias }
+            val alias = aliased.associate { it.entityId to it.alias }
             rows.map { row ->
-                byId[row.entityId]?.let { builder.tile(it, alias[row.entityId], row.tileSize) }
+                byId[row.entityId]?.let { builder.tile(it, alias[row.entityId], row.tileSize, sent[row.entityId]) }
                     ?: builder.missing(serverId, row.entityId, alias[row.entityId], row.tileSize)
             }
         }.databaseErrors()

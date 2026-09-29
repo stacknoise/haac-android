@@ -33,7 +33,8 @@ sealed interface TileContent {
 /**
  * One tile of a room (concept 7.2, 7.4, M-05, M-08). [name] includes the local alias, [defaultName] is the name
  * without it (7.3). [available] is false while HA reports `unavailable` or `unknown`; [withdrawn] entities are
- * no longer shared and show as inactive tiles with their last state.
+ * no longer shared and show as inactive tiles with their last state. [control] is null for tiles without one
+ * and for unavailable or withdrawn entities (concept 8, 14.1).
  */
 data class Tile(
     val entityId: String,
@@ -44,4 +45,5 @@ data class Tile(
     val available: Boolean = true,
     val withdrawn: Boolean = false,
     val defaultName: String = name,
+    val control: EntityControl? = null,
 )

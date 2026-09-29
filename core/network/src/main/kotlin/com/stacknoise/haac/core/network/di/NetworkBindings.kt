@@ -4,9 +4,11 @@ import com.stacknoise.haac.core.network.bridge.BridgeMessageFactory
 import com.stacknoise.haac.core.network.bridge.DefaultBridgeMessageFactory
 import com.stacknoise.haac.core.network.connection.Backoff
 import com.stacknoise.haac.core.network.connection.BridgeConnector
+import com.stacknoise.haac.core.network.connection.ConnectionSupervisor
 import com.stacknoise.haac.core.network.connection.ConnectivityNetworkMonitor
 import com.stacknoise.haac.core.network.connection.DefaultBridgeConnector
 import com.stacknoise.haac.core.network.connection.ExponentialBackoff
+import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.core.network.connection.NetworkMonitor
 import com.stacknoise.haac.core.network.discovery.NsdServerDiscovery
 import com.stacknoise.haac.core.network.discovery.ServerDiscovery
@@ -68,4 +70,8 @@ abstract class NetworkBindings {
     /** Reconnect back-off (concept 11.4). */
     @Binds
     abstract fun bindBackoff(backoff: ExponentialBackoff): Backoff
+
+    /** The live connection for service calls (concept 8.1). */
+    @Binds
+    abstract fun bindLiveConnection(supervisor: ConnectionSupervisor): LiveConnection
 }

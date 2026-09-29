@@ -156,6 +156,16 @@ class EntitySyncTest {
     }
 
     @Test
+    fun `a recheck runs the revision check on the running connection`() = runTest {
+        sync.recheck() // Before the sync: answered by its own revision check.
+        follow()
+        channel.requests.clear()
+        sync.recheck()
+        runCurrent()
+        assertEquals(listOf("haac_bridge/exposure/revision"), channel.requests)
+    }
+
+    @Test
     fun `errors are kept in the status unless the connection ended`() = runTest {
         channel.failure = NetworkException(ErrorCode.NET_CONNECTION_LOST)
         channel.isOpen = false

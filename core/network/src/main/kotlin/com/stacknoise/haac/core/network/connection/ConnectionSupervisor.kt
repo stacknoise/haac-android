@@ -48,7 +48,7 @@ class ConnectionSupervisor @Inject constructor(
     private val backoff: Backoff,
     private val reporter: ErrorReporter,
     @param:ConnectionScope private val scope: CoroutineScope,
-) {
+) : LiveConnection {
     private val _state = MutableStateFlow<ConnectionState>(ConnectionState.Idle)
     private val _connection = MutableStateFlow<BridgeConnection?>(null)
     private val wakeUps = Channel<Unit>(Channel.CONFLATED)
@@ -59,7 +59,7 @@ class ConnectionSupervisor @Inject constructor(
     val state: StateFlow<ConnectionState> = _state.asStateFlow()
 
     /** The open connection, or null; the sync runs its steps on every new connection (concept 9.1, 11.4). */
-    val connection: StateFlow<BridgeConnection?> = _connection.asStateFlow()
+    override val connection: StateFlow<BridgeConnection?> = _connection.asStateFlow()
 
     /** Keeps instance [serverId] connected until [stop]; a running supervision of the same instance continues. */
     fun start(serverId: String) {

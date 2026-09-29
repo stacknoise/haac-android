@@ -12,6 +12,7 @@ import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.ValidationException
+import com.stacknoise.haac.feature.entities.domain.DefaultEntityControlFactory
 import com.stacknoise.haac.feature.entities.domain.DefaultTileFactory
 import com.stacknoise.haac.feature.entities.domain.TileContent
 import kotlinx.coroutines.flow.Flow
@@ -99,8 +100,9 @@ class AssignmentTest {
     private fun unused(): Nothing = throw AssertionError("not expected in these tests")
 
     private val errors = DefaultErrorFactory()
-    private val builder = TileBuilder(Json { ignoreUnknownKeys = true }, DefaultTileFactory())
-    private val catalog = EntityCatalog(entityDao, aliasDao, assignmentDao, builder, errors)
+    private val builder =
+        TileBuilder(Json { ignoreUnknownKeys = true }, DefaultTileFactory(), DefaultEntityControlFactory())
+    private val catalog = EntityCatalog(entityDao, aliasDao, assignmentDao, builder, PendingStates(), errors)
     private val writer = AssignmentWriter(assignmentDao, aliasDao, passThrough, errors) { 42 }
 
     @Test
