@@ -54,6 +54,23 @@
     <string name="detail_swing_horizontal">Horizontal swing</string>
     <string name="tile_details">Details</string>
 
+    <!-- History of the detail screen (concept 8.1 – 8.4). -->
+    <string name="history_title">History</string>
+    <string name="history_day">24 h</string>
+    <string name="history_week">7 days</string>
+    <string name="history_custom">Custom</string>
+    <string name="history_custom_range">%1$s – %2$s</string>
+    <string name="history_show">Show</string>
+    <string name="history_value">Value</string>
+    <string name="history_mean">Mean</string>
+    <string name="history_range">Min–max</string>
+    <string name="history_heating">Heating</string>
+    <string name="history_cooling">Cooling</string>
+    <string name="history_empty">Nothing was recorded in this period.</string>
+    <string name="history_offline">The history loads once the connection is back.</string>
+    <string name="history_retry">Try again</string>
+    <string name="history_hint">Tap or drag on the chart to see its values.</string>
+
     <!-- Tile sheets and rename dialog (M-07, M-08). -->
     <string name="tile_rename">Rename</string>
     <string name="tile_remove_here">Remove from this room</string>

@@ -122,6 +122,10 @@ private fun DetailBody(
         if (!connected) Note(stringResource(R.string.detail_offline))
         DetailControls(detail.controls, enabled = connected, onControl = onControl)
     }
+    if (!tile.withdrawn) {
+        Section(R.string.history_title)
+        HistorySection()
+    }
     InfoSection(detail)
     Section(R.string.detail_attributes)
     if (detail.attributes.isEmpty()) Note(stringResource(R.string.detail_no_attributes))
