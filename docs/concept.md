@@ -184,6 +184,8 @@ sequenceDiagram
 
 With an active unlock window (5.4), the fingerprint step of the switch is skipped and the switch runs without any prompt.
 
+**As built (switcher)** – the switcher bar above the main area appears only while at least two instances exist; *Settings → Instances* lists the instances at any time, switches on a tap and starts *Add instance*. The chosen instance becomes active only when its token is usable: a device-key token or an already unlocked fingerprint token switches at once; a locked fingerprint token opens the unlock screen and a missing token the HA login, both on top of the main area, so Back returns to the previous instance, which stays active until then. Every switch resets the open screens of the main area. The current address is shown as the host of the external address, else of the internal one; only the active instance shows a live status. Renaming, colour change, removal and the app-icon shortcut are not built yet.
+
 **Editing and removing**
 
 | Action | Effect |

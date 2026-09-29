@@ -15,6 +15,7 @@ import androidx.navigation.navArgument
 import com.stacknoise.haac.app.lock.UnlockScreen
 import com.stacknoise.haac.app.lock.UnlockViewModel
 import com.stacknoise.haac.app.start.StartViewModel
+import com.stacknoise.haac.feature.instance.domain.SwitchStep
 import com.stacknoise.haac.feature.onboarding.ui.OnboardingScreen
 import com.stacknoise.haac.feature.onboarding.ui.OnboardingViewModel
 
@@ -43,7 +44,7 @@ fun HaacNavHost(start: StartViewModel = hiltViewModel()) {
                 },
             ),
         ) {
-            OnboardingScreen(onSignedIn = { navController.replaceAll(Routes.MAIN) })
+            OnboardingScreen(onSignedIn = navController::openMain)
         }
         composable(
             Routes.UNLOCK,
@@ -51,14 +52,44 @@ fun HaacNavHost(start: StartViewModel = hiltViewModel()) {
         ) { entry ->
             val serverId = entry.arguments?.getString(UnlockViewModel.SERVER_ID_ARG)
             UnlockScreen(
-                onUnlocked = { navController.replaceAll(Routes.MAIN) },
-                onSignIn = { navController.replaceAll(Routes.onboarding(serverId)) },
+                onUnlocked = navController::openMain,
+                onSignIn = {
+                    navController.navigate(Routes.onboarding(serverId)) {
+                        popUpTo(Routes.UNLOCK) { inclusive = true }
+                    }
+                },
             )
         }
         composable(Routes.MAIN) {
-            MainScaffold(onSignedOut = { serverId -> navController.replaceAll(Routes.onboarding(serverId)) })
+            MainScaffold(
+                MainActions(
+                    onSignedOut = { serverId -> navController.replaceAll(Routes.onboarding(serverId)) },
+                    onSwitched = { serverId, step -> navController.onSwitched(serverId, step) },
+                    onAddInstance = { navController.navigate(Routes.onboarding()) },
+                ),
+            )
         }
     }
+}
+
+/**
+ * Continues after a switch (concept 4.4): the instance is active already ([SwitchStep.READY]), or its unlock or
+ * login opens on top of the main area, so Back returns to the instance that was active before.
+ */
+private fun NavController.onSwitched(serverId: String, step: SwitchStep) {
+    when (step) {
+        SwitchStep.READY -> Unit
+        SwitchStep.UNLOCK -> navigate(Routes.unlock(serverId))
+        SwitchStep.SIGN_IN -> navigate(Routes.onboarding(serverId))
+    }
+}
+
+/**
+ * Shows the main area after an unlock or sign-in: returns to it when it lies below, as after a switch or *Add
+ * instance* (its connection is not touched twice), otherwise replaces the whole stack.
+ */
+private fun NavController.openMain() {
+    if (!popBackStack(Routes.MAIN, inclusive = false)) replaceAll(Routes.MAIN)
 }
 
 /** Navigates to [route] and clears the back stack, so Back does not return to sign-in or signed-out screens. */

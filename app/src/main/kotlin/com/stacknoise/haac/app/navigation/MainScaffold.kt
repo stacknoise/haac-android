@@ -1,6 +1,8 @@
 package com.stacknoise.haac.app.navigation
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -9,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -24,32 +27,46 @@ import androidx.navigation.compose.rememberNavController
 import com.stacknoise.haac.app.connection.ConnectionBanner
 import com.stacknoise.haac.app.connection.ConnectionViewModel
 import com.stacknoise.haac.core.error.ErrorAction
+import com.stacknoise.haac.feature.instance.ui.InstanceBar
+import com.stacknoise.haac.feature.instance.ui.InstancesSection
 import com.stacknoise.haac.feature.notifications.ui.NotificationsScreen
 import com.stacknoise.haac.feature.settings.ui.SettingsScreen
 
 /**
- * Main area after sign-in: bottom bar with Rooms, Places, Settings (concept 15.2) and the live connection of the
- * active instance (11.4). [onSignedOut] after logout or when HA no longer accepts the instance's token (14.1).
+ * Main area after sign-in: instance switcher (concept 4.4), bottom bar with Rooms, Places, Settings (15.2) and the
+ * live connection of the active instance (11.4). Another active instance discards the open screens: its own
+ * home view opens (4.4).
  */
 @Composable
-fun MainScaffold(onSignedOut: (String) -> Unit, connection: ConnectionViewModel = hiltViewModel()) {
-    val navController = rememberNavController()
-    val backStack by navController.currentBackStackEntryAsState()
-    val currentRoute = backStack?.destination?.route
-    val connectionState by connection.state.collectAsStateWithLifecycle()
+fun MainScaffold(actions: MainActions, connection: ConnectionViewModel = hiltViewModel()) {
+    val activeId by connection.activeId.collectAsStateWithLifecycle()
     val signInRequired by connection.signInRequired.collectAsStateWithLifecycle()
     LifecycleStartEffect(connection) {
         connection.onForeground()
         onStopOrDispose { connection.onBackground() }
     }
-    LaunchedEffect(signInRequired) { signInRequired?.let(onSignedOut) }
+    LaunchedEffect(signInRequired) { signInRequired?.let(actions.onSignedOut) }
+    key(activeId) { MainContent(actions, connection) }
+}
+
+/** The screens of one instance: top bar with switcher and connection banner, tabs and their destinations. */
+@Composable
+private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
+    val navController = rememberNavController()
+    val backStack by navController.currentBackStackEntryAsState()
+    val currentRoute = backStack?.destination?.route
+    val connectionState by connection.state.collectAsStateWithLifecycle()
     Scaffold(
         topBar = {
-            ConnectionBanner(
-                state = connectionState,
-                onRetry = connection::retry,
-                onOpenSettings = { navController.openTopLevel(TopLevelDestination.SETTINGS) },
-            )
+            // The bar draws under the status bar; the banner inside it then adds no second inset.
+            Column(Modifier.statusBarsPadding()) {
+                InstanceBar(onSwitched = actions.onSwitched, onAdd = actions.onAddInstance)
+                ConnectionBanner(
+                    state = connectionState,
+                    onRetry = connection::retry,
+                    onOpenSettings = { navController.openTopLevel(TopLevelDestination.SETTINGS) },
+                )
+            }
         },
         bottomBar = {
             // Forms and the notification list use the whole screen (M-03, M-09).
@@ -66,14 +83,19 @@ fun MainScaffold(onSignedOut: (String) -> Unit, connection: ConnectionViewModel 
             roomsDestination(navController)
             placeDestinations(navController)
             entityDestinations(navController)
-            composable(TopLevelDestination.SETTINGS.route) { SettingsScreen(onSignedOut = onSignedOut) }
+            composable(TopLevelDestination.SETTINGS.route) {
+                SettingsScreen(
+                    onSignedOut = actions.onSignedOut,
+                    instances = { InstancesSection(onSwitched = actions.onSwitched, onAdd = actions.onAddInstance) },
+                )
+            }
             composable(NotificationsRoute) {
                 NotificationsScreen(
                     onBack = { navController.popBackStack() },
                     onErrorAction = { action, serverId ->
                         when (action) {
                             ErrorAction.RETRY -> connection.retry()
-                            ErrorAction.SIGN_IN -> serverId?.let(onSignedOut)
+                            ErrorAction.SIGN_IN -> serverId?.let(actions.onSignedOut)
                             ErrorAction.OPEN_SETTINGS -> navController.openTopLevel(TopLevelDestination.SETTINGS)
                             ErrorAction.NONE -> Unit
                         }

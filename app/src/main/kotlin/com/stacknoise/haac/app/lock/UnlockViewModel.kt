@@ -11,6 +11,7 @@ import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.security.biometric.FingerprintOutcome
 import com.stacknoise.haac.core.security.biometric.FingerprintTarget
 import com.stacknoise.haac.core.security.biometric.FingerprintUnlock
+import com.stacknoise.haac.feature.instance.data.InstanceSwitcher
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +45,7 @@ class UnlockViewModel @Inject constructor(
     private val servers: ServerDao,
     private val fingerprint: FingerprintUnlock,
     private val settings: SecuritySettings,
+    private val switcher: InstanceSwitcher,
 ) : ViewModel() {
     private val serverId: String = savedState.get<String>(SERVER_ID_ARG).orEmpty()
     private val _state = MutableStateFlow(UnlockUiState())
@@ -62,7 +64,7 @@ class UnlockViewModel @Inject constructor(
                 val window = settings.unlockWindowMinutes.first() * SECONDS_PER_MINUTE
                 val target = FingerprintTarget(activity, serverId, name)
                 val result = when (fingerprint.unlock(target, window)) {
-                    FingerprintOutcome.DONE -> UnlockResult.UNLOCKED
+                    FingerprintOutcome.DONE -> UnlockResult.UNLOCKED.also { switcher.activate(serverId) }
                     FingerprintOutcome.USE_PASSWORD -> UnlockResult.SIGN_IN
                     FingerprintOutcome.CANCELLED -> null
                 }

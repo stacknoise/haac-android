@@ -35,6 +35,10 @@ class StartRouterTest {
 
             override fun observe(id: String): Flow<ServerEntity?> = error("not used")
 
+            override fun observeAll(): Flow<List<ServerEntity>> = error("not used")
+
+            override suspend fun touch(id: String, at: Long) = error("not used")
+
             override suspend fun count() = instances.size
         },
         tokens = object : TokenStore {

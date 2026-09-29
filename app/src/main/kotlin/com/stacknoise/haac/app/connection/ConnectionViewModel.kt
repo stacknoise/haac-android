@@ -31,6 +31,9 @@ class ConnectionViewModel @Inject constructor(
     private val serverId = MutableStateFlow<String?>(null)
     private var following: Job? = null
 
+    /** The active instance while the main area is followed; a change resets the screens (concept 4.4). */
+    val activeId: StateFlow<String?> = serverId
+
     /** The connection state for the banner. */
     val state: StateFlow<ConnectionState> = supervisor.state
 
