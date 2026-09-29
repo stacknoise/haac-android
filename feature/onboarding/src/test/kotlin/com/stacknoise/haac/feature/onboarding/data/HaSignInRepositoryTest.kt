@@ -71,6 +71,12 @@ class HaSignInRepositoryTest {
 
         override fun observe(id: String): Flow<ServerEntity?> = flowOf(rows[id])
 
+        override fun observeAll(): Flow<List<ServerEntity>> = flowOf(rows.values.toList())
+
+        override suspend fun touch(id: String, at: Long) {
+            rows[id]?.let { rows[id] = it.copy(lastActiveAt = at) }
+        }
+
         override suspend fun count() = rows.size
     }
     private val saved = mutableMapOf<String, String>()

@@ -33,9 +33,16 @@ import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.feature.settings.R
 
-/** Settings (concept 15.4); [onSignedOut] receives the id of the instance that was signed out. */
+/**
+ * Settings (concept 15.4); [onSignedOut] receives the id of the instance that was signed out. [instances] is the
+ * instance list (concept 4.4), which another feature module provides.
+ */
 @Composable
-fun SettingsScreen(onSignedOut: (String) -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(
+    onSignedOut: (String) -> Unit,
+    instances: @Composable () -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel(),
+) {
     SecureWindow()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val signedOut by rememberUpdatedState(onSignedOut)
@@ -46,6 +53,7 @@ fun SettingsScreen(onSignedOut: (String) -> Unit, viewModel: SettingsViewModel =
     SettingsContent(
         state = state,
         onSignOut = viewModel::onSignOut,
+        instances = instances,
         addresses = { AddressesSection() },
         security = SecurityActions(
             onFingerprintChanged = { enabled -> activity?.let { viewModel.onFingerprintChanged(it, enabled) } },
@@ -55,12 +63,13 @@ fun SettingsScreen(onSignedOut: (String) -> Unit, viewModel: SettingsViewModel =
     )
 }
 
-/** Stateless layout of the settings; [addresses] is the addresses section (concept 4.5). */
+/** Stateless layout of the settings; [instances] is the instance list (4.4), [addresses] the address section (4.5). */
 @Composable
 fun SettingsContent(
     state: SettingsUiState,
     onSignOut: () -> Unit,
     security: SecurityActions,
+    instances: @Composable () -> Unit = {},
     addresses: @Composable () -> Unit = {},
 ) {
     Column(
@@ -81,6 +90,8 @@ fun SettingsContent(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Spacer(Modifier.height(32.dp))
+        instances()
         Spacer(Modifier.height(32.dp))
         addresses()
         Spacer(Modifier.height(32.dp))

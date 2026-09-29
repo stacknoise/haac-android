@@ -33,6 +33,14 @@ interface ServerDao {
     @Query("SELECT * FROM server WHERE id = :id")
     fun observe(id: String): Flow<ServerEntity?>
 
+    /** All instances, sorted by name, then HA user (instance switcher, concept 4.4). */
+    @Query("SELECT * FROM server ORDER BY display_name COLLATE NOCASE, ha_user_name COLLATE NOCASE")
+    fun observeAll(): Flow<List<ServerEntity>>
+
+    /** Marks instance [id] as used at [at] (epoch milliseconds). */
+    @Query("UPDATE server SET last_active_at = :at WHERE id = :id")
+    suspend fun touch(id: String, at: Long)
+
     /** Number of instances; used to pick the accent colour of a new one. */
     @Query("SELECT COUNT(*) FROM server")
     suspend fun count(): Int
