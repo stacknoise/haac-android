@@ -25,6 +25,19 @@ object RoomSchemas {
         db.createStatement().use { it.execute(sql) }
     }
 
+    /** Number of rows of [table] in [db]. */
+    fun count(db: Connection, table: String): Int = db.createStatement().use { statement ->
+        statement.executeQuery("SELECT COUNT(*) FROM $table").use { it.next(); it.getInt(1) }
+    }
+
+    /** Adds instance [id] to the `server` table of [db] with fixed sample values. */
+    fun insertServer(db: Connection, id: String) = db.createStatement().use {
+        it.execute(
+            "INSERT INTO server (id, display_name, accent_color, ha_user_name, ha_version, bridge_api_version, " +
+                "last_active_at) VALUES ('$id', 'Home', 1, 'anna', '2026.9.0', 1, 5)",
+        )
+    }
+
     /** Column name → (affinity, not null, default) of [table] in Room schema [version]. */
     fun expectedColumns(version: Int, table: String): Map<String, List<Any?>> =
         table(version, table).getValue("fields").jsonArray.map { it.jsonObject }.associate { field ->

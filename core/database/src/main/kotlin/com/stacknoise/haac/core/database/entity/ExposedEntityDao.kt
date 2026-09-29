@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
 
 /** Access to the `exposed_entity` table and the sync columns of `server` (concept 9.1, 12). */
 @Dao
@@ -11,6 +12,10 @@ interface ExposedEntityDao {
     /** Every cached entity of instance [serverId], active and withdrawn. */
     @Query("SELECT * FROM exposed_entity WHERE server_id = :serverId")
     suspend fun all(serverId: String): List<ExposedEntity>
+
+    /** The same rows as [all], updated on every change (live states for the room grid, concept 8.1). */
+    @Query("SELECT * FROM exposed_entity WHERE server_id = :serverId")
+    fun observe(serverId: String): Flow<List<ExposedEntity>>
 
     /** Inserts new rows and replaces existing ones. */
     @Upsert

@@ -102,12 +102,31 @@ private fun UnreadDot(unread: Boolean) {
     )
 }
 
-/** *Dismiss* or *Keep*; error entries also offer their error's action (concept 17.4). */
+/**
+ * *Dismiss* or *Keep*, after the entry's own action: *Add to room* or *Review N entities* for new entities,
+ * *Remove tile* for removed ones (concept 9.1), the error's action for errors (17.4).
+ */
 @Composable
 private fun EntryActions(item: NotificationItem, actions: NotificationActions) {
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
-        val label = item.error?.action?.takeIf { it != ErrorAction.NONE }?.label
-        if (label != null) ActionButton(stringResource(label), primary = true) { actions.onErrorAction(item) }
+        when (item.type) {
+            NotificationType.ADDED -> {
+                val label = if (item.count == 1) {
+                    stringResource(R.string.notifications_add_to_room)
+                } else {
+                    pluralStringResource(R.plurals.notifications_review, item.count, item.count)
+                }
+                ActionButton(label, primary = true) { actions.onAddToRoom(item) }
+            }
+            NotificationType.REMOVED -> ActionButton(
+                pluralStringResource(R.plurals.notifications_remove_tiles, item.count),
+                primary = true,
+            ) { actions.onRemoveTiles(item) }
+            NotificationType.ERROR -> {
+                val label = item.error?.action?.takeIf { it != ErrorAction.NONE }?.label
+                if (label != null) ActionButton(stringResource(label), primary = true) { actions.onErrorAction(item) }
+            }
+        }
         val resolve = when (item.type) {
             NotificationType.REMOVED -> R.string.notifications_keep
             else -> R.string.notifications_dismiss

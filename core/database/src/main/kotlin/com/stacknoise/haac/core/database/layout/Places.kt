@@ -1,11 +1,4 @@
-package com.stacknoise.haac.feature.layout.domain
-
-/** The three kinds of places (concept 6); the UI calls a floor "Level". */
-enum class PlaceKind {
-    HOME,
-    FLOOR,
-    ROOM,
-}
+package com.stacknoise.haac.core.database.layout
 
 /** A home of the active instance (concept 6.1). */
 data class Home(val id: String, val name: String)

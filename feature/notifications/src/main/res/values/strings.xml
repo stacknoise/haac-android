@@ -22,6 +22,15 @@
     <string name="notifications_times">×%1$d</string>
     <string name="notifications_dismiss">Dismiss</string>
     <string name="notifications_keep">Keep</string>
+    <string name="notifications_add_to_room">Add to room</string>
+    <plurals name="notifications_review">
+        <item quantity="one">Review %1$d entity</item>
+        <item quantity="other">Review %1$d entities</item>
+    </plurals>
+    <plurals name="notifications_remove_tiles">
+        <item quantity="one">Remove tile</item>
+        <item quantity="other">Remove tiles</item>
+    </plurals>
     <string name="notifications_detail_code">Code</string>
     <string name="notifications_detail_time">Time</string>
     <string name="notifications_detail_instance">Instance</string>

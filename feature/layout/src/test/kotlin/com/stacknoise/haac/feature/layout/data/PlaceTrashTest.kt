@@ -1,9 +1,10 @@
 package com.stacknoise.haac.feature.layout.data
 
+import com.stacknoise.haac.core.database.layout.PlaceRepository
 import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.feature.layout.domain.PlaceForm
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
-import com.stacknoise.haac.feature.layout.domain.Places
+import com.stacknoise.haac.core.database.layout.Places
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals

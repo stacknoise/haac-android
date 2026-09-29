@@ -1,6 +1,8 @@
 package com.stacknoise.haac.feature.notifications.data
 
+import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
+import com.stacknoise.haac.core.database.entity.displayName
 import com.stacknoise.haac.core.database.notification.NotificationDao
 import com.stacknoise.haac.core.database.notification.NotificationEntity
 import com.stacknoise.haac.core.database.notification.NotificationType
@@ -28,13 +30,18 @@ import kotlinx.serialization.json.Json
 class NotificationRepository internal constructor(
     private val notifications: NotificationDao,
     private val entities: ExposedEntityDao,
+    private val assignments: RoomAssignmentDao,
     private val errors: ErrorFactory,
     private val clock: () -> Long,
 ) {
     /** Uses the wall clock. */
     @Inject
-    constructor(notifications: NotificationDao, entities: ExposedEntityDao, errors: ErrorFactory) :
-        this(notifications, entities, errors, System::currentTimeMillis)
+    constructor(
+        notifications: NotificationDao,
+        entities: ExposedEntityDao,
+        assignments: RoomAssignmentDao,
+        errors: ErrorFactory,
+    ) : this(notifications, entities, assignments, errors, System::currentTimeMillis)
 
     private val writes = Mutex()
 
@@ -74,7 +81,7 @@ class NotificationRepository internal constructor(
     /** Entries of instance [serverId] and global ones, newest first, with the names of their entities. */
     fun items(serverId: String?): Flow<List<NotificationItem>> = notifications.observe(serverId).map { rows ->
         val names = serverId?.let { id ->
-            errors.database { entities.all(id) }.associate { it.entityId to (it.configuredName ?: it.haName) }
+            errors.database { entities.all(id) }.associate { it.entityId to it.displayName(null) }
         }.orEmpty()
         rows.map { it.toItem(names) }
     }
@@ -90,6 +97,13 @@ class NotificationRepository internal constructor(
 
     /** *Dismiss* or *Keep*: the entry stays without actions. */
     suspend fun resolve(id: Long) = errors.database { notifications.resolve(id, clock()) }
+
+    /** *Remove tile*: removes the entities of [item] from every room of its instance, then resolves it (7.4). */
+    suspend fun removeTiles(item: NotificationItem) = errors.database {
+        val serverId = item.serverId ?: return@database
+        assignments.removeEverywhere(serverId, item.entities.map { it.entityId })
+        notifications.resolve(item.id, clock())
+    }
 
     /** Purges old entries and runs [block] with the current time, one write at a time. */
     private suspend fun write(block: suspend (Long) -> Unit) = writes.withLock {
@@ -114,20 +128,20 @@ class NotificationRepository internal constructor(
         serverId = serverId,
     )
 
-    /** Entity ids as the JSON of column `entity_ids`. */
-    private fun encode(ids: List<String>): String = Json.encodeToString(IDS, ids)
-
-    /** The ids of column `entity_ids`; a damaged value shows no entities. */
-    private fun decode(json: String): List<String> = try {
-        Json.decodeFromString(IDS, json)
-    } catch (_: IllegalArgumentException) {
-        emptyList()
-    }
-
-    /** Time limits (concept 9.1, 17.4) and the JSON shape of `entity_ids`. */
+    /** Time limits (concept 9.1, 17.4) and the JSON of column `entity_ids`. */
     private companion object {
         const val GROUP_MS = 10 * 60_000L
         const val RETENTION_MS = 30 * 24 * 60 * 60_000L
         val IDS = ListSerializer(String.serializer())
+
+        /** Entity ids as the JSON of column `entity_ids`. */
+        fun encode(ids: List<String>): String = Json.encodeToString(IDS, ids)
+
+        /** The ids of column `entity_ids`; a damaged value shows no entities. */
+        fun decode(json: String): List<String> = try {
+            Json.decodeFromString(IDS, json)
+        } catch (_: IllegalArgumentException) {
+            emptyList()
+        }
     }
 }

@@ -5,10 +5,10 @@ import com.stacknoise.haac.core.database.layout.LayoutTrashDao
 import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.database
 import com.stacknoise.haac.feature.layout.domain.Deletion
-import com.stacknoise.haac.feature.layout.domain.Floor
-import com.stacknoise.haac.feature.layout.domain.Home
+import com.stacknoise.haac.core.database.layout.Floor
+import com.stacknoise.haac.core.database.layout.Home
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
-import com.stacknoise.haac.feature.layout.domain.Room
+import com.stacknoise.haac.core.database.layout.Room
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow

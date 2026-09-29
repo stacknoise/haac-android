@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Room grid (M-05, M-08). -->
+    <string name="rooms_choose_group">Choose home and level</string>
+    <string name="rooms_add_entities">Add entities</string>
+    <string name="rooms_no_rooms">No rooms yet. Create a home and its rooms under Places.</string>
+    <string name="rooms_open_places">Open Places</string>
+    <string name="rooms_empty_room">No entities in this room yet.</string>
+    <plurals name="rooms_withdrawn_banner">
+        <item quantity="one">%1$d entity no longer exists in Home Assistant</item>
+        <item quantity="other">%1$d entities no longer exist in Home Assistant</item>
+    </plurals>
+    <string name="rooms_review">Review</string>
+    <string name="tile_on">On</string>
+    <string name="tile_off">Off</string>
+    <string name="tile_unavailable">Unavailable</string>
+    <string name="tile_now">now %1$s</string>
+    <string name="tile_heating">Heating</string>
+    <string name="tile_removed">Removed in HA · tap to remove</string>
+
+    <!-- Tile sheets and rename dialog (M-07, M-08). -->
+    <string name="tile_rename">Rename</string>
+    <string name="tile_remove_here">Remove from this room</string>
+    <string name="tile_remove_everywhere">Remove from all rooms</string>
+    <string name="tile_removed_title">No longer available in Home Assistant</string>
+    <string name="tile_removed_text">It was deleted in Home Assistant or is no longer shared with you. Its last state stays here until you remove it.</string>
+    <string name="review_title">No longer in Home Assistant</string>
+    <string name="review_remove_here">Remove all from this room</string>
+    <string name="review_remove_everywhere">Remove all from every room</string>
+    <string name="rename_title">Rename entity</string>
+    <string name="rename_text">Only changes the name in this app. Home Assistant keeps %1$s.</string>
+    <string name="rename_default">Use default name</string>
+    <string name="rename_cancel">Cancel</string>
+    <string name="rename_save">Save</string>
+
+    <!-- Add entities (M-04). -->
+    <string name="add_title">Add entities</string>
+    <string name="add_back">Back</string>
+    <string name="add_domain_switch">Switch</string>
+    <string name="add_domain_sensor">Sensor</string>
+    <string name="add_domain_climate">Climate</string>
+    <string name="add_filter">Filter by name or ID</string>
+    <string name="add_in_room">in %1$s</string>
+    <string name="add_here">in this room</string>
+    <string name="add_nothing">Nothing to add here.</string>
+    <string name="add_select">Select entities to add</string>
+    <plurals name="add_button">
+        <item quantity="one">Add %1$d entity</item>
+        <item quantity="other">Add %1$d entities</item>
+    </plurals>
+    <plurals name="add_switches">
+        <item quantity="one">%1$d switch</item>
+        <item quantity="other">%1$d switches</item>
+    </plurals>
+    <plurals name="add_sensors">
+        <item quantity="one">%1$d sensor</item>
+        <item quantity="other">%1$d sensors</item>
+    </plurals>
+    <plurals name="add_climates">
+        <item quantity="one">%1$d climate</item>
+        <item quantity="other">%1$d climate</item>
+    </plurals>
+
+    <!-- Add to room from the notification list (M-09). -->
+    <string name="assign_title">Add to room</string>
+    <string name="assign_no_rooms">Create a room under Places first.</string>
+    <string name="assign_button">Add to %1$s</string>
+    <string name="assign_choose">Choose a room</string>
+    <string name="assign_gone">These entities are no longer shared.</string>
+</resources>

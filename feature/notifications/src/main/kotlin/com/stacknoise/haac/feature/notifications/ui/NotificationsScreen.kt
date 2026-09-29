@@ -39,12 +39,14 @@ import java.time.format.FormatStyle
 
 /**
  * Notification list (M-09, concept 9.1, 17.4). [onErrorAction] receives the action of an error entry
- * (*Try again*, *Sign in*, *Open settings*) and the instance it belongs to (null for global entries).
+ * (*Try again*, *Sign in*, *Open settings*) and the instance it belongs to (null for global entries);
+ * [onAddToRoom] the entity ids of an *Add to room* or *Review N entities*, which also resolves the entry.
  */
 @Composable
 fun NotificationsScreen(
     onBack: () -> Unit,
     onErrorAction: (ErrorAction, String?) -> Unit,
+    onAddToRoom: (List<String>) -> Unit,
     viewModel: NotificationsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -56,6 +58,11 @@ fun NotificationsScreen(
             onMarkAllRead = viewModel::onMarkAllRead,
             onResolve = viewModel::onResolve,
             onErrorAction = { item -> item.error?.let { onErrorAction(it.action, item.serverId) } },
+            onAddToRoom = { item ->
+                viewModel.onResolve(item)
+                onAddToRoom(item.entities.map { it.entityId })
+            },
+            onRemoveTiles = viewModel::onRemoveTiles,
         ),
     )
     state.detail?.let { ErrorDetailSheet(it, state.instanceName, onDismiss = viewModel::onCloseDetail) }

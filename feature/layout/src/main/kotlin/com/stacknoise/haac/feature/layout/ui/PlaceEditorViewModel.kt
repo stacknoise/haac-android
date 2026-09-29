@@ -6,12 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
-import com.stacknoise.haac.feature.layout.data.PlaceRepository
+import com.stacknoise.haac.core.database.layout.PlaceRepository
 import com.stacknoise.haac.feature.layout.data.PlaceTrash
 import com.stacknoise.haac.feature.layout.data.PlaceWriter
 import com.stacknoise.haac.feature.layout.domain.PlaceForm
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
-import com.stacknoise.haac.feature.layout.domain.Places
+import com.stacknoise.haac.core.database.layout.Places
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi

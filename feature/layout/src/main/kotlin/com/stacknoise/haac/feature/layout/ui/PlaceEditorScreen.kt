@@ -41,12 +41,12 @@ import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.feature.layout.R
-import com.stacknoise.haac.feature.layout.domain.Floor
-import com.stacknoise.haac.feature.layout.domain.Home
+import com.stacknoise.haac.core.database.layout.Floor
+import com.stacknoise.haac.core.database.layout.Home
 import com.stacknoise.haac.feature.layout.domain.PlaceForm
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
-import com.stacknoise.haac.feature.layout.domain.Places
-import com.stacknoise.haac.feature.layout.domain.Room
+import com.stacknoise.haac.core.database.layout.Places
+import com.stacknoise.haac.core.database.layout.Room
 
 /**
  * Form for a new or existing home, level or room (M-03, concept 6.1, 6.2); [onClose] after saving, deleting or

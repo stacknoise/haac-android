@@ -29,8 +29,8 @@ import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.feature.layout.R
 import com.stacknoise.haac.feature.layout.domain.PlaceForm
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
-import com.stacknoise.haac.feature.layout.domain.Places
-import com.stacknoise.haac.feature.layout.domain.Room
+import com.stacknoise.haac.core.database.layout.Places
+import com.stacknoise.haac.core.database.layout.Room
 
 /**
  * *Rooms on this level* (the rooms of the level's home) or *Rooms in this home* (the rooms of other homes, which

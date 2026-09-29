@@ -2,6 +2,10 @@ package com.stacknoise.haac.core.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.stacknoise.haac.core.database.assignment.EntityAlias
+import com.stacknoise.haac.core.database.assignment.EntityAliasDao
+import com.stacknoise.haac.core.database.assignment.RoomAssignment
+import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
 import com.stacknoise.haac.core.database.entity.ExposedEntity
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.database.layout.FloorDao
@@ -24,8 +28,10 @@ import com.stacknoise.haac.core.database.server.ServerEntity
         HomeEntity::class,
         FloorEntity::class,
         RoomEntity::class,
+        RoomAssignment::class,
+        EntityAlias::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 /**
@@ -53,4 +59,10 @@ abstract class HaacDatabase : RoomDatabase() {
 
     /** Undo and purge of deleted homes, floors and rooms (concept 6.2). */
     abstract fun layoutTrashDao(): LayoutTrashDao
+
+    /** The `room_entity` table (concept 7.2). */
+    abstract fun roomAssignmentDao(): RoomAssignmentDao
+
+    /** The `entity_alias` table (concept 7.3). */
+    abstract fun entityAliasDao(): EntityAliasDao
 }

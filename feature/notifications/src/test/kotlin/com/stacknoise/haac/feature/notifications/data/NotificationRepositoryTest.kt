@@ -1,5 +1,7 @@
 package com.stacknoise.haac.feature.notifications.data
 
+import com.stacknoise.haac.core.database.assignment.RoomAssignment
+import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
 import com.stacknoise.haac.core.database.entity.ExposedEntity
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.database.notification.NotificationDao
@@ -71,6 +73,8 @@ class NotificationRepositoryTest {
             ExposedEntity(serverId, "sensor.h", "sensor", "Humidity sensor", configuredName = "Humidity"),
         )
 
+        override fun observe(serverId: String): Flow<List<ExposedEntity>> = error("not used")
+
         override suspend fun upsert(rows: List<ExposedEntity>) = error("not used")
 
         override suspend fun revision(serverId: String) = error("not used")
@@ -82,9 +86,27 @@ class NotificationRepositoryTest {
         override suspend fun setState(serverId: String, entityId: String, state: String) = error("not used")
     }
 
-    private var now = 1_000_000L
-    private val repository = NotificationRepository(dao, entities, DefaultErrorFactory()) { now }
+    private val removed = mutableListOf<Pair<String, List<String>>>()
+    private val assignments = object : RoomAssignmentDao {
+        override fun observe(roomId: String): Flow<List<RoomAssignment>> = error("not used")
 
+        override fun observeAll(serverId: String): Flow<List<RoomAssignment>> = error("not used")
+
+        override suspend fun insert(rows: List<RoomAssignment>) = error("not used")
+
+        override suspend fun maxSortOrder(roomId: String) = error("not used")
+
+        override suspend fun roomIsActive(roomId: String) = error("not used")
+
+        override suspend fun remove(roomId: String, entityId: String) = error("not used")
+
+        override suspend fun removeEverywhere(serverId: String, entityIds: List<String>) {
+            removed += serverId to entityIds
+        }
+    }
+
+    private var now = 1_000_000L
+    private val repository = NotificationRepository(dao, entities, assignments, DefaultErrorFactory()) { now }
     @Test
     fun `a sync adds one entry per kind with the entity names`() = runTest {
         repository.addEntityChanges("s1", added = listOf("switch.hall", "switch.unknown"), removed = listOf("sensor.h"))
@@ -152,5 +174,14 @@ class NotificationRepositoryTest {
         val item = repository.items("s1").first().single()
         assertTrue(item.resolved)
         assertFalse(item.unread)
+    }
+
+    @Test
+    fun `remove tile takes the entities out of every room and resolves the entry`() = runTest {
+        repository.addEntityChanges("s1", added = emptyList(), removed = listOf("sensor.h"))
+        repository.removeTiles(repository.items("s1").first().single())
+
+        assertEquals(listOf("s1" to listOf("sensor.h")), removed)
+        assertTrue(repository.items("s1").first().single().resolved)
     }
 }

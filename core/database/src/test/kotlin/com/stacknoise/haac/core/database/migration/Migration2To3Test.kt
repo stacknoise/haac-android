@@ -17,9 +17,7 @@ class Migration2To3Test {
 
     private fun exec(sql: String) = db.createStatement().use { it.execute(sql) }
 
-    private fun count(table: String): Int = db.createStatement().use { statement ->
-        statement.executeQuery("SELECT COUNT(*) FROM $table").use { it.next(); it.getInt(1) }
-    }
+    private fun count(table: String): Int = RoomSchemas.count(db, table)
 
     private fun migrate() {
         RoomSchemas.create(db, 2, "server")

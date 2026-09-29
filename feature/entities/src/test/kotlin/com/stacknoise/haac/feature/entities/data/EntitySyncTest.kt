@@ -61,6 +61,8 @@ class EntitySyncTest {
     private val dao = object : ExposedEntityDao {
         override suspend fun all(serverId: String) = cache.values.filter { it.serverId == serverId }
 
+        override fun observe(serverId: String): Flow<List<ExposedEntity>> = error("not used")
+
         override suspend fun upsert(rows: List<ExposedEntity>) {
             rows.forEach { cache[it.entityId] = it }
         }

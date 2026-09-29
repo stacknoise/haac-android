@@ -25,7 +25,7 @@ import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.feature.layout.R
 import com.stacknoise.haac.feature.layout.domain.PlaceForm
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
-import com.stacknoise.haac.feature.layout.domain.Places
+import com.stacknoise.haac.core.database.layout.Places
 
 /** Small uppercase label above a section of the form. */
 @Composable

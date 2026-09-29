@@ -1,5 +1,9 @@
 package com.stacknoise.haac.feature.layout.domain
 
+import com.stacknoise.haac.core.database.layout.Home
+import com.stacknoise.haac.core.database.layout.Places
+import com.stacknoise.haac.core.database.layout.Room
+
 /** Filter chips of the Places overview (M-02). */
 enum class PlaceFilter {
     ALL,
