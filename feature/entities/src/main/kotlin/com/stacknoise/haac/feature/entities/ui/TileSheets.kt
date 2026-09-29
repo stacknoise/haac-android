@@ -21,7 +21,7 @@ import com.stacknoise.haac.feature.entities.domain.Tile
 
 /** Which sheet or dialog of the room grid is open. */
 internal sealed interface RoomSheet {
-    /** Long press on an active tile: *Rename*, *Remove from this room*. */
+    /** Long press on an active tile: *Details*, *Rename*, *Remove from this room*. */
     data class Menu(val tile: Tile) : RoomSheet
 
     /** Tap on a withdrawn tile (concept 7.4). */
@@ -36,6 +36,7 @@ internal sealed interface RoomSheet {
 
 /** Callbacks of the sheets; each closes the sheet. */
 internal class SheetActions(
+    val onDetails: (Tile) -> Unit,
     val onRename: (Tile) -> Unit,
     val onRemoveHere: (List<String>) -> Unit,
     val onRemoveEverywhere: (List<String>) -> Unit,
@@ -52,6 +53,7 @@ internal fun RoomSheetContent(sheet: RoomSheet, actions: SheetActions) {
             when (sheet) {
                 is RoomSheet.Menu -> {
                     Heading(sheet.tile.name, sheet.tile.entityId)
+                    SheetButton(R.string.tile_details) { actions.onDetails(sheet.tile) }
                     SheetButton(R.string.tile_rename) { actions.onRename(sheet.tile) }
                     SheetButton(R.string.tile_remove_here) { actions.onRemoveHere(listOf(sheet.tile.entityId)) }
                 }

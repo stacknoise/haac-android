@@ -161,6 +161,7 @@ internal fun stateText(tile: Tile): String {
     return when (val content = tile.content) {
         is TileContent.Switch -> stringResource(if (content.on == true) R.string.tile_on else R.string.tile_off)
         is TileContent.Sensor -> listOfNotNull(content.value, content.unit).joinToString(" ")
+        is TileContent.Timestamp -> relativeTime(content.at)
         is TileContent.Climate -> content.target ?: content.current.orEmpty()
         is TileContent.Other -> content.state
     }
