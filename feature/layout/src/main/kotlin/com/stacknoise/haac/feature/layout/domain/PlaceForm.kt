@@ -1,5 +1,9 @@
 package com.stacknoise.haac.feature.layout.domain
 
+import com.stacknoise.haac.core.database.layout.Home
+import com.stacknoise.haac.core.database.layout.Places
+import com.stacknoise.haac.core.database.layout.Room
+
 /**
  * The input of the form for a new or existing home, level or room (M-03, concept 6.1, 6.2).
  *

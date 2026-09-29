@@ -1,11 +1,7 @@
 package com.stacknoise.haac.app.navigation
 
-import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -13,11 +9,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,16 +21,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
-import com.stacknoise.haac.R
 import com.stacknoise.haac.app.connection.ConnectionBanner
 import com.stacknoise.haac.app.connection.ConnectionViewModel
 import com.stacknoise.haac.core.error.ErrorAction
-import com.stacknoise.haac.feature.layout.ui.PlaceEditorScreen
-import com.stacknoise.haac.feature.layout.ui.PlaceEditorViewModel
-import com.stacknoise.haac.feature.layout.ui.PlacesScreen
-import com.stacknoise.haac.feature.notifications.ui.NotificationBell
 import com.stacknoise.haac.feature.notifications.ui.NotificationsScreen
 import com.stacknoise.haac.feature.settings.ui.SettingsScreen
 
@@ -76,28 +63,9 @@ fun MainScaffold(onSignedOut: (String) -> Unit, connection: ConnectionViewModel 
             startDestination = TopLevelDestination.ROOMS.route,
             modifier = Modifier.padding(padding),
         ) {
-            composable(TopLevelDestination.ROOMS.route) {
-                PlaceholderScreen(TopLevelDestination.ROOMS.label) {
-                    // The bell belongs into the room header (M-05, M-08) once rooms exist.
-                    NotificationBell(onClick = { navController.navigate(NotificationsRoute) })
-                }
-            }
-            composable(TopLevelDestination.PLACES.route) {
-                PlacesScreen(onOpen = { kind, id -> navController.navigate(PlaceRoutes.editor(kind, id)) })
-            }
-            composable(
-                PlaceRoutes.EDITOR,
-                arguments = listOf(
-                    navArgument(PlaceEditorViewModel.KIND_ARG) { type = NavType.StringType },
-                    navArgument(PlaceEditorViewModel.ID_ARG) {
-                        type = NavType.StringType
-                        nullable = true
-                        defaultValue = null
-                    },
-                ),
-            ) {
-                PlaceEditorScreen(onClose = { navController.popBackStack() })
-            }
+            roomsDestination(navController)
+            placeDestinations(navController)
+            entityDestinations(navController)
             composable(TopLevelDestination.SETTINGS.route) { SettingsScreen(onSignedOut = onSignedOut) }
             composable(NotificationsRoute) {
                 NotificationsScreen(
@@ -110,6 +78,7 @@ fun MainScaffold(onSignedOut: (String) -> Unit, connection: ConnectionViewModel 
                             ErrorAction.NONE -> Unit
                         }
                     },
+                    onAddToRoom = { ids -> navController.navigate(EntityRoutes.assign(ids)) },
                 )
             }
         }
@@ -132,7 +101,7 @@ private fun BottomBar(currentRoute: String?, onOpen: (TopLevelDestination) -> Un
 }
 
 /** Opens a tab of the bottom bar and keeps the state of the others. */
-private fun NavController.openTopLevel(destination: TopLevelDestination) {
+internal fun NavController.openTopLevel(destination: TopLevelDestination) {
     navigate(destination.route) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
@@ -141,17 +110,4 @@ private fun NavController.openTopLevel(destination: TopLevelDestination) {
 }
 
 /** Route of the notification list (M-09); not a tab of the bottom bar. */
-private const val NotificationsRoute = "notifications"
-
-/** Temporary screen until the feature modules provide their own; [topEnd] sits in the top right corner. */
-@Composable
-private fun PlaceholderScreen(@StringRes title: Int, topEnd: @Composable () -> Unit = {}) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Box(modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) { topEnd() }
-        Text(
-            text = stringResource(title) + " · " + stringResource(R.string.placeholder_coming_soon),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
+internal const val NotificationsRoute = "notifications"

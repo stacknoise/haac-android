@@ -1,7 +1,7 @@
 package com.stacknoise.haac.feature.layout.ui
 
 import com.stacknoise.haac.feature.layout.domain.PlaceForm
-import com.stacknoise.haac.feature.layout.domain.Places
+import com.stacknoise.haac.core.database.layout.Places
 
 /** Callbacks of the place form; [onChange] applies a change to the form with the current places. */
 class EditorActions(

@@ -1,5 +1,9 @@
 package com.stacknoise.haac.feature.layout.domain
 
+import com.stacknoise.haac.core.database.layout.Floor
+import com.stacknoise.haac.core.database.layout.Home
+import com.stacknoise.haac.core.database.layout.Places
+import com.stacknoise.haac.core.database.layout.Room
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull

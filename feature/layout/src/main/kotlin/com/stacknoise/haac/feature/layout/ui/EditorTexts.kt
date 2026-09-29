@@ -7,7 +7,7 @@ import androidx.compose.ui.res.stringResource
 import com.stacknoise.haac.feature.layout.R
 import com.stacknoise.haac.feature.layout.domain.PlaceForm
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
-import com.stacknoise.haac.feature.layout.domain.Places
+import com.stacknoise.haac.core.database.layout.Places
 
 /** "New level", "Edit room" … for the header of the form. */
 @StringRes

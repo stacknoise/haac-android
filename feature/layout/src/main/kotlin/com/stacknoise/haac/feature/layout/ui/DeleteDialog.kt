@@ -22,7 +22,7 @@ import androidx.compose.ui.res.stringResource
 import com.stacknoise.haac.feature.layout.R
 import com.stacknoise.haac.feature.layout.domain.PlaceForm
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
-import com.stacknoise.haac.feature.layout.domain.Places
+import com.stacknoise.haac.core.database.layout.Places
 
 /**
  * Confirms a deletion (concept 6.2): a home lists its levels and rooms; a level with rooms asks whether they stay

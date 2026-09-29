@@ -80,6 +80,9 @@ class NotificationsViewModel @Inject constructor(
     /** *Dismiss* or *Keep*. */
     fun onResolve(item: NotificationItem) = write { repository.resolve(item.id) }
 
+    /** *Remove tile(s)*: takes the removed entities out of every room (concept 7.4, 9.1). */
+    fun onRemoveTiles(item: NotificationItem) = write { repository.removeTiles(item) }
+
     /** Runs a write; a failed one is shown with its code. */
     private fun write(block: suspend () -> Unit) {
         viewModelScope.launch {
