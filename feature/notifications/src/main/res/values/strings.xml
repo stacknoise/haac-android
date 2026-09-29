@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_back">Back</string>
+    <string name="notifications_mark_all_read">Mark all read</string>
+    <string name="notifications_today">Today</string>
+    <string name="notifications_yesterday">Yesterday</string>
+    <string name="notifications_empty">No notifications yet.</string>
+    <string name="notifications_unread">Unread</string>
+    <plurals name="notifications_added">
+        <item quantity="one">New entity shared</item>
+        <item quantity="other">%1$d new entities shared</item>
+    </plurals>
+    <plurals name="notifications_removed">
+        <item quantity="one">Entity removed in HA</item>
+        <item quantity="other">%1$d entities removed in HA</item>
+    </plurals>
+    <plurals name="notifications_removed_text">
+        <item quantity="one">%1$s is no longer shared. Its tiles stay inactive until you remove them.</item>
+        <item quantity="other">%1$s are no longer shared. Their tiles stay inactive until you remove them.</item>
+    </plurals>
+    <string name="notifications_times">×%1$d</string>
+    <string name="notifications_dismiss">Dismiss</string>
+    <string name="notifications_keep">Keep</string>
+    <string name="notifications_detail_code">Code</string>
+    <string name="notifications_detail_time">Time</string>
+    <string name="notifications_detail_instance">Instance</string>
+    <string name="notifications_detail_description">Details</string>
+    <string name="notifications_detail_bridge_code">Bridge code</string>
+    <string name="notifications_detail_copy">Copy details</string>
+</resources>
