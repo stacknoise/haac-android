@@ -169,6 +169,18 @@ enum class ErrorCode(
         ErrorAction.RETRY,
         "Room write failed (SQLiteException)",
     ),
+    LAY_PLACE_MISSING(
+        "HAAC-LAY-001",
+        R.string.error_lay_place_missing,
+        ErrorAction.NONE,
+        "Home, floor or room to save into no longer exists, or the floor belongs to another home (concept 6.1)",
+    ),
+    LAY_NAME_MISSING(
+        "HAAC-LAY-002",
+        R.string.error_lay_name_missing,
+        ErrorAction.NONE,
+        "Home, floor or room saved with a blank name",
+    ),
     APP_UNEXPECTED(
         "HAAC-APP-000",
         R.string.error_app_unexpected,

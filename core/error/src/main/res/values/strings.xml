@@ -27,6 +27,8 @@
     <string name="error_brg_history_unavailable">History is not available on this server.</string>
     <string name="error_ent_not_found">This device no longer exists in Home Assistant.</string>
     <string name="error_db_save_failed">Your changes could not be saved. Please try again.</string>
+    <string name="error_lay_place_missing">This home, level or room no longer exists. Please check your places.</string>
+    <string name="error_lay_name_missing">Please enter a name.</string>
     <string name="error_app_unexpected">Something went wrong.</string>
     <!-- Action buttons of ErrorAction (concept 17.4). -->
     <string name="error_action_retry">Try again</string>

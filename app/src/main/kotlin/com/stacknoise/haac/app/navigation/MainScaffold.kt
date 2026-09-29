@@ -27,10 +27,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.stacknoise.haac.R
 import com.stacknoise.haac.app.connection.ConnectionBanner
 import com.stacknoise.haac.app.connection.ConnectionViewModel
 import com.stacknoise.haac.core.error.ErrorAction
+import com.stacknoise.haac.feature.layout.ui.PlaceEditorScreen
+import com.stacknoise.haac.feature.layout.ui.PlaceEditorViewModel
+import com.stacknoise.haac.feature.layout.ui.PlacesScreen
 import com.stacknoise.haac.feature.notifications.ui.NotificationBell
 import com.stacknoise.haac.feature.notifications.ui.NotificationsScreen
 import com.stacknoise.haac.feature.settings.ui.SettingsScreen
@@ -60,15 +65,9 @@ fun MainScaffold(onSignedOut: (String) -> Unit, connection: ConnectionViewModel 
             )
         },
         bottomBar = {
-            NavigationBar {
-                TopLevelDestination.entries.forEach { destination ->
-                    NavigationBarItem(
-                        selected = currentRoute == destination.route,
-                        onClick = { navController.openTopLevel(destination) },
-                        icon = { Icon(painterResource(destination.icon), contentDescription = null) },
-                        label = { Text(stringResource(destination.label)) },
-                    )
-                }
+            // Forms and the notification list use the whole screen (M-03, M-09).
+            if (TopLevelDestination.entries.any { it.route == currentRoute }) {
+                BottomBar(currentRoute, onOpen = navController::openTopLevel)
             }
         },
     ) { padding ->
@@ -83,7 +82,22 @@ fun MainScaffold(onSignedOut: (String) -> Unit, connection: ConnectionViewModel 
                     NotificationBell(onClick = { navController.navigate(NotificationsRoute) })
                 }
             }
-            composable(TopLevelDestination.PLACES.route) { PlaceholderScreen(TopLevelDestination.PLACES.label) }
+            composable(TopLevelDestination.PLACES.route) {
+                PlacesScreen(onOpen = { kind, id -> navController.navigate(PlaceRoutes.editor(kind, id)) })
+            }
+            composable(
+                PlaceRoutes.EDITOR,
+                arguments = listOf(
+                    navArgument(PlaceEditorViewModel.KIND_ARG) { type = NavType.StringType },
+                    navArgument(PlaceEditorViewModel.ID_ARG) {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                ),
+            ) {
+                PlaceEditorScreen(onClose = { navController.popBackStack() })
+            }
             composable(TopLevelDestination.SETTINGS.route) { SettingsScreen(onSignedOut = onSignedOut) }
             composable(NotificationsRoute) {
                 NotificationsScreen(
@@ -98,6 +112,21 @@ fun MainScaffold(onSignedOut: (String) -> Unit, connection: ConnectionViewModel 
                     },
                 )
             }
+        }
+    }
+}
+
+/** Bottom bar with Rooms, Places and Settings; [currentRoute] is selected. */
+@Composable
+private fun BottomBar(currentRoute: String?, onOpen: (TopLevelDestination) -> Unit) {
+    NavigationBar {
+        TopLevelDestination.entries.forEach { destination ->
+            NavigationBarItem(
+                selected = currentRoute == destination.route,
+                onClick = { onOpen(destination) },
+                icon = { Icon(painterResource(destination.icon), contentDescription = null) },
+                label = { Text(stringResource(destination.label)) },
+            )
         }
     }
 }
