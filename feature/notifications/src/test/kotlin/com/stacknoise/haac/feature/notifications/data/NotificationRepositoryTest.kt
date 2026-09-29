@@ -2,6 +2,7 @@ package com.stacknoise.haac.feature.notifications.data
 
 import com.stacknoise.haac.core.database.assignment.RoomAssignment
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
+import com.stacknoise.haac.core.database.assignment.TileSize
 import com.stacknoise.haac.core.database.entity.ExposedEntity
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.database.notification.NotificationDao
@@ -99,6 +100,9 @@ class NotificationRepositoryTest {
         override suspend fun roomIsActive(roomId: String) = error("not used")
 
         override suspend fun remove(roomId: String, entityId: String) = error("not used")
+
+        override suspend fun arrange(roomId: String, entityId: String, sortOrder: Int, tileSize: TileSize) =
+            error("no layout here")
 
         override suspend fun removeEverywhere(serverId: String, entityIds: List<String>) {
             removed += serverId to entityIds

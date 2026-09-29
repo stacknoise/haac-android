@@ -5,6 +5,7 @@ import com.stacknoise.haac.core.database.assignment.EntityAlias
 import com.stacknoise.haac.core.database.assignment.EntityAliasDao
 import com.stacknoise.haac.core.database.assignment.RoomAssignment
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
+import com.stacknoise.haac.core.database.assignment.TileSize
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.ValidationException
@@ -46,6 +47,22 @@ class AssignmentWriter internal constructor(
             assignments.insert(rows)
         }
     }
+
+    /**
+     * Saves the edit layout of room [roomId] in one transaction (concept 7.2, M-06, M-07): [tiles] in their new
+     * order with their sizes (sort orders renumbered with gaps), [removed] entities taken out of the room.
+     * Throws HAAC-LAY-001 if the room no longer exists.
+     */
+    suspend fun saveLayout(roomId: String, tiles: List<Pair<String, TileSize>>, removed: Set<String>) =
+        errors.database {
+            transactions.run {
+                if (assignments.roomIsActive(roomId) == 0) throw ValidationException(ErrorCode.LAY_PLACE_MISSING)
+                removed.forEach { assignments.remove(roomId, it) }
+                tiles.forEachIndexed { index, (entityId, size) ->
+                    assignments.arrange(roomId, entityId, (index + 1) * SORT_STEP, size)
+                }
+            }
+        }
 
     /** *Remove from room*: only the local assignment goes (concept 7.2). */
     suspend fun remove(roomId: String, entityId: String) = errors.database { assignments.remove(roomId, entityId) }

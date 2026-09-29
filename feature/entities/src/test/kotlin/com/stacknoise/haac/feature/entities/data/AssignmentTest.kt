@@ -78,6 +78,13 @@ class AssignmentTest {
         override suspend fun removeEverywhere(serverId: String, entityIds: List<String>) {
             rows.value = rows.value.filterNot { it.entityId in entityIds }
         }
+
+        override suspend fun arrange(roomId: String, entityId: String, sortOrder: Int, tileSize: TileSize) {
+            rows.value = rows.value.map { row ->
+                val match = row.roomId == roomId && row.entityId == entityId
+                if (match) row.copy(sortOrder = sortOrder, tileSize = tileSize) else row
+            }
+        }
     }
 
     private val aliasDao = object : EntityAliasDao {
@@ -153,5 +160,26 @@ class AssignmentTest {
         assertEquals(3, rows.value.size)
         writer.removeEverywhere("s1", listOf("climate.radiator"))
         assertEquals(listOf("kitchen" to "switch.lamp"), rows.value.map { it.roomId to it.entityId })
+    }
+
+    @Test
+    fun `the edit layout saves order, sizes and removals together`() = runTest {
+        rows.value = listOf(
+            RoomAssignment("living", "switch.lamp", 1024, TileSize.SMALL, 1),
+            RoomAssignment("living", "climate.radiator", 2048, TileSize.LARGE, 1),
+            RoomAssignment("living", "sensor.gone", 3072, TileSize.SMALL, 1),
+        )
+        writer.saveLayout(
+            "living",
+            listOf("climate.radiator" to TileSize.WIDE, "switch.lamp" to TileSize.SMALL),
+            removed = setOf("sensor.gone"),
+        )
+        val tiles = catalog.roomTiles("s1", "living").first()
+        assertEquals(listOf("climate.radiator", "switch.lamp"), tiles.map { it.entityId })
+        assertEquals(listOf(TileSize.WIDE, TileSize.SMALL), tiles.map { it.size })
+        assertEquals(listOf(1024, 2048), rows.value.sortedBy { it.sortOrder }.map { it.sortOrder })
+
+        val missing = assertThrows<ValidationException> { writer.saveLayout("attic", emptyList(), emptySet()) }
+        assertEquals(ErrorCode.LAY_PLACE_MISSING, missing.code)
     }
 }

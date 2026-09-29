@@ -19,6 +19,10 @@ private const val RemoveEverywhereQuery = "DELETE FROM room_entity WHERE entity_
 private const val RoomActiveQuery = "SELECT COUNT(*) FROM room JOIN home ON home.id = room.home_id " +
     "WHERE room.id = :roomId AND room.deleted_at IS NULL AND home.deleted_at IS NULL"
 
+/** Sets order and size of one assignment. */
+private const val ArrangeQuery = "UPDATE room_entity SET sort_order = :sortOrder, tile_size = :tileSize " +
+    "WHERE room_id = :roomId AND entity_id = :entityId"
+
 /** Access to the `room_entity` table (concept 7.2, 12). */
 @Dao
 interface RoomAssignmentDao {
@@ -45,6 +49,10 @@ interface RoomAssignmentDao {
     /** Removes entity [entityId] from room [roomId] (concept 7.2: only the local assignment). */
     @Query("DELETE FROM room_entity WHERE room_id = :roomId AND entity_id = :entityId")
     suspend fun remove(roomId: String, entityId: String)
+
+    /** Sets [sortOrder] and [tileSize] of [entityId] in room [roomId] (edit layout, M-06, M-07). */
+    @Query(ArrangeQuery)
+    suspend fun arrange(roomId: String, entityId: String, sortOrder: Int, tileSize: TileSize)
 
     /** Removes [entityIds] from every room of instance [serverId] (*Remove from all rooms*, concept 7.4). */
     @Query(RemoveEverywhereQuery)

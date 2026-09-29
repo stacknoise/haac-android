@@ -71,6 +71,28 @@
     <string name="history_retry">Try again</string>
     <string name="history_hint">Tap or drag on the chart to see its values.</string>
 
+    <!-- Edit layout and arrange list (M-06, M-07). -->
+    <string name="rooms_edit_layout">Edit layout</string>
+    <string name="edit_title">Edit %1$s</string>
+    <string name="edit_close">Close without saving</string>
+    <string name="edit_done">Done</string>
+    <string name="edit_grid">Grid</string>
+    <string name="edit_list">List</string>
+    <string name="edit_hint_grid">Hold and drag tiles to reorder. Tap a name to rename.</string>
+    <string name="edit_hint_list">Drag the handle to reorder. Tap a name to rename.</string>
+    <string name="edit_empty">No entities in this room yet.</string>
+    <string name="edit_remove">Remove %1$s from this room</string>
+    <string name="edit_move_earlier">Move earlier</string>
+    <string name="edit_move_later">Move later</string>
+    <string name="edit_size_option">%1$s · %2$s</string>
+    <string name="edit_size_small">small</string>
+    <string name="edit_size_wide">wide</string>
+    <string name="edit_size_large">tall</string>
+    <string name="edit_discard_title">Discard changes?</string>
+    <string name="edit_discard_text">The new order, the sizes and the removed tiles are not saved.</string>
+    <string name="edit_discard">Discard</string>
+    <string name="edit_keep">Keep editing</string>
+
     <!-- Tile sheets and rename dialog (M-07, M-08). -->
     <string name="tile_rename">Rename</string>
     <string name="tile_remove_here">Remove from this room</string>
