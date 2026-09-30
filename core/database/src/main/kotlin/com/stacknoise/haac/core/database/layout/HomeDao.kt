@@ -16,9 +16,9 @@ interface HomeDao {
     @Insert
     suspend fun insert(home: HomeEntity)
 
-    /** Renames home [id]; returns 0 if it does not exist or is deleted. */
-    @Query("UPDATE home SET name = :name WHERE id = :id AND deleted_at IS NULL")
-    suspend fun rename(id: String, name: String): Int
+    /** Changes name and icon of home [id]; returns 0 if it does not exist or is deleted. */
+    @Query("UPDATE home SET name = :name, icon = :icon WHERE id = :id AND deleted_at IS NULL")
+    suspend fun update(id: String, name: String, icon: String?): Int
 
     /** The highest sort order of the homes of [serverId], or null without homes. */
     @Query("SELECT MAX(sort_order) FROM home WHERE server_id = :serverId")

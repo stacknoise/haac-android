@@ -34,6 +34,7 @@
     <string name="editor_title_edit_level">Edit level</string>
     <string name="editor_title_edit_room">Edit room</string>
     <string name="editor_name_hint">Name</string>
+    <string name="editor_icon_section">Icon</string>
     <string name="editor_close">Close</string>
     <string name="editor_delete">Delete</string>
     <string name="editor_home_section">Belongs to home</string>

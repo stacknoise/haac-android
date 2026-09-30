@@ -23,9 +23,9 @@ class PlaceRepository @Inject constructor(
     private fun toPlaces(homes: List<HomeEntity>, floors: List<FloorEntity>, rooms: List<RoomEntity>): Places {
         val floorIds = floors.map { it.id }.toSet()
         return Places(
-            homes = homes.map { Home(it.id, it.name) },
-            floors = floors.map { Floor(it.id, it.homeId, it.name, it.level) },
-            rooms = rooms.map { Room(it.id, it.homeId, it.floorId?.takeIf(floorIds::contains), it.name) },
+            homes = homes.map { Home(it.id, it.name, it.icon) },
+            floors = floors.map { Floor(it.id, it.homeId, it.name, it.level, it.icon) },
+            rooms = rooms.map { Room(it.id, it.homeId, it.floorId?.takeIf(floorIds::contains), it.name, it.icon) },
         )
     }
 }

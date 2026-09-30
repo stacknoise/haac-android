@@ -25,7 +25,13 @@ sealed interface Relation {
 }
 
 /** One row of the Places overview. */
-data class PlaceRow(val kind: PlaceKind, val id: String, val name: String, val relation: Relation)
+data class PlaceRow(
+    val kind: PlaceKind,
+    val id: String,
+    val name: String,
+    val relation: Relation,
+    val icon: String? = null,
+)
 
 /**
  * The rows of the Places overview for [filter]: homes, then levels, then rooms (M-02). Levels and rooms are
@@ -33,14 +39,16 @@ data class PlaceRow(val kind: PlaceKind, val id: String, val name: String, val r
  */
 fun Places.rows(filter: PlaceFilter): List<PlaceRow> = buildList {
     if (filter == PlaceFilter.ALL || filter == PlaceFilter.HOMES) {
-        homes.forEach { add(PlaceRow(PlaceKind.HOME, it.id, it.name, homeRelation(it))) }
+        homes.forEach { add(PlaceRow(PlaceKind.HOME, it.id, it.name, homeRelation(it), it.icon)) }
     }
     if (filter == PlaceFilter.ALL || filter == PlaceFilter.LEVELS) {
         homes.flatMap { floorsOf(it.id) }
-            .forEach { add(PlaceRow(PlaceKind.FLOOR, it.id, it.name, Relation.In(home(it.homeId)?.name.orEmpty()))) }
+            .forEach {
+                add(PlaceRow(PlaceKind.FLOOR, it.id, it.name, Relation.In(home(it.homeId)?.name.orEmpty()), it.icon))
+            }
     }
     if (filter == PlaceFilter.ALL || filter == PlaceFilter.ROOMS) {
-        homesRooms().forEach { add(PlaceRow(PlaceKind.ROOM, it.id, it.name, roomRelation(it))) }
+        homesRooms().forEach { add(PlaceRow(PlaceKind.ROOM, it.id, it.name, roomRelation(it), it.icon)) }
     }
 }
 

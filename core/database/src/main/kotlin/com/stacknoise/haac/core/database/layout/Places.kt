@@ -1,13 +1,13 @@
 package com.stacknoise.haac.core.database.layout
 
 /** A home of the active instance (concept 6.1). */
-data class Home(val id: String, val name: String)
+data class Home(val id: String, val name: String, val icon: String? = null)
 
 /** A floor of home [homeId]; [level] sorts the floors of a home. */
-data class Floor(val id: String, val homeId: String, val name: String, val level: Int)
+data class Floor(val id: String, val homeId: String, val name: String, val level: Int, val icon: String? = null)
 
 /** A room of home [homeId], on floor [floorId] or directly in the home (null). */
-data class Room(val id: String, val homeId: String, val floorId: String?, val name: String)
+data class Room(val id: String, val homeId: String, val floorId: String?, val name: String, val icon: String? = null)
 
 /**
  * Homes, floors and rooms of the active instance in their display order (concept 6.1); rows whose deletion can

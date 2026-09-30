@@ -21,9 +21,9 @@ interface FloorDao {
     @Insert
     suspend fun insert(floor: FloorEntity)
 
-    /** Changes name and level of floor [id]; returns 0 if it does not exist or is deleted. */
-    @Query("UPDATE floor SET name = :name, level = :level WHERE id = :id AND deleted_at IS NULL")
-    suspend fun update(id: String, name: String, level: Int): Int
+    /** Changes name, level and icon of floor [id]; returns 0 if it does not exist or is deleted. */
+    @Query("UPDATE floor SET name = :name, level = :level, icon = :icon WHERE id = :id AND deleted_at IS NULL")
+    suspend fun update(id: String, name: String, level: Int, icon: String?): Int
 
     /** The highest sort order of the floors of [homeId], or null without floors. */
     @Query("SELECT MAX(sort_order) FROM floor WHERE home_id = :homeId")
