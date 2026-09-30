@@ -80,6 +80,12 @@ class NotificationsViewModel @Inject constructor(
     /** *Dismiss* or *Keep*. */
     fun onResolve(item: NotificationItem) = write { repository.resolve(item.id) }
 
+    /** Swipe: deletes one entry. */
+    fun onDelete(item: NotificationItem) = write { repository.delete(item.id) }
+
+    /** *Delete all*: empties the list of the active instance. */
+    fun onDeleteAll() = write { repository.deleteAll(serverId.value) }
+
     /** *Remove tile(s)*: takes the removed entities out of every room (concept 7.4, 9.1). */
     fun onRemoveTiles(item: NotificationItem) = write { repository.removeTiles(item) }
 

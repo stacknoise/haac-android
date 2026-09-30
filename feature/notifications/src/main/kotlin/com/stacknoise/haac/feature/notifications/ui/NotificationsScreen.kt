@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -15,6 +16,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -63,6 +67,8 @@ fun NotificationsScreen(
                 onAddToRoom(item.entities.map { it.entityId })
             },
             onRemoveTiles = viewModel::onRemoveTiles,
+            onDelete = viewModel::onDelete,
+            onDeleteAll = viewModel::onDeleteAll,
         ),
     )
     state.detail?.let { ErrorDetailSheet(it, state.instanceName, onDismiss = viewModel::onCloseDetail) }
@@ -78,28 +84,57 @@ fun NotificationsContent(state: NotificationsUiState, actions: NotificationActio
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp),
     ) {
-        item { Header(actions) }
+        item { Header(actions, canDeleteAll = state.days.isNotEmpty()) }
         state.error?.let { item { ErrorMessage(it) } }
         if (state.days.isEmpty()) item { EmptyHint() }
         state.days.forEach { day ->
             item(key = "day-${day.date}") { DayLabel(day.date, today) }
             items(day.items, key = { it.id }) { entry ->
-                NotificationRow(entry, actions)
+                SwipeToDelete(entry, actions.onDelete) { NotificationRow(entry, actions) }
                 HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
             }
         }
     }
 }
 
-/** Back arrow, *Mark all read* and the title. */
+/** Back arrow, *Mark all read*, *Delete all* (after a confirmation) and the title. */
 @Composable
-private fun Header(actions: NotificationActions) {
+private fun Header(actions: NotificationActions, canDeleteAll: Boolean) {
+    var confirm by rememberSaveable { mutableStateOf(false) }
     Row(verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = actions.onBack) {
             Icon(painterResource(R.drawable.ic_notifications_back), stringResource(R.string.notifications_back))
         }
         Spacer(Modifier.weight(1f))
         TextButton(onClick = actions.onMarkAllRead) { Text(stringResource(R.string.notifications_mark_all_read)) }
+        if (canDeleteAll) {
+            IconButton(onClick = { confirm = true }) {
+                Icon(
+                    painterResource(R.drawable.ic_notifications_delete),
+                    stringResource(R.string.notifications_delete_all),
+                )
+            }
+        }
+    }
+    if (confirm) {
+        AlertDialog(
+            onDismissRequest = { confirm = false },
+            title = { Text(stringResource(R.string.notifications_delete_all_title)) },
+            text = { Text(stringResource(R.string.notifications_delete_all_text)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirm = false
+                        actions.onDeleteAll()
+                    },
+                ) {
+                    Text(stringResource(R.string.notifications_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirm = false }) { Text(stringResource(R.string.notifications_cancel)) }
+            },
+        )
     }
     Text(
         stringResource(R.string.notifications_title),

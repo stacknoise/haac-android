@@ -26,6 +26,7 @@ import kotlinx.serialization.json.Json
  * The notification list (concept 9.1, 17.4): entity changes of a sync, errors grouped by code within 10
  * minutes, entries purged after 30 days. Writes are serialised, so a repeated error never creates two entries.
  */
+@Suppress("TooManyFunctions") // one small function per list operation
 @Singleton
 class NotificationRepository internal constructor(
     private val notifications: NotificationDao,
@@ -97,6 +98,12 @@ class NotificationRepository internal constructor(
 
     /** *Dismiss* or *Keep*: the entry stays without actions. */
     suspend fun resolve(id: Long) = errors.database { notifications.resolve(id, clock()) }
+
+    /** Deletes entry [id] from the list. */
+    suspend fun delete(id: Long) = errors.database { notifications.delete(id) }
+
+    /** *Delete all*: deletes the entries of [serverId] and the global ones. */
+    suspend fun deleteAll(serverId: String?) = errors.database { notifications.deleteAll(serverId) }
 
     /** *Remove tile*: removes the entities of [item] from every room of its instance, then resolves it (7.4). */
     suspend fun removeTiles(item: NotificationItem) = errors.database {
