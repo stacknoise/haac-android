@@ -7,5 +7,6 @@ plugins {
     alias(libs.plugins.android.junit5) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.aboutlibraries) apply false
     id("haac.code-index")
 }

@@ -26,6 +26,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.stacknoise.haac.app.connection.ConnectionBanner
 import com.stacknoise.haac.app.connection.ConnectionViewModel
+import com.stacknoise.haac.app.licenses.LicensesScreen
 import com.stacknoise.haac.core.error.ErrorAction
 import com.stacknoise.haac.feature.instance.ui.InstanceBar
 import com.stacknoise.haac.feature.instance.ui.InstancesSection
@@ -86,9 +87,11 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
             composable(TopLevelDestination.SETTINGS.route) {
                 SettingsScreen(
                     onSignedOut = actions.onSignedOut,
+                    onOpenLicenses = { navController.navigate(LicensesRoute) },
                     instances = { InstancesSection(actions.instances) },
                 )
             }
+            composable(LicensesRoute) { LicensesScreen(onBack = { navController.popBackStack() }) }
             composable(NotificationsRoute) {
                 NotificationsScreen(
                     onBack = { navController.popBackStack() },
@@ -133,3 +136,6 @@ internal fun NavController.openTopLevel(destination: TopLevelDestination) {
 
 /** Route of the notification list (M-09); not a tab of the bottom bar. */
 internal const val NotificationsRoute = "notifications"
+
+/** Route of the library licenses, opened from *Settings → About* (16.2). */
+internal const val LicensesRoute = "licenses"
