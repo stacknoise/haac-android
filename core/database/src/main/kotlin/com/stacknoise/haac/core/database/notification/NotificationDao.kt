@@ -52,6 +52,14 @@ interface NotificationDao {
     @Query("UPDATE notification SET resolved_at = :at, read_at = COALESCE(read_at, :at) WHERE id = :id")
     suspend fun resolve(id: Long, at: Long)
 
+    /** Deletes entry [id]. */
+    @Query("DELETE FROM notification WHERE id = :id")
+    suspend fun delete(id: Long)
+
+    /** Deletes every entry of [serverId] and every global entry, the ones a list shows. */
+    @Query("DELETE FROM notification WHERE server_id = :serverId OR server_id IS NULL")
+    suspend fun deleteAll(serverId: String?)
+
     /** Deletes entries created before [before] (30 days, concept 9.1). */
     @Query("DELETE FROM notification WHERE created_at < :before")
     suspend fun purge(before: Long)

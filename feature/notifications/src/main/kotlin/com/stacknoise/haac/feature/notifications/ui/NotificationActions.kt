@@ -11,4 +11,6 @@ data class NotificationActions(
     val onErrorAction: (NotificationItem) -> Unit,
     val onAddToRoom: (NotificationItem) -> Unit = {},
     val onRemoveTiles: (NotificationItem) -> Unit = {},
+    val onDelete: (NotificationItem) -> Unit = {},
+    val onDeleteAll: () -> Unit = {},
 )

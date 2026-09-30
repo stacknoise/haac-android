@@ -20,6 +20,11 @@
         <item quantity="other">%1$s are no longer shared. Their tiles stay inactive until you remove them.</item>
     </plurals>
     <string name="notifications_times">×%1$d</string>
+    <string name="notifications_delete">Delete</string>
+    <string name="notifications_cancel">Cancel</string>
+    <string name="notifications_delete_all">Delete all notifications</string>
+    <string name="notifications_delete_all_title">Delete all notifications?</string>
+    <string name="notifications_delete_all_text">This removes every entry of this instance from the list. It does not change any rooms or tiles.</string>
     <string name="notifications_dismiss">Dismiss</string>
     <string name="notifications_keep">Keep</string>
     <string name="notifications_add_to_room">Add to room</string>

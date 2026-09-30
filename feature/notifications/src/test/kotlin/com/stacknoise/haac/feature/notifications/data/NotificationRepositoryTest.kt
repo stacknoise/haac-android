@@ -63,6 +63,15 @@ class NotificationRepositoryTest {
         override suspend fun resolve(id: Long, at: Long) =
             change(id) { it.copy(resolvedAt = at, readAt = it.readAt ?: at) }
 
+        override suspend fun delete(id: Long) {
+            table.value = table.value.filter { it.id != id }
+        }
+
+        override suspend fun deleteAll(serverId: String?) {
+            val shown = visible(serverId).map { it.id }.toSet()
+            table.value = table.value.filter { it.id !in shown }
+        }
+
         override suspend fun purge(before: Long) {
             table.value = table.value.filter { it.createdAt >= before }
         }
@@ -187,5 +196,28 @@ class NotificationRepositoryTest {
 
         assertEquals(listOf("s1" to listOf("sensor.h")), removed)
         assertTrue(repository.items("s1").first().single().resolved)
+    }
+
+    @Test
+    fun `one entry can be deleted`() = runTest {
+        repository.addEntityChanges("s1", added = listOf("switch.hall"), removed = listOf("sensor.h"))
+        val first = repository.items("s1").first().first()
+
+        repository.delete(first.id)
+
+        assertEquals(1, repository.items("s1").first().size)
+        assertTrue(repository.items("s1").first().none { it.id == first.id })
+    }
+
+    @Test
+    fun `delete all removes the instance's and the global entries but not another instance's`() = runTest {
+        repository.addEntityChanges("s1", listOf("switch.hall"), emptyList())
+        repository.addError(NetworkException(ErrorCode.NET_UNREACHABLE), null)
+        repository.addEntityChanges("s2", listOf("switch.hall"), emptyList())
+
+        repository.deleteAll("s1")
+
+        assertTrue(repository.items("s1").first().isEmpty())
+        assertEquals(listOf("s2"), table.value.map { it.serverId })
     }
 }
