@@ -46,6 +46,7 @@
     <string name="editor_rooms_on_level">Rooms on this level</string>
     <string name="editor_rooms_in_home">Rooms in this home</string>
     <string name="editor_room_directly_in">directly in %1$s</string>
+    <string name="editor_room_on">on %1$s</string>
     <string name="editor_room_moves_from">moves from %1$s</string>
     <string name="editor_room_new">new</string>
     <string name="editor_new_room_on">New room on %1$s</string>
