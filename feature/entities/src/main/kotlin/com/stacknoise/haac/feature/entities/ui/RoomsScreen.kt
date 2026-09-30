@@ -223,9 +223,10 @@ private fun Header(
 /** "Main house · Ground floor", or only the home for its rooms without a level. */
 private fun groupLabel(group: RoomGroup): String = listOfNotNull(group.home.name, group.floor?.name).joinToString(" · ")
 
-/** The rooms of the shown level as chips (M-05). */
+/** The rooms of the shown level as chips (M-05); a level with a single room shows none, its name is the title. */
 @Composable
 private fun RoomChips(group: RoomGroup?, selected: String, onSelect: (String) -> Unit) {
+    if ((group?.rooms?.size ?: 0) < 2) return
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.horizontalScroll(rememberScrollState()),

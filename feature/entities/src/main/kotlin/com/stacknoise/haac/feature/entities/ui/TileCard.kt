@@ -14,10 +14,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +32,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.feature.entities.R
@@ -85,11 +88,14 @@ private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: Til
             )
             Spacer(Modifier.weight(1f))
             if (tile.content is TileContent.Switch) {
-                Switch(
-                    checked = on,
-                    onCheckedChange = { actions.onToggle(tile) },
-                    enabled = enabled && tile.control is EntityControl.Toggle,
-                )
+                // The whole tile is the touch target, so the switch need not reserve 48 dp of height (concept 8.2).
+                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+                    Switch(
+                        checked = on,
+                        onCheckedChange = { actions.onToggle(tile) },
+                        enabled = enabled && tile.control is EntityControl.Toggle,
+                    )
+                }
             }
         }
         Spacer(Modifier.weight(1f))

@@ -57,4 +57,4 @@ internal class GridGeometry(private val width: Int, private val gap: Int, privat
 
 /** Gap between tiles and height of one grid row (M-05). */
 internal val GridGap = 12.dp
-internal val GridRowHeight = 112.dp
+internal val GridRowHeight = 120.dp
