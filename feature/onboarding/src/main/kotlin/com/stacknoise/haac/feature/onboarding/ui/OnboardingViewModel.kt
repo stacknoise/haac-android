@@ -1,5 +1,6 @@
 package com.stacknoise.haac.feature.onboarding.ui
 
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +15,7 @@ import com.stacknoise.haac.core.network.server.ServerUrlNormalizer
 import com.stacknoise.haac.core.network.tls.CertificateProbe
 import com.stacknoise.haac.core.network.tls.PinRegistry
 import com.stacknoise.haac.feature.onboarding.domain.KnownServer
+import com.stacknoise.haac.feature.onboarding.domain.FingerprintStep
 import com.stacknoise.haac.feature.onboarding.domain.ServerValidator
 import com.stacknoise.haac.feature.onboarding.domain.SignInRepository
 import com.stacknoise.haac.feature.onboarding.domain.SignInResult
@@ -58,8 +60,12 @@ data class OnboardingUiState(
     val cleartextWarningFor: String? = null,
     val addressOffer: SignInResult.SameInstance? = null,
     val certificateOffer: CertificateOffer? = null,
+    val fingerprintOffer: FingerprintOffer? = null,
     val signedInServerId: String? = null,
 )
+
+/** The instance [serverId] (called [name]) is stored; the user may now turn on fingerprint unlock (concept 4.4). */
+data class FingerprintOffer(val serverId: String, val name: String)
 
 /**
  * M-01 (concept 4.2, 4.3, 5.1): pick or enter a server, sign in with username, password and optional
@@ -76,6 +82,7 @@ class OnboardingViewModel @Inject constructor(
     private val repository: SignInRepository,
     private val probe: CertificateProbe,
     private val pins: PinRegistry,
+    private val fingerprint: FingerprintStep,
     savedState: SavedStateHandle,
 ) : ViewModel() {
     private val _state = MutableStateFlow(OnboardingUiState())
@@ -226,6 +233,23 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    /** Turns fingerprint unlock on for the new instance, then opens it; a failed or cancelled prompt leaves it off. */
+    fun onEnableFingerprint(activity: FragmentActivity) {
+        val offer = _state.value.fingerprintOffer ?: return
+        if (_state.value.busy) return
+        _state.update { it.copy(busy = true) }
+        viewModelScope.launch {
+            fingerprint.enable(activity, offer.serverId, offer.name)
+            _state.update { it.copy(busy = false, fingerprintOffer = null, signedInServerId = offer.serverId) }
+        }
+    }
+
+    /** *Not now*: opens the instance without fingerprint unlock; the settings can turn it on later. */
+    fun onSkipFingerprint() {
+        val offer = _state.value.fingerprintOffer ?: return
+        _state.update { it.copy(fingerprintOffer = null, signedInServerId = offer.serverId) }
+    }
+
     /** Declines the offer; the tokens of the new sign-in are revoked. */
     fun onAddressOfferDismissed() {
         _state.update { it.copy(addressOffer = null) }
@@ -289,7 +313,14 @@ class OnboardingViewModel @Inject constructor(
             when (val result = repository.finish(signInTarget, _state.value.username.trim(), tokens)) {
                 is SignInResult.Saved -> {
                     pendingTokens = null
-                    _state.update { it.copy(busy = false, signedInServerId = result.serverId) }
+                    val offer = FingerprintOffer(result.serverId, signInTarget.displayName)
+                    _state.update {
+                        if (fingerprint.available()) {
+                            it.copy(busy = false, fingerprintOffer = offer)
+                        } else {
+                            it.copy(busy = false, signedInServerId = result.serverId)
+                        }
+                    }
                 }
                 is SignInResult.SameInstance -> _state.update { it.copy(busy = false, addressOffer = result) }
             }

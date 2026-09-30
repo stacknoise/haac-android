@@ -20,4 +20,6 @@ data class OnboardingActions(
     val onCertificateDismissed: () -> Unit = {},
     val onAddAddress: () -> Unit = {},
     val onAddressOfferDismissed: () -> Unit = {},
+    val onEnableFingerprint: () -> Unit = {},
+    val onSkipFingerprint: () -> Unit = {},
 )

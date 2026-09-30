@@ -30,6 +30,10 @@
     <string name="onboarding_address_offer_text">This server belongs to %1$s, and you are signed in with the same user. Add this address as its %2$s address?</string>
     <string name="onboarding_address_offer_replaces">It replaces %1$s.</string>
     <string name="onboarding_address_offer_confirm">Add address</string>
+    <string name="onboarding_fingerprint_title">Unlock with your fingerprint?</string>
+    <string name="onboarding_fingerprint_text">HAAC then asks for your fingerprint when it opens. You can change this later in Settings.</string>
+    <string name="onboarding_fingerprint_enable">Use fingerprint</string>
+    <string name="onboarding_fingerprint_skip">Not now</string>
     <string name="onboarding_slot_internal">home network</string>
     <string name="onboarding_slot_external">external</string>
 </resources>
