@@ -223,17 +223,18 @@ private fun Header(
 /** "Main house · Ground floor", or only the home for its rooms without a level. */
 private fun groupLabel(group: RoomGroup): String = listOfNotNull(group.home.name, group.floor?.name).joinToString(" · ")
 
-/** The rooms of the shown level as chips (M-05); a level with a single room shows none, its name is the title. */
+/** The other rooms of the shown level as chips (M-05); the shown room is the title, so it has no chip. */
 @Composable
 private fun RoomChips(group: RoomGroup?, selected: String, onSelect: (String) -> Unit) {
-    if ((group?.rooms?.size ?: 0) < 2) return
+    val others = group?.rooms.orEmpty().filter { it.id != selected }
+    if (others.isEmpty()) return
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.horizontalScroll(rememberScrollState()),
     ) {
-        group?.rooms?.forEach { room ->
+        others.forEach { room ->
             FilterChip(
-                selected = room.id == selected,
+                selected = false,
                 onClick = { onSelect(room.id) },
                 label = { Text(room.name, modifier = Modifier.padding(vertical = 8.dp)) },
                 shape = HaacShapes.Medium,
