@@ -4,7 +4,7 @@ import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.error.NetworkException
-import com.stacknoise.haac.core.network.bridge.BridgeCommand
+import com.stacknoise.haac.core.network.bridge.BridgeMessageFactory.Companion.NO_FIELDS
 import com.stacknoise.haac.core.network.bridge.BridgeInfo
 import com.stacknoise.haac.core.network.bridge.BridgeMessageFactory
 import com.stacknoise.haac.core.network.bridge.resultOrThrow
@@ -50,6 +50,7 @@ class BridgeConnection(
     private val replies = ConcurrentHashMap<Int, CompletableDeferred<JsonObject>>()
     private val subscriptions = ConcurrentHashMap<Int, Channel<JsonObject>>()
     private val ended = CompletableDeferred<HaacException>()
+    private val sendLock = Any()
 
     /** Completes with the reason when the connection ends. */
     val end: Deferred<HaacException> get() = ended
@@ -64,34 +65,47 @@ class BridgeConnection(
 
     /** Sends the command and waits for the reply with its message id. */
     override suspend fun request(type: String, fields: JsonObject): JsonElement =
-        exchange(messages.command(type, fields)).resultOrThrow(errors)
+        exchange(type, fields).resultOrThrow(errors)
 
     /** Events arrive in a channel registered before the command is sent; stopping sends `unsubscribe_events`. */
     override fun subscribe(type: String, fields: JsonObject): Flow<JsonObject> = flow {
-        val command = messages.command(type, fields)
         val events = Channel<JsonObject>(Channel.UNLIMITED)
-        subscriptions[command.id] = events
+        var id = 0
         try {
-            exchange(command).resultOrThrow(errors)
+            exchange(type, fields) { sent ->
+                id = sent
+                subscriptions[sent] = events
+            }.resultOrThrow(errors)
             for (event in events) emit(event)
         } finally {
-            subscriptions.remove(command.id)
-            if (!ended.isCompleted) socket.send(unsubscribe(command.id))
+            subscriptions.remove(id)
+            if (!ended.isCompleted) sendUnsubscribe(id)
         }
     }
 
     /** Closes the connection, e.g. on an address change or when the app goes to the background. */
     fun close() = end(NetworkException(ErrorCode.NET_CONNECTION_LOST))
 
-    /** Sends [command] and waits for the message with its id (result or pong). */
-    private suspend fun exchange(command: BridgeCommand): JsonObject {
+    /**
+     * Sends the command [type] and waits for the message with its id (result or pong). HA requires the ids on one
+     * socket to increase, so taking the id and sending happen under one lock: two callers can never put their
+     * messages on the wire in the opposite order of their ids (HA would answer `id_reuse`). [onId] runs with the
+     * id before the message is sent.
+     */
+    private suspend fun exchange(type: String, fields: JsonObject = NO_FIELDS, onId: (Int) -> Unit = {}): JsonObject {
         val reply = CompletableDeferred<JsonObject>()
-        replies[command.id] = reply
+        var id = 0
         try {
-            if (ended.isCompleted || !socket.send(command.json)) throw ended.getOrLost()
+            synchronized(sendLock) {
+                val command = messages.command(type, fields)
+                id = command.id
+                replies[id] = reply
+                onId(id)
+                if (ended.isCompleted || !socket.send(command.json)) throw ended.getOrLost()
+            }
             return reply.await()
         } finally {
-            replies.remove(command.id)
+            replies.remove(id)
         }
     }
 
@@ -119,7 +133,7 @@ class BridgeConnection(
         while (true) {
             delay(HEARTBEAT_MS)
             val pong = try {
-                withTimeoutOrNull(PONG_TIMEOUT_MS) { exchange(messages.command(PING)) }
+                withTimeoutOrNull(PONG_TIMEOUT_MS) { exchange(PING) }
             } catch (_: HaacException) {
                 return // The connection already ended; [ended] holds the reason.
             }
@@ -141,9 +155,12 @@ class BridgeConnection(
     private fun CompletableDeferred<HaacException>.getOrLost(): HaacException =
         if (isCompleted) getCompleted() else NetworkException(ErrorCode.NET_CONNECTION_LOST)
 
-    /** `unsubscribe_events` for the subscription with message id [subscription]. */
-    private fun unsubscribe(subscription: Int): String =
-        messages.command(UNSUBSCRIBE, buildJsonObject { put("subscription", subscription) }).json
+    /** `unsubscribe_events` for the subscription with message id [subscription], in id order with all other sends. */
+    private fun sendUnsubscribe(subscription: Int) {
+        synchronized(sendLock) {
+            socket.send(messages.command(UNSUBSCRIBE, buildJsonObject { put("subscription", subscription) }).json)
+        }
+    }
 
     /** Heartbeat timing and command names. */
     private companion object {

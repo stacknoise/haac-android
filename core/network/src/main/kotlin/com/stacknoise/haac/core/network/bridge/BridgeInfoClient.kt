@@ -37,8 +37,11 @@ data class BridgeUrls(
     val cloud: String? = null,
 )
 
-/** An open, authenticated WebSocket and the bridge info it returned. */
-class BridgeHandshake(val socket: HaWebSocket, val info: BridgeInfo)
+/**
+ * An open, authenticated WebSocket, the bridge info it returned and the [messages] factory whose ids the handshake
+ * used: the connection must go on with it, because HA requires message ids on one socket to keep increasing.
+ */
+class BridgeHandshake(val socket: HaWebSocket, val info: BridgeInfo, val messages: BridgeMessageFactory)
 
 /**
  * Checks that HAAC Bridge is installed and speaks a supported API version (concept 4.2 step 4, 11.4):
@@ -70,7 +73,7 @@ class BridgeInfoClient @Inject constructor(
                 withTimeoutOrNull(TIMEOUT_MS) { converse(socket, accessToken) }
             } ?: throw NetworkException(ErrorCode.NET_UNREACHABLE)
             done = true
-            return BridgeHandshake(socket, info)
+            return BridgeHandshake(socket, info, messages)
         } finally {
             if (!done) socket.close()
         }
