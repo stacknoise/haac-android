@@ -4,6 +4,7 @@
     <string name="onboarding_intro">Pick your Home Assistant server and sign in with your user.</string>
     <string name="onboarding_on_this_network">On this network</string>
     <string name="onboarding_scanning">Scanning</string>
+    <string name="onboarding_scan_again">Scan again</string>
     <string name="onboarding_nothing_found">No server found yet. You can enter its address instead.</string>
     <string name="onboarding_other_address">Other address…</string>
     <string name="onboarding_address_label">Server address</string>

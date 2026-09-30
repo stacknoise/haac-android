@@ -42,21 +42,25 @@ internal fun ServerSection(state: OnboardingUiState, actions: OnboardingActions)
         ServerRow(name = known.displayName, address = known.url, selected = true, onClick = {})
         return
     }
-    SectionHeader(scanning = state.scanning)
+    SectionHeader(scanning = state.scanning, onRescan = actions.onRescan)
     ServerList(state, actions)
     ManualAddress(state, actions)
 }
 
-/** "ON THIS NETWORK" label with the live scan indicator. */
+/** "ON THIS NETWORK" label with the live scan indicator, or *Scan again* once the scan is over. */
 @Composable
-private fun SectionHeader(scanning: Boolean) {
+private fun SectionHeader(scanning: Boolean, onRescan: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
             stringResource(R.string.onboarding_on_this_network).uppercase(),
             style = SectionLabelStyle,
             modifier = Modifier.weight(1f),
         )
-        if (scanning) {
+        val label = if (scanning) R.string.onboarding_scanning else R.string.onboarding_scan_again
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable(enabled = !scanning, onClick = onRescan).padding(vertical = 8.dp),
+        ) {
             Icon(
                 painterResource(R.drawable.ic_onboarding_scan),
                 contentDescription = null,
@@ -65,7 +69,7 @@ private fun SectionHeader(scanning: Boolean) {
             )
             Spacer(Modifier.width(4.dp))
             Text(
-                stringResource(R.string.onboarding_scanning).uppercase(),
+                stringResource(label).uppercase(),
                 style = SectionLabelStyle.copy(color = MaterialTheme.colorScheme.primary),
             )
         }
