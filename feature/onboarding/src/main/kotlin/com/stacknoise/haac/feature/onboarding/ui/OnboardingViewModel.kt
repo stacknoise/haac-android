@@ -21,6 +21,8 @@ import com.stacknoise.haac.feature.onboarding.domain.SignInStep
 import com.stacknoise.haac.feature.onboarding.domain.SignInTarget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -85,20 +87,35 @@ class OnboardingViewModel @Inject constructor(
     private var target: SignInTarget? = null
     private var flowId: String? = null
     private var pendingTokens: AuthTokens? = null
+    private var discoveryJob: Job? = null
 
     init {
         val serverId = savedState.get<String>(SERVER_ID_ARG)
         if (serverId == null) discover() else loadKnownServer(serverId)
     }
 
-    /** LAN discovery while the screen is open. */
+    /**
+     * LAN discovery while the screen is open. The scan indicator stops after [SCAN_WINDOW_MS] or when discovery
+     * ends; [onRescan] then starts it again, which also recovers a discovery that got stuck.
+     */
     private fun discover() {
-        viewModelScope.launch {
+        discoveryJob?.cancel()
+        _state.update { it.copy(scanning = true, servers = emptyList()) }
+        discoveryJob = viewModelScope.launch {
+            launch {
+                delay(SCAN_WINDOW_MS)
+                _state.update { it.copy(scanning = false) }
+            }
             discovery.servers().collect { servers ->
                 _state.update { it.copy(servers = servers, selectedUrl = it.selectedUrl ?: servers.firstOrNull()?.url) }
             }
             _state.update { it.copy(scanning = false) }
         }
+    }
+
+    /** *Scan again*: searches the network once more, unless a scan is running. */
+    fun onRescan() {
+        if (!_state.value.scanning && _state.value.knownServer == null) discover()
     }
 
     /** Shows the stored instance and its user; falls back to discovery if it was removed meanwhile. */
@@ -355,5 +372,8 @@ class OnboardingViewModel @Inject constructor(
     companion object {
         /** Id of the stored instance to sign in to again (concept 4.1). */
         const val SERVER_ID_ARG = "serverId"
+
+        /** How long the scan indicator shows before *Scan again* is offered. */
+        const val SCAN_WINDOW_MS = 10_000L
     }
 }

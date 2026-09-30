@@ -42,8 +42,13 @@ class OnboardingViewModelTest {
     private var failValidation: ErrorCode? = null
     private val tokens = AuthTokens("acc", "ref", 1800)
 
+    private var scans = 0
+    private val dispatcher = UnconfinedTestDispatcher()
     private val discovery = object : ServerDiscovery {
-        override fun servers(): Flow<List<DiscoveredServer>> = found
+        override fun servers(): Flow<List<DiscoveredServer>> {
+            scans++
+            return found
+        }
     }
     private val validator = object : ServerValidator {
         override suspend fun validate(url: HttpUrl): ValidatedServer {
@@ -100,7 +105,7 @@ class OnboardingViewModelTest {
     private val home = DiscoveredServer("1", "Home", "192.168.1.10:8123", "http://192.168.1.10:8123", "2026.9.0")
 
     @BeforeEach
-    fun setUp() = Dispatchers.setMain(UnconfinedTestDispatcher())
+    fun setUp() = Dispatchers.setMain(dispatcher)
 
     @AfterEach
     fun tearDown() = Dispatchers.resetMain()
@@ -270,5 +275,23 @@ class OnboardingViewModelTest {
         assertNull(viewModel.state.value.certificateOffer)
         assertEquals(ErrorCode.NET_CERTIFICATE_UNTRUSTED, viewModel.state.value.error)
         assertNull(pins.pinFor("ha.example.com", 443))
+    }
+
+    @Test
+    fun `the scan indicator ends after the scan window and Scan again searches once more`() {
+        val viewModel = viewModel()
+        assertTrue(viewModel.state.value.scanning)
+        viewModel.onRescan()
+        assertEquals(1, scans)
+
+        dispatcher.scheduler.advanceTimeBy(OnboardingViewModel.SCAN_WINDOW_MS + 1)
+        assertFalse(viewModel.state.value.scanning)
+
+        found.tryEmit(listOf(home))
+        viewModel.onRescan()
+        assertEquals(2, scans)
+        assertTrue(viewModel.state.value.scanning)
+        // The fake replays its last list to every new collector, like a fresh discovery finding the server again.
+        assertEquals(listOf(home), viewModel.state.value.servers)
     }
 }
