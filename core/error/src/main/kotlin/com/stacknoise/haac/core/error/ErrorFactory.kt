@@ -36,10 +36,19 @@ class DefaultErrorFactory @Inject constructor() : ErrorFactory {
         is GeneralSecurityException, is ProviderException ->
             KeystoreException(ErrorCode.SEC_STORAGE_UNAVAILABLE, throwable)
         is SQLException -> StorageException(ErrorCode.DB_SAVE_FAILED, throwable)
-        is SSLHandshakeException, is SSLPeerUnverifiedException ->
-            NetworkException(ErrorCode.NET_CERTIFICATE_UNTRUSTED, throwable)
-        is IOException -> NetworkException(ErrorCode.NET_UNREACHABLE, throwable)
+        is IOException -> NetworkException(networkCode(throwable), throwable)
         else -> UnexpectedException(throwable)
+    }
+
+    /**
+     * The code of an I/O failure. OkHttp tries every address of a host and keeps the earlier failures as suppressed
+     * exceptions, so a rejected certificate is found there too (concept 4.3).
+     */
+    private fun networkCode(failure: IOException): ErrorCode = when {
+        failure.hasCause<CertificatePinException>() -> ErrorCode.NET_CERTIFICATE_CHANGED
+        failure.hasCause<SSLHandshakeException>() || failure.hasCause<SSLPeerUnverifiedException>() ->
+            ErrorCode.NET_CERTIFICATE_UNTRUSTED
+        else -> ErrorCode.NET_UNREACHABLE
     }
 
     /** Looks the HAB code up in [BRIDGE_CODES] and keeps it on the exception for the detail sheet. */
@@ -65,3 +74,14 @@ class DefaultErrorFactory @Inject constructor() : ErrorFactory {
         )
     }
 }
+
+/** True if [this], one of its causes or one of their suppressed exceptions is a [T]. */
+private inline fun <reified T : Throwable> Throwable.hasCause(): Boolean = anyInChain { it is T }
+
+/** True if [test] holds for [this], a cause or a suppressed exception, searched to [MaxCauseDepth] levels. */
+private fun Throwable.anyInChain(depth: Int = MaxCauseDepth, test: (Throwable) -> Boolean): Boolean =
+    test(this) ||
+        (depth > 0 && (listOfNotNull(cause) + suppressed).any { it !== this && it.anyInChain(depth - 1, test) })
+
+/** Deepest cause chain that is searched, so a cyclic chain cannot loop. */
+private const val MaxCauseDepth = 10

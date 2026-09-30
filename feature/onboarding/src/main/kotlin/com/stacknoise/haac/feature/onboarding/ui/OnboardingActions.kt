@@ -15,6 +15,8 @@ data class OnboardingActions(
     val onStartOver: () -> Unit = {},
     val onCleartextConfirmed: () -> Unit = {},
     val onCleartextDismissed: () -> Unit = {},
+    val onCertificateTrusted: () -> Unit = {},
+    val onCertificateDismissed: () -> Unit = {},
     val onAddAddress: () -> Unit = {},
     val onAddressOfferDismissed: () -> Unit = {},
 )

@@ -11,6 +11,8 @@ import com.stacknoise.haac.core.network.discovery.DiscoveredServer
 import com.stacknoise.haac.core.network.discovery.ServerDiscovery
 import com.stacknoise.haac.core.network.server.CleartextPolicy
 import com.stacknoise.haac.core.network.server.ServerUrlNormalizer
+import com.stacknoise.haac.core.network.tls.CertificateProbe
+import com.stacknoise.haac.core.network.tls.PinRegistry
 import com.stacknoise.haac.feature.onboarding.domain.KnownServer
 import com.stacknoise.haac.feature.onboarding.domain.ServerValidator
 import com.stacknoise.haac.feature.onboarding.domain.SignInRepository
@@ -53,6 +55,7 @@ data class OnboardingUiState(
     val error: ErrorCode? = null,
     val cleartextWarningFor: String? = null,
     val addressOffer: SignInResult.SameInstance? = null,
+    val certificateOffer: CertificateOffer? = null,
     val signedInServerId: String? = null,
 )
 
@@ -69,6 +72,8 @@ class OnboardingViewModel @Inject constructor(
     private val discovery: ServerDiscovery,
     private val validator: ServerValidator,
     private val repository: SignInRepository,
+    private val probe: CertificateProbe,
+    private val pins: PinRegistry,
     savedState: SavedStateHandle,
 ) : ViewModel() {
     private val _state = MutableStateFlow(OnboardingUiState())
@@ -292,8 +297,36 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    /** The user trusts the certificate of the offer: its key is pinned for the address; the sign-in can be retried. */
+    fun onCertificateTrusted() {
+        val offer = _state.value.certificateOffer ?: return
+        pins.trust(offer.url, offer.certificate.keyHash)
+        _state.update { it.copy(certificateOffer = null, error = null) }
+    }
+
+    /** The user does not trust the certificate; the sign-in stays blocked with HAAC-NET-007. */
+    fun onCertificateDismissed() {
+        _state.update { it.copy(certificateOffer = null, error = ErrorCode.NET_CERTIFICATE_UNTRUSTED) }
+    }
+
+    /** Reads the certificate of [url] and asks the user to trust it (concept 4.3); without one the error is shown. */
+    private fun offerCertificate(url: HttpUrl) {
+        viewModelScope.launch {
+            try {
+                _state.update { it.copy(busy = false, certificateOffer = CertificateOffer(url, probe.inspect(url))) }
+            } catch (e: HaacException) {
+                _state.update { it.copy(busy = false, error = e.code) }
+            }
+        }
+    }
+
     /** Shows [code]; an aborted flow or failed save returns to the credentials. */
     private fun fail(code: ErrorCode) {
+        val untrusted = target?.url?.takeIf { it.isHttps && code == ErrorCode.NET_CERTIFICATE_UNTRUSTED }
+        if (untrusted != null) {
+            offerCertificate(untrusted)
+            return
+        }
         val keepStage = code == ErrorCode.AUTH_INVALID_MFA_CODE ||
             (_state.value.stage == SignInStage.BRIDGE && code.area == "NET")
         if (!keepStage) {

@@ -36,6 +36,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stacknoise.haac.core.common.ui.CertificateDetails
+import com.stacknoise.haac.core.common.ui.CertificateDialog
+import com.stacknoise.haac.core.common.ui.CertificateDialogKind
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.SecureWindow
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
@@ -80,6 +83,8 @@ fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hi
                 signIn()
             },
             onCleartextDismissed = viewModel::onCleartextDismissed,
+            onCertificateTrusted = viewModel::onCertificateTrusted,
+            onCertificateDismissed = viewModel::onCertificateDismissed,
             onAddAddress = viewModel::onAddAddress,
             onAddressOfferDismissed = viewModel::onAddressOfferDismissed,
         ),
@@ -128,6 +133,7 @@ fun OnboardingContent(state: OnboardingUiState, password: TextFieldState, action
         PrimaryAction(state, actions)
     }
     state.cleartextWarningFor?.let { url -> CleartextDialog(url, actions) }
+    state.certificateOffer?.let { offer -> TrustDialog(offer, actions) }
     state.addressOffer?.let { offer -> AddressOfferDialog(offer, actions) }
 }
 
@@ -229,4 +235,21 @@ private fun OnboardingPreview() {
             actions = OnboardingActions(),
         )
     }
+}
+
+/** Asks whether to trust the self-signed certificate of the server on first use (concept 4.3). */
+@Composable
+private fun TrustDialog(offer: CertificateOffer, actions: OnboardingActions) {
+    val certificate = offer.certificate
+    CertificateDialog(
+        details = CertificateDetails(
+            offer.url.host,
+            certificate.fingerprint,
+            certificate.subject,
+            certificate.expiresAt,
+        ),
+        kind = CertificateDialogKind.TRUST_NEW,
+        onConfirm = actions.onCertificateTrusted,
+        onDismiss = actions.onCertificateDismissed,
+    )
 }

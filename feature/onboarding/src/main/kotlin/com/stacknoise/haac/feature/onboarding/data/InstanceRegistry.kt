@@ -11,7 +11,9 @@ import com.stacknoise.haac.core.network.bridge.BridgeInfo
 import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.core.network.endpoint.InstanceAddresses
 import com.stacknoise.haac.core.network.endpoint.addresses
+import com.stacknoise.haac.core.network.endpoint.pinnedBy
 import com.stacknoise.haac.core.network.endpoint.withAddresses
+import com.stacknoise.haac.core.network.tls.PinRegistry
 import com.stacknoise.haac.core.security.token.TokenStore
 import com.stacknoise.haac.feature.onboarding.domain.SignInTarget
 import java.util.UUID
@@ -24,6 +26,7 @@ class InstanceRegistry @Inject constructor(
     private val tokens: TokenStore,
     private val active: ActiveInstanceStore,
     private val errors: ErrorFactory,
+    private val pins: PinRegistry,
 ) {
     /** The stored instance [id], or null. */
     suspend fun find(id: String): ServerEntity? = errors.database { servers.get(id) }
@@ -53,7 +56,7 @@ class InstanceRegistry @Inject constructor(
                             haVersion = bridge.haVersion,
                             bridgeApiVersion = bridge.apiVersion,
                             lastActiveAt = now,
-                        ),
+                        ).pinnedBy(pins),
                     )
                 }
             }
@@ -74,7 +77,7 @@ class InstanceRegistry @Inject constructor(
         val saveToken = !tokens.contains(id)
         if (saveToken) tokens.save(id, refreshToken)
         val addresses = server.addresses.with(AddressSlot.of(url), url)
-        val updated = server.withAddresses(addresses).copy(lastActiveAt = System.currentTimeMillis())
+        val updated = server.withAddresses(addresses).pinnedBy(pins).copy(lastActiveAt = System.currentTimeMillis())
         errors.database { servers.update(updated) }
         active.setActive(id)
         return saveToken
@@ -96,5 +99,5 @@ class InstanceRegistry @Inject constructor(
         haVersion = bridge.haVersion,
         bridgeApiVersion = bridge.apiVersion,
         lastActiveAt = now,
-    ).withAddresses(InstanceAddresses.afterSignIn(target.url, bridge.urls))
+    ).withAddresses(InstanceAddresses.afterSignIn(target.url, bridge.urls)).pinnedBy(pins)
 }

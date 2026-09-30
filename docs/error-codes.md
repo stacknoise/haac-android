@@ -12,7 +12,7 @@ Every error of the app carries one of these codes (format `HAAC-<AREA>-<NNN>`) a
 | HAAC-NET-004 | This address is not a Home Assistant server. Check the address and try again. | NONE | GET /auth/providers did not return a HA auth provider list |
 | HAAC-NET-005 | This is not a valid address. Check it and try again. | NONE | Server URL could not be parsed after normalisation |
 | HAAC-NET-006 | Unencrypted connections are only allowed in your home network. Use an https address. | NONE | http:// to a host outside private address ranges and .local (concept 4.3) |
-| HAAC-NET-007 | The server's certificate is not trusted, so the connection was blocked. | NONE | TLS handshake failed: certificate not trusted by the system (self-signed pinning comes later) |
+| HAAC-NET-007 | The server's certificate is not trusted, so the connection was blocked. | OPEN_SETTINGS | TLS handshake failed: the certificate is not trusted by the system and not pinned (concept 4.3) |
 | HAAC-NET-008 | A different server answers at this address. The connection was closed for your safety. | OPEN_SETTINGS | haac_bridge/info returned an instance_id other than the stored one (concept 4.5) |
 | HAAC-AUTH-001 | Username or password is wrong. | NONE | HA login flow rejected username or password |
 | HAAC-AUTH-002 | The verification code is wrong. | NONE | HA login flow rejected the MFA code |

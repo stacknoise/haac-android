@@ -52,8 +52,8 @@ enum class ErrorCode(
     NET_CERTIFICATE_UNTRUSTED(
         "HAAC-NET-007",
         R.string.error_net_certificate_untrusted,
-        ErrorAction.NONE,
-        "TLS handshake failed: certificate not trusted by the system (self-signed pinning comes later)",
+        ErrorAction.OPEN_SETTINGS,
+        "TLS handshake failed: the certificate is not trusted by the system and not pinned (concept 4.3)",
     ),
     NET_WRONG_SERVER(
         "HAAC-NET-008",

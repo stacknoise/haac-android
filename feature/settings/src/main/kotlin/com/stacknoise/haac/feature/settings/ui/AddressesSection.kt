@@ -21,6 +21,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stacknoise.haac.core.common.ui.CertificateDetails
+import com.stacknoise.haac.core.common.ui.CertificateDialog
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
@@ -41,6 +43,9 @@ fun AddressesSection(viewModel: AddressesViewModel = hiltViewModel()) {
             onInputChanged = viewModel::onInputChanged,
             onSave = viewModel::onSave,
             onDismissEdit = viewModel::onDismissEdit,
+            onCertificate = viewModel::onCertificate,
+            onCertificateConfirm = viewModel::onCertificateConfirm,
+            onCertificateDismiss = viewModel::onCertificateDismiss,
         ),
     )
 }
@@ -74,6 +79,7 @@ fun AddressesContent(state: AddressesUiState, actions: AddressActions) {
     }
     if (state.editing == null) state.error?.let { ErrorMessage(it) }
     state.editing?.let { slot -> EditAddressDialog(slot, state, actions) }
+    state.certificate?.let { review -> CertificateReviewDialog(review, actions) }
 }
 
 /** One address with its label and the Edit and Remove actions. */
@@ -93,6 +99,11 @@ private fun AddressRow(
                 style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFontFamily),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+        if (url?.startsWith("https://") == true) {
+            TextButton(onClick = { actions.onCertificate(slot) }, enabled = enabled) {
+                Text(stringResource(R.string.settings_address_certificate))
+            }
         }
         TextButton(onClick = { actions.onEdit(slot) }, enabled = enabled) {
             Text(stringResource(R.string.settings_address_edit))
@@ -140,3 +151,20 @@ private fun EditAddressDialog(slot: AddressSlot, state: AddressesUiState, action
 /** Label of the slot in the UI. */
 private fun AddressSlot.label(): Int =
     if (this == AddressSlot.INTERNAL) R.string.settings_address_internal else R.string.settings_address_external
+
+/** The certificate of an address for the manual comparison, with the pin action of its kind (concept 4.3). */
+@Composable
+private fun CertificateReviewDialog(review: CertificateReview, actions: AddressActions) {
+    val certificate = review.certificate
+    CertificateDialog(
+        details = CertificateDetails(
+            review.url.host,
+            certificate.fingerprint,
+            certificate.subject,
+            certificate.expiresAt,
+        ),
+        kind = review.kind,
+        onConfirm = actions.onCertificateConfirm,
+        onDismiss = actions.onCertificateDismiss,
+    )
+}

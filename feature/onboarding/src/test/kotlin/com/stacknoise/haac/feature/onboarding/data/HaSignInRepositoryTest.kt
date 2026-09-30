@@ -19,6 +19,7 @@ import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.core.network.endpoint.EndpointSelector
 import com.stacknoise.haac.core.network.endpoint.addresses
 import com.stacknoise.haac.core.network.http.HaHttpClient
+import com.stacknoise.haac.core.network.tls.PinRegistry
 import com.stacknoise.haac.core.network.websocket.OkHttpWebSocketFactory
 import com.stacknoise.haac.core.security.token.TokenProtection
 import com.stacknoise.haac.core.security.token.TokenStore
@@ -111,7 +112,7 @@ class HaSignInRepositoryTest {
         }
     }
 
-    private val registry = InstanceRegistry(dao, tokenStore, active, DefaultErrorFactory())
+    private val registry = InstanceRegistry(dao, tokenStore, active, DefaultErrorFactory(), PinRegistry())
     private val firstAddress = EndpointSelector { row -> row.addresses.external ?: row.addresses.internal!! }
     private val repository = HaSignInRepository(
         LoginFlowClient(http, json),

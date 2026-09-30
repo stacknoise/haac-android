@@ -11,4 +11,7 @@ class AddressActions(
     val onInputChanged: (String) -> Unit,
     val onSave: () -> Unit,
     val onDismissEdit: () -> Unit,
+    val onCertificate: (AddressSlot) -> Unit,
+    val onCertificateConfirm: () -> Unit,
+    val onCertificateDismiss: () -> Unit,
 )
