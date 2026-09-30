@@ -82,9 +82,22 @@ fun AddEntitiesScreen(onClose: () -> Unit, viewModel: AddEntitiesViewModel = hil
     }
 }
 
-/** *Switch 12 · Sensor 24 · Climate 3* (M-04). */
+/**
+ * *Switch 12 · Sensor 24 · Climate 3* (M-04). With only one kind of entity there is nothing to switch between, so
+ * the tabs give way to a plain caption *Switch · 2*.
+ */
 @Composable
 private fun DomainTabs(state: AddEntitiesUiState, onSelect: (String) -> Unit) {
+    val single = state.domains.singleOrNull()
+    if (single != null) {
+        Text(
+            "${domainLabel(single)} · ${state.counts[single] ?: 0}",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 16.dp),
+        )
+        return
+    }
     if (state.domains.isEmpty()) return
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
         state.domains.forEachIndexed { index, domain ->
