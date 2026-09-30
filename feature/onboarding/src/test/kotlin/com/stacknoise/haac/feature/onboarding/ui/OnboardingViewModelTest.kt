@@ -1,5 +1,6 @@
 package com.stacknoise.haac.feature.onboarding.ui
 
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.SavedStateHandle
 import com.stacknoise.haac.core.error.AuthException
 import com.stacknoise.haac.core.error.BridgeException
@@ -12,6 +13,7 @@ import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.core.network.tls.CertificateProbe
 import com.stacknoise.haac.core.network.tls.PeerCertificate
 import com.stacknoise.haac.core.network.tls.PinRegistry
+import com.stacknoise.haac.feature.onboarding.domain.FingerprintStep
 import com.stacknoise.haac.feature.onboarding.domain.KnownServer
 import com.stacknoise.haac.feature.onboarding.domain.ServerValidator
 import com.stacknoise.haac.feature.onboarding.domain.SignInRepository
@@ -101,6 +103,19 @@ class OnboardingViewModelTest {
     private val certificate = PeerCertificate("ab".repeat(32), "AA:BB", "CN=ha", 0L)
     private val probe = CertificateProbe { certificate }
     private val pins = PinRegistry()
+    private val fingerprint = object : FingerprintStep {
+        var available = false
+        val enabled = mutableListOf<String>()
+
+        /** Whether the device has a fingerprint. */
+        override fun available() = available
+
+        /** Records the instance. */
+        override suspend fun enable(activity: FragmentActivity, serverId: String, name: String): Boolean {
+            enabled += "$serverId/$name"
+            return true
+        }
+    }
 
     private val home = DiscoveredServer("1", "Home", "192.168.1.10:8123", "http://192.168.1.10:8123", "2026.9.0")
 
@@ -116,6 +131,7 @@ class OnboardingViewModelTest {
         repository,
         probe,
         pins,
+        fingerprint,
         SavedStateHandle(if (serverId == null) emptyMap() else mapOf(OnboardingViewModel.SERVER_ID_ARG to serverId)),
     )
 
@@ -124,6 +140,28 @@ class OnboardingViewModelTest {
         onOtherAddress()
         onManualUrlChanged("ha.example.com/lovelace")
         onUsernameChanged("anna")
+    }
+
+    @Test
+    fun `a device with a fingerprint offers unlock before the instance opens`() {
+        fingerprint.available = true
+        val viewModel = manual()
+        viewModel.onSignIn("secret".toCharArray())
+        assertNull(viewModel.state.value.signedInServerId)
+        assertEquals("new-id", viewModel.state.value.fingerprintOffer?.serverId)
+
+        viewModel.onSkipFingerprint()
+        assertEquals("new-id", viewModel.state.value.signedInServerId)
+        assertNull(viewModel.state.value.fingerprintOffer)
+        assertTrue(fingerprint.enabled.isEmpty())
+    }
+
+    @Test
+    fun `no fingerprint on the device opens the instance at once`() {
+        val viewModel = manual()
+        viewModel.onSignIn("secret".toCharArray())
+        assertEquals("new-id", viewModel.state.value.signedInServerId)
+        assertNull(viewModel.state.value.fingerprintOffer)
     }
 
     @Test

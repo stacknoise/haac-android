@@ -30,10 +30,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.CertificateDetails
@@ -41,6 +43,7 @@ import com.stacknoise.haac.core.common.ui.CertificateDialog
 import com.stacknoise.haac.core.common.ui.CertificateDialogKind
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.SecureWindow
+import com.stacknoise.haac.core.common.ui.findActivity
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.error.ErrorCode
@@ -55,6 +58,7 @@ fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hi
     val state by viewModel.state.collectAsStateWithLifecycle()
     val password = rememberTextFieldState()
     val signedIn by rememberUpdatedState(onSignedIn)
+    val activity = LocalContext.current.findActivity() as? FragmentActivity
     LaunchedEffect(state.signedInServerId) {
         if (state.signedInServerId != null) {
             password.clearText()
@@ -88,6 +92,8 @@ fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hi
             onCertificateDismissed = viewModel::onCertificateDismissed,
             onAddAddress = viewModel::onAddAddress,
             onAddressOfferDismissed = viewModel::onAddressOfferDismissed,
+            onEnableFingerprint = { activity?.let(viewModel::onEnableFingerprint) },
+            onSkipFingerprint = viewModel::onSkipFingerprint,
         ),
     )
 }
@@ -136,6 +142,7 @@ fun OnboardingContent(state: OnboardingUiState, password: TextFieldState, action
     state.cleartextWarningFor?.let { url -> CleartextDialog(url, actions) }
     state.certificateOffer?.let { offer -> TrustDialog(offer, actions) }
     state.addressOffer?.let { offer -> AddressOfferDialog(offer, actions) }
+    if (state.fingerprintOffer != null) FingerprintDialog(state.busy, actions)
 }
 
 /** Sign in, Verify or Try again, depending on the stage. */
@@ -213,6 +220,26 @@ private fun AddressOfferDialog(offer: SignInResult.SameInstance, actions: Onboar
         dismissButton = {
             TextButton(onClick = actions.onAddressOfferDismissed) {
                 Text(stringResource(R.string.onboarding_cleartext_cancel))
+            }
+        },
+    )
+}
+
+/** Offers fingerprint unlock for the new instance; either answer opens it (concept 4.4, 5.4). */
+@Composable
+private fun FingerprintDialog(busy: Boolean, actions: OnboardingActions) {
+    AlertDialog(
+        onDismissRequest = {},
+        title = { Text(stringResource(R.string.onboarding_fingerprint_title)) },
+        text = { Text(stringResource(R.string.onboarding_fingerprint_text)) },
+        confirmButton = {
+            TextButton(onClick = actions.onEnableFingerprint, enabled = !busy) {
+                Text(stringResource(R.string.onboarding_fingerprint_enable))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = actions.onSkipFingerprint, enabled = !busy) {
+                Text(stringResource(R.string.onboarding_fingerprint_skip))
             }
         },
     )
