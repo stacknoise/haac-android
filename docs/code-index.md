@@ -8,7 +8,7 @@ Lists every class and function of the app with signature, file and a one-line KD
 
 | Symbol | Signature | File | Description |
 | --- | --- | --- | --- |
-| `HaacApplication` | `class HaacApplication : Application()` | `app/src/main/kotlin/com/stacknoise/haac/app/HaacApplication.kt` | Application entry point; sets up Hilt, the app lock (concept 5.5) and the certificate pins (4.3). |
+| `HaacApplication` | `class HaacApplication : Application()` | `app/src/main/kotlin/com/stacknoise/haac/app/HaacApplication.kt` | Application entry point; sets up Hilt, crash reporting (17.4), the app lock (5.5) and the certificate pins (4.3). |
 | `HaacApplication.onCreate` | `override fun onCreate()` | `app/src/main/kotlin/com/stacknoise/haac/app/HaacApplication.kt` | Reports foreground and background of the whole app to [AppLock]. |
 | `HaacApplication.onStop` | `override fun onStop(owner: LifecycleOwner)` | `app/src/main/kotlin/com/stacknoise/haac/app/HaacApplication.kt` | All activities stopped. |
 | `HaacApplication.onStart` | `override fun onStart(owner: LifecycleOwner)` | `app/src/main/kotlin/com/stacknoise/haac/app/HaacApplication.kt` | An activity is visible again. |
@@ -25,6 +25,16 @@ Lists every class and function of the app with signature, file and a one-line KD
 | `ConnectionViewModel.onBackground` | `fun onBackground()` | `app/src/main/kotlin/com/stacknoise/haac/app/connection/ConnectionViewModel.kt` | The main area is hidden or the app went to the background: close the connection. |
 | `ConnectionViewModel.retry` | `fun retry()` | `app/src/main/kotlin/com/stacknoise/haac/app/connection/ConnectionViewModel.kt` | Try again* in the banner. |
 | `ConnectionViewModel.onCleared` | `override fun onCleared()` | `app/src/main/kotlin/com/stacknoise/haac/app/connection/ConnectionViewModel.kt` | Leaving the main area, e.g. after sign-out or an app lock, ends the connection. |
+
+## com.stacknoise.haac.app.crash
+
+| Symbol | Signature | File | Description |
+| --- | --- | --- | --- |
+| `CrashMarker` | `class CrashMarker internal constructor(private val file: File)` | `app/src/main/kotlin/com/stacknoise/haac/app/crash/CrashMarker.kt` | Records that the app died from an uncaught exception and reports it as HAAC-APP-000 at the next start |
+| `CrashMarker.install` | `fun install()` | `app/src/main/kotlin/com/stacknoise/haac/app/crash/CrashMarker.kt` | Makes every uncaught exception leave a marker before the previous handler (the system's, which ends the app) |
+| `CrashMarker.replayTo` | `fun replayTo(reporter: ErrorReporter)` | `app/src/main/kotlin/com/stacknoise/haac/app/crash/CrashMarker.kt` | Reports the crash of the last run, if there was one, as HAAC-APP-000 without an instance; then forgets it. |
+| `CrashMarker.mark` | `internal fun mark()` | `app/src/main/kotlin/com/stacknoise/haac/app/crash/CrashMarker.kt` | Writes the marker with the time of the crash. |
+| `CrashMarker.consume` | `internal fun consume(): Boolean` | `app/src/main/kotlin/com/stacknoise/haac/app/crash/CrashMarker.kt` | True once if a marker existed; it is deleted. |
 
 ## com.stacknoise.haac.app.lock
 

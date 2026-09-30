@@ -1178,7 +1178,7 @@ Every error passed to `ErrorReporter` appears as an entry in the in-app notifica
 - The same code within 10 minutes is grouped into one entry with a counter instead of new entries.
 - Errors belong to the active instance (`serverId`); errors without an instance (e.g. during onboarding) are global entries.
 - Errors that block the current screen are additionally shown there (field error, dialog or snackbar), always with the code.
-- Uncaught exceptions are recorded as `HAAC-APP-000` and shown as an entry after the next app start.
+- Uncaught exceptions are recorded as `HAAC-APP-000` and shown as an entry after the next app start. As built, a handler installed at app start writes only a marker file while the process dies (no stack trace and no exception message, which can contain addresses or tokens; the trace stays in logcat and in Play's crash reports); the next start turns the marker into a global entry with the time of that start and deletes it.
 
 ### 17.5 Code index against duplicate functions
 
