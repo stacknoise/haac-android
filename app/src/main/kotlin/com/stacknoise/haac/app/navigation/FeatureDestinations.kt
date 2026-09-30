@@ -15,6 +15,7 @@ import com.stacknoise.haac.feature.entities.ui.EntityDetailScreen
 import com.stacknoise.haac.feature.entities.ui.EntityDetailViewModel
 import com.stacknoise.haac.feature.entities.ui.RoomsNavigation
 import com.stacknoise.haac.feature.entities.ui.RoomsScreen
+import com.stacknoise.haac.feature.layout.ui.AreaImportScreen
 import com.stacknoise.haac.feature.layout.ui.PlaceEditorScreen
 import com.stacknoise.haac.feature.layout.ui.PlaceEditorViewModel
 import com.stacknoise.haac.feature.layout.ui.PlacesScreen
@@ -38,8 +39,12 @@ internal fun NavGraphBuilder.roomsDestination(navController: NavController) {
 /** The Places tab (M-02) and the place form (M-03). */
 internal fun NavGraphBuilder.placeDestinations(navController: NavController) {
     composable(TopLevelDestination.PLACES.route) {
-        PlacesScreen(onOpen = { kind, id -> navController.navigate(PlaceRoutes.editor(kind, id)) })
+        PlacesScreen(
+            onOpen = { kind, id -> navController.navigate(PlaceRoutes.editor(kind, id)) },
+            onImport = { navController.navigate(PlaceRoutes.IMPORT) },
+        )
     }
+    composable(PlaceRoutes.IMPORT) { AreaImportScreen(onClose = { navController.popBackStack() }) }
     composable(
         PlaceRoutes.EDITOR,
         arguments = listOf(

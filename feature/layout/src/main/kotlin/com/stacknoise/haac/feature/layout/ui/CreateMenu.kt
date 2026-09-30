@@ -25,14 +25,19 @@ import com.stacknoise.haac.feature.layout.R
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
 
 /**
- * Floating action button with the create menu *New home / New level / New room* (M-02). Without a home only
+ * Floating action button with the create menu *New home / New level / New room* and *Import from Home
+ * Assistant* (M-02, 6.3). Without a home only
  * *New home* is offered (concept 6.1: a home is mandatory).
  */
 @Composable
-fun CreateMenu(hasHome: Boolean, onCreate: (PlaceKind) -> Unit) {
+fun CreateMenu(hasHome: Boolean, onCreate: (PlaceKind) -> Unit, onImport: () -> Unit) {
     var open by rememberSaveable { mutableStateOf(false) }
     Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         if (open) {
+            MenuEntry(R.string.places_import, R.drawable.ic_layout_import) {
+                open = false
+                onImport()
+            }
             MenuEntry(R.string.places_new_home, R.drawable.ic_layout_home) {
                 open = false
                 onCreate(PlaceKind.HOME)

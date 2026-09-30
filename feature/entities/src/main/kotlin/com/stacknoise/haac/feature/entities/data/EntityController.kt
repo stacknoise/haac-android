@@ -4,6 +4,7 @@ import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.network.connection.LiveConnection
+import com.stacknoise.haac.core.network.connection.requireOpen
 import com.stacknoise.haac.core.network.di.ConnectionScope
 import com.stacknoise.haac.feature.entities.domain.ControlRequest
 import com.stacknoise.haac.feature.entities.domain.ServiceCallFactory

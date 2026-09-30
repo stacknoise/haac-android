@@ -113,7 +113,7 @@ internal fun IconPicker(selected: String?, onSelect: (String?) -> Unit) {
 
 /** Single-select chip with a check mark when selected (M-03). */
 @Composable
-private fun Choice(label: String, selected: Boolean, onClick: () -> Unit) {
+internal fun Choice(label: String, selected: Boolean, onClick: () -> Unit) {
     FilterChip(
         selected = selected,
         onClick = onClick,

@@ -57,10 +57,15 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Places overview (M-02, concept 6): every home, level and room with filter chips and the create menu.
- * [onOpen] opens the form for a place of a kind; the id is null for a new one.
+ * [onOpen] opens the form for a place of a kind; the id is null for a new one. [onImport] opens the import of
+ * Home Assistant areas (6.3).
  */
 @Composable
-fun PlacesScreen(onOpen: (PlaceKind, String?) -> Unit, viewModel: PlacesViewModel = hiltViewModel()) {
+fun PlacesScreen(
+    onOpen: (PlaceKind, String?) -> Unit,
+    onImport: () -> Unit,
+    viewModel: PlacesViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val pending by viewModel.pending.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -81,7 +86,7 @@ fun PlacesScreen(onOpen: (PlaceKind, String?) -> Unit, viewModel: PlacesViewMode
     val hasHome = !state.places?.homes.isNullOrEmpty()
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
-        floatingActionButton = { CreateMenu(hasHome = hasHome, onCreate = { onOpen(it, null) }) },
+        floatingActionButton = { CreateMenu(hasHome = hasHome, onCreate = { onOpen(it, null) }, onImport = onImport) },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
         PlacesContent(state, viewModel::onFilter, onOpen = { onOpen(it.kind, it.id) }, Modifier.padding(padding))
