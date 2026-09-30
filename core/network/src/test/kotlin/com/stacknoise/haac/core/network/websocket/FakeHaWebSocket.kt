@@ -33,11 +33,23 @@ class FakeHaWebSocket(private val reply: FakeHaWebSocket.(JsonObject) -> Unit = 
     /** Frames of [type] the app sent. */
     fun sentOfType(type: String): List<JsonObject> = sent.filter { it.text("type") == type }
 
+    private var lastId = 0
+
     override fun send(text: String): Boolean {
         if (closed) return false
         val message = Json.parseToJsonElement(text).jsonObject
         sent += message
-        reply(message)
+        // Like HA: the ids of one socket must increase, otherwise the command is answered with `id_reuse`.
+        val id = message.messageId
+        if (id != null && id <= lastId) {
+            push(
+                """{"id":$id,"type":"result","success":false,""" +
+                    """"error":{"code":"id_reuse","message":"Identifier values have to increase."}}""",
+            )
+        } else {
+            if (id != null) lastId = id
+            reply(message)
+        }
         return true
     }
 

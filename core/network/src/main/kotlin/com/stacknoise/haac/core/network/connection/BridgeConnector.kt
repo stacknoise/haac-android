@@ -9,7 +9,6 @@ import com.stacknoise.haac.core.error.UnexpectedException
 import com.stacknoise.haac.core.error.database
 import com.stacknoise.haac.core.network.bridge.BridgeInfo
 import com.stacknoise.haac.core.network.bridge.BridgeInfoClient
-import com.stacknoise.haac.core.network.bridge.BridgeMessageFactory
 import com.stacknoise.haac.core.network.endpoint.EndpointSelector
 import com.stacknoise.haac.core.network.endpoint.requireSameInstance
 import com.stacknoise.haac.core.network.session.InstanceSession
@@ -37,7 +36,6 @@ class DefaultBridgeConnector @Inject constructor(
     private val endpoints: EndpointSelector,
     private val sessions: InstanceSessionFactory,
     private val bridge: BridgeInfoClient,
-    private val messages: BridgeMessageFactory,
     private val errors: ErrorFactory,
 ) : BridgeConnector {
     /** Runs the selection rules of [EndpointSelector] for the stored instance. */
@@ -66,7 +64,7 @@ class DefaultBridgeConnector @Inject constructor(
             handshake.socket.close()
             throw e
         }
-        return BridgeConnection(session.baseUrl, handshake.info, handshake.socket, messages, errors, scope)
+        return BridgeConnection(session.baseUrl, handshake.info, handshake.socket, handshake.messages, errors, scope)
     }
 
     /** Saves what the handshake reported, if it changed; schema-1 instances get their ID here (4.5). */

@@ -11,6 +11,7 @@ import com.stacknoise.haac.core.network.bridge.DefaultBridgeMessageFactory
 import com.stacknoise.haac.core.network.session.InstanceSession
 import com.stacknoise.haac.core.network.session.InstanceSessionFactory
 import com.stacknoise.haac.core.network.websocket.FakeHaWebSocket
+import com.stacknoise.haac.core.network.websocket.messageId
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -62,7 +63,6 @@ class BridgeConnectorTest {
             override fun create(serverId: String, baseUrl: HttpUrl) = session
         },
         bridge = bridge,
-        messages = messages,
         errors = errors,
     )
 
@@ -104,5 +104,17 @@ class BridgeConnectorTest {
         assertTrue(opened.single().closed)
         assertEquals("f00d", stored.instanceUuid)
         assertTrue(opened.single().sentOfType("ping").isEmpty())
+    }
+
+    @Test
+    fun `the connection goes on with the message ids of the handshake`() = runTest {
+        sockets += FakeHaWebSocket.ha(other = { message ->
+            push("""{"id":${message.messageId},"type":"result","success":true,"result":[]}""")
+        })
+        val connection = connector.connect("s1", url, backgroundScope)
+        // HA answers `id_reuse` if the first command reuses the id of `haac_bridge/info`.
+        connection.request("haac_bridge/entities/list")
+        val ids = opened.single().sent.mapNotNull { it.messageId }
+        assertEquals(ids.sorted().distinct(), ids)
     }
 }
