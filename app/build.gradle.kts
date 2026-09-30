@@ -2,6 +2,7 @@ plugins {
     id("haac.android.application")
     id("haac.android.compose")
     id("haac.hilt")
+    alias(libs.plugins.aboutlibraries)
 }
 
 android {
@@ -31,5 +32,6 @@ dependencies {
     implementation(libs.androidx.fragment)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.aboutlibraries.compose.m3)
     testImplementation(libs.kotlinx.coroutines.test)
 }

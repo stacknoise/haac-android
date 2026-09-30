@@ -36,6 +36,12 @@ Lists every class and function of the app with signature, file and a one-line KD
 | `CrashMarker.mark` | `internal fun mark()` | `app/src/main/kotlin/com/stacknoise/haac/app/crash/CrashMarker.kt` | Writes the marker with the time of the crash. |
 | `CrashMarker.consume` | `internal fun consume(): Boolean` | `app/src/main/kotlin/com/stacknoise/haac/app/crash/CrashMarker.kt` | True once if a marker existed; it is deleted. |
 
+## com.stacknoise.haac.app.licenses
+
+| Symbol | Signature | File | Description |
+| --- | --- | --- | --- |
+| `LicensesScreen` | `fun LicensesScreen(onBack: () -> Unit)` | `app/src/main/kotlin/com/stacknoise/haac/app/licenses/LicensesScreen.kt` | Settings → About → Open-source licenses*: the libraries bundled in the app with their licenses (concept 16.2). |
+
 ## com.stacknoise.haac.app.lock
 
 | Symbol | Signature | File | Description |
@@ -1629,6 +1635,8 @@ Lists every class and function of the app with signature, file and a one-line KD
 
 | Symbol | Signature | File | Description |
 | --- | --- | --- | --- |
+| `AboutSection` | `fun AboutSection(onOpenLicenses: () -> Unit)` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/AboutSection.kt` | Settings → About*: app version, the app's own license and the entry to the library licenses (concept 16.2). |
+| `Context.versionName` | `private fun Context.versionName(): String?` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/AboutSection.kt` | The version name of the installed app, or null when the package cannot be read. |
 | `AddressActions` | `class AddressActions(val onEdit: (AddressSlot) -> Unit, val onRemove: (AddressSlot) -> Unit, val onAlwaysUseInternalChanged: (Boolean) -> Unit, val onUseHaAddresses: () -> Unit, val onInputChanged: (String) -> Unit, val onSave: () -> Unit, val onDismissEdit: () -> Unit, val onCertificate: (AddressSlot) -> Unit, val onCertificateConfirm: () -> Unit, val onCertificateDismiss: () -> Unit)` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/AddressActions.kt` | Callbacks of the addresses section. |
 | `AddressesSection` | `fun AddressesSection(viewModel: AddressesViewModel = hiltViewModel())` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/AddressesSection.kt` | Settings → Addresses* of the active instance (concept 4.5). |
 | `AddressesContent` | `fun AddressesContent(state: AddressesUiState, actions: AddressActions)` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/AddressesSection.kt` | Stateless layout of the addresses section. |
@@ -1662,8 +1670,8 @@ Lists every class and function of the app with signature, file and a one-line KD
 | `SecuritySection` | `fun SecuritySection(state: SecurityUiState, busy: Boolean, actions: SecurityActions)` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/SecuritySection.kt` | Settings → Security (concept 5.4, 5.5, 15.4): fingerprint unlock, unlock window and lock timeout. |
 | `Hint` | `private fun Hint(text: String)` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/SecuritySection.kt` | Secondary text below a setting. |
 | `Choices` | `private fun Choices(choices: List<Int>, selected: Int, zeroLabel: String, enabled: Boolean, onSelected: (Int) -> Unit)` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/SecuritySection.kt` | Single-select chips for minute values; 0 is shown as [zeroLabel]. |
-| `SettingsScreen` | `fun SettingsScreen(onSignedOut: (String) -> Unit, instances: @Composable () -> Unit, viewModel: SettingsViewModel = hiltViewModel())` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/SettingsScreen.kt` | Settings (concept 15.4); [onSignedOut] receives the id of the instance that was signed out. [instances] is the |
-| `SettingsContent` | `fun SettingsContent(state: SettingsUiState, onSignOut: () -> Unit, security: SecurityActions, instances: @Composable () -> Unit = {}, addresses: @Composable () -> Unit = {}, diagnostics: @Composable () -> Unit = {})` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/SettingsScreen.kt` | Stateless layout of the settings; [instances] is the instance list (4.4), [addresses] the address section (4.5) |
+| `SettingsScreen` | `fun SettingsScreen(onSignedOut: (String) -> Unit, onOpenLicenses: () -> Unit, instances: @Composable () -> Unit, viewModel: SettingsViewModel = hiltViewModel())` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/SettingsScreen.kt` | Settings (concept 15.4); [onSignedOut] receives the id of the instance that was signed out. [instances] is the |
+| `SettingsContent` | `fun SettingsContent(state: SettingsUiState, onSignOut: () -> Unit, security: SecurityActions, instances: @Composable () -> Unit = {}, addresses: @Composable () -> Unit = {}, diagnostics: @Composable () -> Unit = {}, about: @Composable () -> Unit = {})` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/SettingsScreen.kt` | Stateless layout of the settings; [instances] is the instance list (4.4), [addresses] the address section (4.5), |
 | `SettingsPreview` | `private fun SettingsPreview()` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/SettingsScreen.kt` | Preview with a signed-in instance and fingerprint unlock on. |
 | `ActiveInstance` | `data class ActiveInstance(val id: String, val name: String, val userName: String)` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/SettingsViewModel.kt` | The active instance as the settings show it. |
 | `SecurityUiState` | `data class SecurityUiState(val fingerprintAvailable: Boolean = false, val fingerprintEnabled: Boolean = false, val unlockWindowSelectable: Boolean = false, val unlockWindowMinutes: Int = 0, val lockTimeoutMinutes: Int = SecuritySettings.DEFAULT_LOCK_TIMEOUT_MINUTES)` | `feature/settings/src/main/kotlin/com/stacknoise/haac/feature/settings/ui/SettingsViewModel.kt` | Settings → Security (concept 5.4, 5.5). |

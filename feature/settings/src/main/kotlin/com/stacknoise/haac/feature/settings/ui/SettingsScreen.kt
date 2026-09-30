@@ -35,11 +35,12 @@ import com.stacknoise.haac.feature.settings.R
 
 /**
  * Settings (concept 15.4); [onSignedOut] receives the id of the instance that was signed out. [instances] is the
- * instance list (concept 4.4), which another feature module provides.
+ * instance list (concept 4.4), which another feature module provides; [onOpenLicenses] opens the library licenses.
  */
 @Composable
 fun SettingsScreen(
     onSignedOut: (String) -> Unit,
+    onOpenLicenses: () -> Unit,
     instances: @Composable () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -56,6 +57,7 @@ fun SettingsScreen(
         instances = instances,
         addresses = { AddressesSection() },
         diagnostics = { DiagnosticsSection() },
+        about = { AboutSection(onOpenLicenses) },
         security = SecurityActions(
             onFingerprintChanged = { enabled -> activity?.let { viewModel.onFingerprintChanged(it, enabled) } },
             onUnlockWindowChanged = { minutes -> activity?.let { viewModel.onUnlockWindowChanged(it, minutes) } },
@@ -65,8 +67,8 @@ fun SettingsScreen(
 }
 
 /**
- * Stateless layout of the settings; [instances] is the instance list (4.4), [addresses] the address section (4.5)
- * and [diagnostics] the diagnostics (9.3).
+ * Stateless layout of the settings; [instances] is the instance list (4.4), [addresses] the address section (4.5),
+ * [diagnostics] the diagnostics (9.3) and [about] the About section (16.2).
  */
 @Composable
 fun SettingsContent(
@@ -76,6 +78,7 @@ fun SettingsContent(
     instances: @Composable () -> Unit = {},
     addresses: @Composable () -> Unit = {},
     diagnostics: @Composable () -> Unit = {},
+    about: @Composable () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -104,6 +107,8 @@ fun SettingsContent(
         state.error?.let { ErrorMessage(it) }
         Spacer(Modifier.height(32.dp))
         diagnostics()
+        Spacer(Modifier.height(32.dp))
+        about()
         Spacer(Modifier.height(32.dp))
         OutlinedButton(
             onClick = onSignOut,
