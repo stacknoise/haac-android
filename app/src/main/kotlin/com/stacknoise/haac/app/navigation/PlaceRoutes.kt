@@ -9,6 +9,9 @@ object PlaceRoutes {
     const val EDITOR = "place/{${PlaceEditorViewModel.KIND_ARG}}?${PlaceEditorViewModel.ID_ARG}=" +
         "{${PlaceEditorViewModel.ID_ARG}}"
 
+    /** The import wizard for Home Assistant areas (concept 6.3). */
+    const val IMPORT = "places/import"
+
     /** The form for place [id] of [kind], or for a new place when [id] is null. */
     fun editor(kind: PlaceKind, id: String?): String =
         if (id == null) "place/${kind.name}" else "place/${kind.name}?${PlaceEditorViewModel.ID_ARG}=$id"

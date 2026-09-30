@@ -79,4 +79,32 @@
     <string name="delete_floor_with_rooms">Delete its rooms too</string>
     <string name="delete_confirm">Delete</string>
     <string name="delete_cancel">Cancel</string>
+    <string name="places_import">Import from Home Assistant</string>
+    <string name="import_title">Import from Home Assistant</string>
+    <string name="import_intro">Takes over levels and rooms from the areas of Home Assistant that hold your entities. Afterwards they are ordinary levels and rooms you can change; later changes in Home Assistant are not followed.</string>
+    <string name="import_empty">Home Assistant has no areas with entities you can use. Add areas there first, or create rooms here yourself.</string>
+    <string name="import_home_section">Into home</string>
+    <string name="import_new_home">New home</string>
+    <string name="import_new_home_hint">Name of the new home</string>
+    <string name="import_areas_section">Areas</string>
+    <string name="import_toggle_all">Select all / none</string>
+    <string name="import_no_level">No level</string>
+    <plurals name="import_new_levels">
+        <item quantity="one">%d new level</item>
+        <item quantity="other">%d new levels</item>
+    </plurals>
+    <plurals name="import_new_rooms">
+        <item quantity="one">%d new room</item>
+        <item quantity="other">%d new rooms</item>
+    </plurals>
+    <string name="import_action">Import</string>
+    <string name="import_try_again">Try again</string>
+    <plurals name="import_entities">
+        <item quantity="one">%d entity</item>
+        <item quantity="other">%d entities</item>
+    </plurals>
+    <plurals name="import_skipped">
+        <item quantity="one">%d room with this name already exists and is skipped</item>
+        <item quantity="other">%d rooms with these names already exist and are skipped</item>
+    </plurals>
 </resources>
