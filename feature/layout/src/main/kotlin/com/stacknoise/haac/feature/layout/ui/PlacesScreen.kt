@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
@@ -27,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.PlaceIcon
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.feature.layout.R
@@ -161,6 +165,14 @@ private fun PlaceRowItem(row: PlaceRow, onClick: () -> Unit) {
             style = SectionLabelStyle.copy(color = typeColor),
             modifier = Modifier.width(72.dp),
         )
+        PlaceIcon.fromKey(row.icon)?.let { icon ->
+            Icon(
+                painterResource(icon.drawable),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(end = 8.dp).size(20.dp),
+            )
+        }
         Text(
             row.name,
             style = MaterialTheme.typography.bodyLarge,

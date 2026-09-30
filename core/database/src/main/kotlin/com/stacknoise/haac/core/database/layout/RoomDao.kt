@@ -11,7 +11,7 @@ private const val ObserveQuery = "SELECT room.* FROM room JOIN home ON home.id =
     "ORDER BY room.sort_order"
 
 /** Moves and renames a room that is not deleted. */
-private const val UpdateQuery = "UPDATE room SET name = :name, home_id = :homeId, floor_id = :floorId " +
+private const val UpdateQuery = "UPDATE room SET name = :name, home_id = :homeId, floor_id = :floorId, icon = :icon " +
     "WHERE id = :id AND deleted_at IS NULL"
 
 /** Access to the `room` table (concept 6, 12); reads skip rows whose deletion is pending. */
@@ -27,7 +27,7 @@ interface RoomDao {
 
     /** Renames room [id] and links it to [homeId] and [floorId]; returns 0 if it does not exist or is deleted. */
     @Query(UpdateQuery)
-    suspend fun update(id: String, name: String, homeId: String, floorId: String?): Int
+    suspend fun update(id: String, name: String, homeId: String, floorId: String?, icon: String?): Int
 
     /** The highest sort order of the rooms of [homeId], or null without rooms. */
     @Query("SELECT MAX(sort_order) FROM room WHERE home_id = :homeId")

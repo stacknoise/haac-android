@@ -99,6 +99,7 @@ fun PlaceEditorContent(state: PlaceEditorUiState, actions: EditorActions) {
         Header(form, actions)
         Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
             NameField(form.name) { name -> actions.onChange { f, _ -> f.copy(name = name) } }
+            IconPicker(form.icon) { icon -> actions.onChange { f, _ -> f.copy(icon = icon) } }
             if (form.kind != PlaceKind.HOME) {
                 HomeChips(form, places) { id -> actions.onChange { f, p -> f.withHome(id, p) } }
             }

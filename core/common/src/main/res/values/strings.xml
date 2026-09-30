@@ -14,4 +14,20 @@
     <string name="certificate_remove_pin">Remove pin</string>
     <string name="certificate_cancel">Cancel</string>
     <string name="certificate_close">Close</string>
+    <string name="place_icon_home">Home</string>
+    <string name="place_icon_building">Building</string>
+    <string name="place_icon_cabin">Cabin</string>
+    <string name="place_icon_living">Living room</string>
+    <string name="place_icon_bed">Bedroom</string>
+    <string name="place_icon_kitchen">Kitchen</string>
+    <string name="place_icon_dining">Dining room</string>
+    <string name="place_icon_bath">Bathroom</string>
+    <string name="place_icon_office">Office</string>
+    <string name="place_icon_laundry">Laundry</string>
+    <string name="place_icon_garage">Garage</string>
+    <string name="place_icon_garden">Garden</string>
+    <string name="place_icon_terrace">Terrace</string>
+    <string name="place_icon_kids">Kids room</string>
+    <string name="place_icon_stairs">Stairs</string>
+    <string name="place_icon_layers">Level</string>
 </resources>

@@ -20,6 +20,23 @@ class PlaceWriterTest {
     private fun room(name: String) = tables.rooms.value.single { it.name == name }
 
     @Test
+    fun `the icon is stored on create and changed or cleared on edit`() = runTest {
+        val main = writer.save("s1", PlaceForm(PlaceKind.HOME, name = "Main", icon = "home"))
+        val kitchen = writer.save("s1", PlaceForm(PlaceKind.ROOM, name = "Kitchen", homeId = main, icon = "kitchen"))
+        val ground = writer.save("s1", PlaceForm(PlaceKind.FLOOR, name = "Ground", homeId = main, icon = "layers"))
+        assertEquals(listOf("home"), tables.homes.value.map { it.icon })
+        assertEquals("kitchen", room("Kitchen").icon)
+        assertEquals("layers", tables.floors.value.single().icon)
+
+        writer.save("s1", PlaceForm(PlaceKind.ROOM, kitchen, "Kitchen", main, icon = "dining"))
+        writer.save("s1", PlaceForm(PlaceKind.FLOOR, ground, "Ground", main))
+        writer.save("s1", PlaceForm(PlaceKind.HOME, main, "Main", icon = "cabin"))
+        assertEquals("dining", room("Kitchen").icon)
+        assertEquals(null, tables.floors.value.single().icon)
+        assertEquals("cabin", tables.homes.value.single().icon)
+    }
+
+    @Test
     fun `a new home with new rooms puts them directly in the home, sorted with gaps`() = runTest {
         home("Main house")
         val id = writer.save("s1", PlaceForm(PlaceKind.HOME, name = " Garden ", newRooms = listOf("Shed", " ", "Pool")))

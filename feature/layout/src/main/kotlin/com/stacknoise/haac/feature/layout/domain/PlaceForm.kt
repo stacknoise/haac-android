@@ -11,7 +11,8 @@ import com.stacknoise.haac.core.database.layout.Room
  * - Level: [homeId] is required; [roomIds] are the rooms of that home on the level, [level] sorts the levels.
  * - Room: [homeId] is required, [floorId] is a level of that home or null (directly in the home).
  *
- * [newRooms] are names of rooms the form creates in the home, on the level for a level form.
+ * [newRooms] are names of rooms the form creates in the home, on the level for a level form. [icon] is the key of
+ * a [com.stacknoise.haac.core.common.ui.PlaceIcon] or null for none.
  */
 data class PlaceForm(
     val kind: PlaceKind,
@@ -22,6 +23,7 @@ data class PlaceForm(
     val level: Int = 0,
     val roomIds: Set<String> = emptySet(),
     val newRooms: List<String> = emptyList(),
+    val icon: String? = null,
 ) {
     /** True while the form creates a place instead of editing one. */
     val isNew: Boolean get() = id == null
@@ -62,12 +64,14 @@ data class PlaceForm(
 
         /** The form of the existing place [id] of [kind], or null if it no longer exists. */
         fun edit(kind: PlaceKind, id: String, places: Places): PlaceForm? = when (kind) {
-            PlaceKind.HOME -> places.home(id)?.let { PlaceForm(kind, id, it.name) }
+            PlaceKind.HOME -> places.home(id)?.let { PlaceForm(kind, id, it.name, icon = it.icon) }
             PlaceKind.FLOOR -> places.floor(id)?.let { floor ->
                 val onFloor = places.roomsOn(id).map { it.id }.toSet()
-                PlaceForm(kind, id, floor.name, floor.homeId, level = floor.level, roomIds = onFloor)
+                PlaceForm(kind, id, floor.name, floor.homeId, level = floor.level, roomIds = onFloor, icon = floor.icon)
             }
-            PlaceKind.ROOM -> places.room(id)?.let { PlaceForm(kind, id, it.name, it.homeId, it.floorId) }
+            PlaceKind.ROOM -> places.room(id)?.let {
+                PlaceForm(kind, id, it.name, it.homeId, it.floorId, icon = it.icon)
+            }
         }
 
         /** One above the highest level of home [homeId], or 0 for its first level. */

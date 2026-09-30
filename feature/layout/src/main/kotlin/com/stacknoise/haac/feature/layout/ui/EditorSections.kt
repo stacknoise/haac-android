@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.stacknoise.haac.core.common.ui.PlaceIcon
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.feature.layout.R
@@ -89,6 +91,24 @@ internal fun LevelStepper(level: Int, onChange: (Int) -> Unit) {
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+}
+
+/** *Icon*: the icons of [PlaceIcon] as a single choice; tapping the chosen icon again clears it (concept 6.1). */
+@Composable
+internal fun IconPicker(selected: String?, onSelect: (String?) -> Unit) {
+    SectionLabel(R.string.editor_icon_section)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        PlaceIcon.entries.forEach { icon ->
+            val chosen = icon.key == selected
+            FilledIconToggleButton(
+                checked = chosen,
+                onCheckedChange = { onSelect(if (chosen) null else icon.key) },
+                modifier = Modifier.size(48.dp),
+            ) {
+                Icon(painterResource(icon.drawable), stringResource(icon.label))
+            }
+        }
+    }
 }
 
 /** Single-select chip with a check mark when selected (M-03). */

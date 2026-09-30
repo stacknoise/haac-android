@@ -33,7 +33,8 @@ class FakeLayoutTables {
             homes.value += home
         }
 
-        override suspend fun rename(id: String, name: String): Int = updateHome(id) { it.copy(name = name) }
+        override suspend fun update(id: String, name: String, icon: String?): Int =
+            updateHome(id) { it.copy(name = name, icon = icon) }
 
         override suspend fun maxSortOrder(serverId: String) =
             homes.value.filter { it.serverId == serverId }.maxOfOrNull { it.sortOrder }
@@ -55,8 +56,8 @@ class FakeLayoutTables {
             floors.value += floor
         }
 
-        override suspend fun update(id: String, name: String, level: Int): Int =
-            updateFloors({ it.id == id }) { it.copy(name = name, level = level) }
+        override suspend fun update(id: String, name: String, level: Int, icon: String?): Int =
+            updateFloors({ it.id == id }) { it.copy(name = name, level = level, icon = icon) }
 
         override suspend fun maxSortOrder(homeId: String) =
             floors.value.filter { it.homeId == homeId }.maxOfOrNull { it.sortOrder }
@@ -84,8 +85,8 @@ class FakeLayoutTables {
             rooms.value += room
         }
 
-        override suspend fun update(id: String, name: String, homeId: String, floorId: String?): Int =
-            updateRooms({ it.id == id }) { it.copy(name = name, homeId = homeId, floorId = floorId) }
+        override suspend fun update(id: String, name: String, homeId: String, floorId: String?, icon: String?): Int =
+            updateRooms({ it.id == id }) { it.copy(name = name, homeId = homeId, floorId = floorId, icon = icon) }
 
         override suspend fun maxSortOrder(homeId: String) =
             rooms.value.filter { it.homeId == homeId }.maxOfOrNull { it.sortOrder }

@@ -50,9 +50,11 @@ class PlaceWriter internal constructor(
     private suspend fun saveHome(serverId: String, form: PlaceForm, name: String): String {
         val id = form.id ?: newId()
         if (form.id == null) {
-            daos.homes.insert(HomeEntity(id, serverId, name, sortOrder = next(daos.homes.maxSortOrder(serverId))))
+            daos.homes.insert(
+                HomeEntity(id, serverId, name, icon = form.icon, sortOrder = next(daos.homes.maxSortOrder(serverId))),
+            )
         } else {
-            found(daos.homes.rename(id, name))
+            found(daos.homes.update(id, name, form.icon))
         }
         if (form.roomIds.isNotEmpty()) daos.rooms.link(form.roomIds.toList(), id, null)
         addRooms(id, null, form.newRooms)
@@ -64,10 +66,10 @@ class PlaceWriter internal constructor(
         val id = form.id ?: newId()
         if (form.id == null) {
             val sortOrder = next(daos.floors.maxSortOrder(homeId))
-            daos.floors.insert(FloorEntity(id, homeId, name, form.level, sortOrder = sortOrder))
+            daos.floors.insert(FloorEntity(id, homeId, name, form.level, icon = form.icon, sortOrder = sortOrder))
         } else {
             requireFloorOf(id, homeId)
-            daos.floors.update(id, name, form.level)
+            daos.floors.update(id, name, form.level, form.icon)
         }
         val onFloor = form.roomIds.toList()
         daos.rooms.releaseFloor(id, onFloor)
@@ -82,9 +84,9 @@ class PlaceWriter internal constructor(
         val id = form.id ?: newId()
         if (form.id == null) {
             val sortOrder = next(daos.rooms.maxSortOrder(homeId))
-            daos.rooms.insert(RoomEntity(id, homeId, form.floorId, name, sortOrder = sortOrder))
+            daos.rooms.insert(RoomEntity(id, homeId, form.floorId, name, icon = form.icon, sortOrder = sortOrder))
         } else {
-            found(daos.rooms.update(id, name, homeId, form.floorId))
+            found(daos.rooms.update(id, name, homeId, form.floorId, form.icon))
         }
         return id
     }
