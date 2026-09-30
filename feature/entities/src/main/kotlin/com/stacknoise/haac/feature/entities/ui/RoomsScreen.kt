@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.PlaceIcon
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
@@ -215,10 +217,22 @@ private fun Header(
             }
         }
     }
-    state.room?.let {
-        Text(it.name, style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(bottom = 8.dp))
+    state.room?.let { room ->
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp)) {
+            PlaceIcon.fromKey(room.icon)?.let { icon ->
+                Icon(
+                    painterResource(icon.drawable),
+                    contentDescription = null,
+                    modifier = Modifier.padding(end = 12.dp).size(TitleIconSize),
+                )
+            }
+            Text(room.name, style = MaterialTheme.typography.headlineLarge)
+        }
     }
 }
+
+/** Size of the room icon in front of the title. */
+private val TitleIconSize = 28.dp
 
 /** "Main house · Ground floor", or only the home for its rooms without a level. */
 private fun groupLabel(group: RoomGroup): String = listOfNotNull(group.home.name, group.floor?.name).joinToString(" · ")
@@ -237,6 +251,9 @@ private fun RoomChips(group: RoomGroup?, selected: String, onSelect: (String) ->
                 selected = false,
                 onClick = { onSelect(room.id) },
                 label = { Text(room.name, modifier = Modifier.padding(vertical = 8.dp)) },
+                leadingIcon = PlaceIcon.fromKey(room.icon)?.let { icon ->
+                    { Icon(painterResource(icon.drawable), null, Modifier.size(FilterChipDefaults.IconSize)) }
+                },
                 shape = HaacShapes.Medium,
             )
         }
