@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.stacknoise.haac.app.access.RequestLocalNetworkAccess
 import com.stacknoise.haac.app.lock.UnlockScreen
 import com.stacknoise.haac.app.lock.UnlockViewModel
 import com.stacknoise.haac.app.start.StartViewModel
@@ -46,6 +47,7 @@ fun HaacNavHost(start: StartViewModel = hiltViewModel()) {
                 },
             ),
         ) {
+            RequestLocalNetworkAccess()
             OnboardingScreen(onSignedIn = navController::openMain)
         }
         composable(

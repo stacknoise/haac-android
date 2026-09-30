@@ -15,12 +15,20 @@ Lists every class and function of the app with signature, file and a one-line KD
 | `MainActivity` | `class MainActivity : FragmentActivity()` | `app/src/main/kotlin/com/stacknoise/haac/app/MainActivity.kt` | The single activity of the app; hosts the Compose navigation graph (concept 3). A [FragmentActivity], |
 | `MainActivity.onCreate` | `override fun onCreate(savedInstanceState: Bundle?)` | `app/src/main/kotlin/com/stacknoise/haac/app/MainActivity.kt` | Enables edge-to-edge drawing and sets the themed Compose content. |
 
+## com.stacknoise.haac.app.access
+
+| Symbol | Signature | File | Description |
+| --- | --- | --- | --- |
+| `LocalNetworkViewModel` | `class LocalNetworkViewModel @Inject constructor(private val access: LocalNetworkAccess) : ViewModel()` | `app/src/main/kotlin/com/stacknoise/haac/app/access/LocalNetworkViewModel.kt` | Gives the composable below the current state of the local network permission (concept 4.2). |
+| `LocalNetworkViewModel.granted` | `fun granted(): Boolean` | `app/src/main/kotlin/com/stacknoise/haac/app/access/LocalNetworkViewModel.kt` | True if the permission is granted or not needed on this Android version. |
+| `RequestLocalNetworkAccess` | `fun RequestLocalNetworkAccess(enabled: Boolean = true, onResult: (Boolean) -> Unit = {}, viewModel: LocalNetworkViewModel = hiltViewModel())` | `app/src/main/kotlin/com/stacknoise/haac/app/access/RequestLocalNetworkAccess.kt` | Asks once for `ACCESS_LOCAL_NETWORK` while [enabled] and the permission is missing (concept 4.2, 4.5); the |
+
 ## com.stacknoise.haac.app.connection
 
 | Symbol | Signature | File | Description |
 | --- | --- | --- | --- |
 | `ConnectionBanner` | `fun ConnectionBanner(state: ConnectionState, onRetry: () -> Unit, onOpenSettings: () -> Unit)` | `app/src/main/kotlin/com/stacknoise/haac/app/connection/ConnectionBanner.kt` | Banner above the main area while the connection is lost or failed (concept 14.1): the error with its code |
-| `ConnectionViewModel` | `class ConnectionViewModel @Inject constructor(private val supervisor: ConnectionSupervisor, private val active: ActiveInstanceStore, private val sync: EntitySync) : ViewModel()` | `app/src/main/kotlin/com/stacknoise/haac/app/connection/ConnectionViewModel.kt` | Connects the active instance while the main area is visible and syncs it on every new connection (concept |
+| `ConnectionViewModel` | `class ConnectionViewModel @Inject constructor(private val supervisor: ConnectionSupervisor, private val active: ActiveInstanceStore, private val sync: EntitySync, private val servers: ServerDao) : ViewModel()` | `app/src/main/kotlin/com/stacknoise/haac/app/connection/ConnectionViewModel.kt` | Connects the active instance while the main area is visible and syncs it on every new connection (concept |
 | `ConnectionViewModel.onForeground` | `fun onForeground()` | `app/src/main/kotlin/com/stacknoise/haac/app/connection/ConnectionViewModel.kt` | The main area is visible: follow the active instance, also when it changes, and sync each connection. |
 | `ConnectionViewModel.onBackground` | `fun onBackground()` | `app/src/main/kotlin/com/stacknoise/haac/app/connection/ConnectionViewModel.kt` | The main area is hidden or the app went to the background: close the connection. |
 | `ConnectionViewModel.retry` | `fun retry()` | `app/src/main/kotlin/com/stacknoise/haac/app/connection/ConnectionViewModel.kt` | Try again* in the banner. |
@@ -377,6 +385,15 @@ Lists every class and function of the app with signature, file and a one-line KD
 | `ErrorModule` | `abstract class ErrorModule` | `core/error/src/main/kotlin/com/stacknoise/haac/core/error/di/ErrorModule.kt` | Provides the [ErrorFactory] implementation. |
 | `ErrorModule.bindErrorFactory` | `abstract fun bindErrorFactory(factory: DefaultErrorFactory): ErrorFactory` | `core/error/src/main/kotlin/com/stacknoise/haac/core/error/di/ErrorModule.kt` | Binds [DefaultErrorFactory] as the app-wide [ErrorFactory]. |
 
+## com.stacknoise.haac.core.network.access
+
+| Symbol | Signature | File | Description |
+| --- | --- | --- | --- |
+| `LocalNetworkAccess` | `fun interface LocalNetworkAccess` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/access/LocalNetworkAccess.kt` | Whether the app may reach devices in the local network (concept 4.2, 4.5). |
+| `LocalNetworkAccess.granted` | `fun granted(): Boolean` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/access/LocalNetworkAccess.kt` | True if discovery and connections to local addresses are allowed on this device. |
+| `AndroidLocalNetworkAccess` | `class AndroidLocalNetworkAccess @Inject constructor(@ApplicationContext private val context: Context) : LocalNetworkAccess` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/access/LocalNetworkAccess.kt` | Reads the `ACCESS_LOCAL_NETWORK` runtime permission; Android versions before API 37 never block local traffic. |
+| `AndroidLocalNetworkAccess.granted` | `override fun granted(): Boolean` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/access/LocalNetworkAccess.kt` | Always true before API 37, otherwise the state of the permission. |
+
 ## com.stacknoise.haac.core.network.auth
 
 | Symbol | Signature | File | Description |
@@ -504,6 +521,8 @@ Lists every class and function of the app with signature, file and a one-line KD
 
 | Symbol | Signature | File | Description |
 | --- | --- | --- | --- |
+| `AccessBindings` | `abstract class AccessBindings` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/di/AccessBindings.kt` | Bindings of the local network permission (concept 4.2). |
+| `AccessBindings.bindLocalNetworkAccess` | `abstract fun bindLocalNetworkAccess(access: AndroidLocalNetworkAccess): LocalNetworkAccess` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/di/AccessBindings.kt` | The state of `ACCESS_LOCAL_NETWORK`. |
 | `ConnectionScope` | `annotation class ConnectionScope` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/di/ConnectionScope.kt` | The app-wide coroutine scope of the live connection; runs on the main thread (concept 11.4). |
 | `NetworkBindings` | `abstract class NetworkBindings` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/di/NetworkBindings.kt` | Factory and service bindings of the network topic (concept 17.2). |
 | `NetworkBindings.bindBridgeMessageFactory` | `abstract fun bindBridgeMessageFactory(factory: DefaultBridgeMessageFactory): BridgeMessageFactory` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/di/NetworkBindings.kt` | WebSocket messages with increasing ids. |
@@ -532,8 +551,8 @@ Lists every class and function of the app with signature, file and a one-line KD
 | `HaServiceParser` | `object HaServiceParser` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/discovery/HaServiceParser.kt` | Builds a [DiscoveredServer] from a resolved `_home-assistant._tcp` service and its TXT record. |
 | `HaServiceParser.parse` | `fun parse(serviceName: String, ip: String, port: Int, txt: Map<String, ByteArray?>): DiscoveredServer` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/discovery/HaServiceParser.kt` | Returns the server; the URL is the TXT `base_url`, else `http://<ip>:<port>` as HA announces it. |
 | `HaServiceParser.normalizeHost` | `fun normalizeHost(host: String): String` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/discovery/HaServiceParser.kt` | Lower case without IPv6 brackets and zone, so hosts from URLs and NSD compare equal. |
-| `NsdServerDiscovery` | `class NsdServerDiscovery @Inject constructor(private val nsd: NsdManager) : ServerDiscovery` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/discovery/NsdServerDiscovery.kt` | LAN discovery with Android's NsdManager (concept 4.2, M-01). |
-| `NsdServerDiscovery.servers` | `override fun servers(): Flow<List<DiscoveredServer>>` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/discovery/NsdServerDiscovery.kt` | Discovers while collected; stops discovery when the collector goes away. |
+| `NsdServerDiscovery` | `class NsdServerDiscovery @Inject constructor(private val nsd: NsdManager, private val localNetwork: LocalNetworkAccess) : ServerDiscovery` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/discovery/NsdServerDiscovery.kt` | LAN discovery with Android's NsdManager (concept 4.2, M-01). |
+| `NsdServerDiscovery.servers` | `override fun servers(): Flow<List<DiscoveredServer>>` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/discovery/NsdServerDiscovery.kt` | Discovers while collected; without local network access the flow ends at once (concept 4.2). |
 | `NsdServerDiscovery.publish` | `fun publish()` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/discovery/NsdServerDiscovery.kt` | Sends a snapshot of all resolved servers. |
 | `NsdServerDiscovery.onDiscoveryStarted` | `override fun onDiscoveryStarted(serviceType: String)` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/discovery/NsdServerDiscovery.kt` | Discovery is running; nothing to do. |
 | `NsdServerDiscovery.onDiscoveryStopped` | `override fun onDiscoveryStopped(serviceType: String)` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/discovery/NsdServerDiscovery.kt` | Discovery stopped because the flow was closed. |
@@ -565,9 +584,9 @@ Lists every class and function of the app with signature, file and a one-line KD
 | `AuthProvidersProbe.check` | `override suspend fun check(url: HttpUrl)` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/endpoint/EndpointProbe.kt` | NET-001 if unreachable, NET-004 if something else answers, NET-006 for cleartext to a public host. |
 | `EndpointSelector` | `fun interface EndpointSelector` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/endpoint/EndpointSelector.kt` | Chooses the address of an instance to connect to (concept 4.5, 17.2). |
 | `EndpointSelector.select` | `suspend fun select(server: ServerEntity): HttpUrl` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/endpoint/EndpointSelector.kt` | The first usable address of [server]; the error of the last attempt if none answers. |
-| `DefaultEndpointSelector` | `class DefaultEndpointSelector @Inject constructor(private val homeNetwork: HomeNetworkCheck, private val probe: EndpointProbe) : EndpointSelector` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/endpoint/EndpointSelector.kt` | Selection rules of concept 4.5: the internal address first if it is `https://`, the user allowed it |
+| `DefaultEndpointSelector` | `class DefaultEndpointSelector @Inject constructor(private val homeNetwork: HomeNetworkCheck, private val probe: EndpointProbe, private val localNetwork: LocalNetworkAccess) : EndpointSelector` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/endpoint/EndpointSelector.kt` | Selection rules of concept 4.5: the internal address first if it is `https://`, the user allowed it |
 | `DefaultEndpointSelector.select` | `override suspend fun select(server: ServerEntity): HttpUrl` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/endpoint/EndpointSelector.kt` | Tries the candidates in order. |
-| `DefaultEndpointSelector.candidates` | `private suspend fun candidates(server: ServerEntity): List<HttpUrl>` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/endpoint/EndpointSelector.kt` | Internal address if allowed, then external address. |
+| `DefaultEndpointSelector.candidates` | `private suspend fun candidates(server: ServerEntity): List<HttpUrl>` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/endpoint/EndpointSelector.kt` | Internal address if allowed and local network access is granted, then external address. |
 | `DefaultEndpointSelector.internalAllowed` | `private suspend fun internalAllowed(server: ServerEntity, url: HttpUrl): Boolean` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/endpoint/EndpointSelector.kt` | A device that is not this server cannot complete TLS; plain `http://` needs the home network check. |
 | `HomeNetworkCheck` | `fun interface HomeNetworkCheck` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/endpoint/HomeNetworkCheck.kt` | Decides whether the device is in the home network of an instance (concept 4.5). |
 | `HomeNetworkCheck.confirms` | `suspend fun confirms(instanceUuid: String, host: String): Boolean` | `core/network/src/main/kotlin/com/stacknoise/haac/core/network/endpoint/HomeNetworkCheck.kt` | True if HA installation [instanceUuid] announces itself on this network at [host]. |

@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 /** SDK levels and JVM target shared by all Android modules (concept 3.3). */
 internal object AndroidSdk {
     const val COMPILE = 37
-    const val TARGET = 36
+    const val TARGET = 37
     const val MIN = 28
     val JAVA = JavaVersion.VERSION_17
     val JVM = JvmTarget.JVM_17
