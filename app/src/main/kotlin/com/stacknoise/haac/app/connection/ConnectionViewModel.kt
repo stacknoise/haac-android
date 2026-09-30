@@ -2,6 +2,7 @@ package com.stacknoise.haac.app.connection
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.error.ErrorAction
 import com.stacknoise.haac.core.network.connection.ConnectionState
@@ -9,12 +10,16 @@ import com.stacknoise.haac.core.network.connection.ConnectionSupervisor
 import com.stacknoise.haac.feature.entities.data.EntitySync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -22,11 +27,13 @@ import kotlinx.coroutines.launch
  * Connects the active instance while the main area is visible and syncs it on every new connection (concept
  * 9.1, 11.4): the WebSocket is closed in the background and rebuilt with the reconnect steps when the app returns.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ConnectionViewModel @Inject constructor(
     private val supervisor: ConnectionSupervisor,
     private val active: ActiveInstanceStore,
     private val sync: EntitySync,
+    private val servers: ServerDao,
 ) : ViewModel() {
     private val serverId = MutableStateFlow<String?>(null)
     private var following: Job? = null
@@ -36,6 +43,11 @@ class ConnectionViewModel @Inject constructor(
 
     /** The connection state for the banner. */
     val state: StateFlow<ConnectionState> = supervisor.state
+
+    /** True while the active instance has an internal address, which needs local network access (concept 4.5). */
+    val hasInternalAddress: StateFlow<Boolean> = serverId.flatMapLatest { id ->
+        id?.let { servers.observe(it) }?.map { it?.internalUrl != null } ?: flowOf(false)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     /** The instance whose token HA no longer accepts (action *Sign in*), or null (concept 14.1). */
     val signInRequired: StateFlow<String?> = combine(supervisor.state, serverId) { state, id ->

@@ -4,4 +4,7 @@
     <!-- Default network changes for the address choice (concept 4.5). -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Discovery and internal addresses; enforced from targetSdk 37 (concept 4.2, 4.5). -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+
 </manifest>

@@ -3,6 +3,7 @@ package com.stacknoise.haac.core.network.discovery
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.Build
+import com.stacknoise.haac.core.network.access.LocalNetworkAccess
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.channels.awaitClose
@@ -12,14 +13,18 @@ import kotlinx.coroutines.flow.callbackFlow
 /**
  * LAN discovery with Android's NsdManager (concept 4.2, M-01).
  *
- * With targetSdk 36 no runtime permission is needed. Targeting API 37 will require
- * ACCESS_LOCAL_NETWORK or the NSD system picker (concept 4.2).
+ * From targetSdk 37 the runtime permission ACCESS_LOCAL_NETWORK is required; the app asks for it (concept 4.2).
  */
 class NsdServerDiscovery @Inject constructor(
     private val nsd: NsdManager,
+    private val localNetwork: LocalNetworkAccess,
 ) : ServerDiscovery {
-    /** Discovers while collected; stops discovery when the collector goes away. */
+    /** Discovers while collected; without local network access the flow ends at once (concept 4.2). */
     override fun servers(): Flow<List<DiscoveredServer>> = callbackFlow {
+        if (!localNetwork.granted()) {
+            close()
+            return@callbackFlow awaitClose()
+        }
         val found = LinkedHashMap<String, DiscoveredServer>()
         /** Sends a snapshot of all resolved servers. */
         fun publish() = synchronized(found) { trySend(found.values.toList()) }

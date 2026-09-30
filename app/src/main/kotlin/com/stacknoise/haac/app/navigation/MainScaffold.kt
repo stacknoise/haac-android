@@ -24,6 +24,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.stacknoise.haac.app.access.RequestLocalNetworkAccess
 import com.stacknoise.haac.app.connection.ConnectionBanner
 import com.stacknoise.haac.app.connection.ConnectionViewModel
 import com.stacknoise.haac.app.licenses.LicensesScreen
@@ -47,6 +48,8 @@ fun MainScaffold(actions: MainActions, connection: ConnectionViewModel = hiltVie
         onStopOrDispose { connection.onBackground() }
     }
     LaunchedEffect(signInRequired) { signInRequired?.let(actions.onSignedOut) }
+    val hasInternalAddress by connection.hasInternalAddress.collectAsStateWithLifecycle()
+    RequestLocalNetworkAccess(enabled = hasInternalAddress, onResult = { if (it) connection.retry() })
     key(activeId) { MainContent(actions, connection) }
 }
 

@@ -4,6 +4,7 @@ import com.stacknoise.haac.core.database.server.ServerEntity
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.error.NetworkException
+import com.stacknoise.haac.core.network.access.LocalNetworkAccess
 import javax.inject.Inject
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -22,6 +23,7 @@ fun interface EndpointSelector {
 class DefaultEndpointSelector @Inject constructor(
     private val homeNetwork: HomeNetworkCheck,
     private val probe: EndpointProbe,
+    private val localNetwork: LocalNetworkAccess,
 ) : EndpointSelector {
     /** Tries the candidates in order. */
     override suspend fun select(server: ServerEntity): HttpUrl {
@@ -37,9 +39,9 @@ class DefaultEndpointSelector @Inject constructor(
         throw failure
     }
 
-    /** Internal address if allowed, then external address. */
+    /** Internal address if allowed and local network access is granted, then external address. */
     private suspend fun candidates(server: ServerEntity): List<HttpUrl> = listOfNotNull(
-        server.internalUrl?.toHttpUrlOrNull()?.takeIf { internalAllowed(server, it) },
+        server.internalUrl?.toHttpUrlOrNull()?.takeIf { localNetwork.granted() && internalAllowed(server, it) },
         server.externalUrl?.toHttpUrlOrNull(),
     )
 

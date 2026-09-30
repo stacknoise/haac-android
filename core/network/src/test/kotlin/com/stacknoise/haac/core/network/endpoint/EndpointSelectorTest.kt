@@ -25,6 +25,7 @@ class EndpointSelectorTest {
     private val probed = mutableListOf<String>()
     private val unreachable = mutableSetOf<String>()
     private var home = false
+    private var localNetwork = true
     private val homeChecks = mutableListOf<Pair<String, String>>()
 
     private val selector = DefaultEndpointSelector(
@@ -36,6 +37,7 @@ class EndpointSelectorTest {
             probed += url.toString()
             if (url.toString() in unreachable) throw NetworkException(ErrorCode.NET_UNREACHABLE)
         },
+        localNetwork = { localNetwork },
     )
 
     private fun server(
@@ -112,6 +114,15 @@ class EndpointSelectorTest {
         assertFalse(check(flowOf(listOf(found))).confirms("f00d", "192.168.1.99"))
         assertFalse(check(flowOf(listOf(other))).confirms("f00d", "192.168.1.10"))
         assertFalse(check(flow { awaitCancellation() }).confirms("f00d", "192.168.1.10"))
+    }
+
+    @Test
+    fun `internal address is skipped without local network access`() = runTest {
+        home = true
+        localNetwork = false
+        assertEquals(external, selector.select(server(always = true)).toString())
+        assertEquals(listOf(external), probed)
+        assertEquals(emptyList<Pair<String, String>>(), homeChecks)
     }
 
     @Test
