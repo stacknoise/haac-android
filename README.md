@@ -15,6 +15,7 @@ This limits what the app shows and controls. It is not a Home Assistant permissi
 - Supported entity domains in v1: switch, sensor, climate.
 - Android 9 (API 28) or newer.
 - Requires Home Assistant 2026.9.0 or newer with HAAC Bridge installed.
+- Install: download `haac-vX.Y.Z-sideload.apk` from the [latest GitHub Release](https://github.com/stacknoise/haac-android/releases/latest), compare its SHA-256 with the `.sha256` file next to it and open it on the phone (allow installs from this source once).
 
 ## Screenshots
 

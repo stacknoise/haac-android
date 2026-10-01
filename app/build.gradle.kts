@@ -5,10 +5,14 @@ plugins {
     alias(libs.plugins.aboutlibraries)
 }
 
+val appVersion = "0.1.0"
+
 android {
     defaultConfig {
-        versionCode = 1
-        versionName = "0.1.0"
+        // versionCode is derived from the version (concept 16.4): 0.1.0 is 100, 1.2.3 is 10203.
+        val (major, minor, patch) = appVersion.split(".").map(String::toInt)
+        versionCode = major * 10000 + minor * 100 + patch
+        versionName = appVersion
     }
 }
 
