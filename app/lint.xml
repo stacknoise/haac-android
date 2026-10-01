@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The launcher icons are final and must not be regenerated or moved (CLAUDE.md, concept 15.6). -->
+<!-- The launcher icons must not be moved; regenerate them only for a new icon (CLAUDE.md, concept 15.6). -->
 <lint>
     <issue id="ObsoleteSdkInt">
         <ignore path="src/main/res/mipmap-anydpi-v26" />
