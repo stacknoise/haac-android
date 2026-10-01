@@ -26,6 +26,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
+import com.stacknoise.haac.core.common.ui.theme.haacFilterChipBorder
+import com.stacknoise.haac.core.common.ui.theme.haacFilterChipColors
+import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
+import com.stacknoise.haac.core.common.ui.theme.haacSegmentedColors
+import com.stacknoise.haac.core.common.ui.theme.haacSwitchColors
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.ClimateMode
 import com.stacknoise.haac.feature.entities.domain.ControlRequest
@@ -62,7 +67,12 @@ private fun ToggleRow(control: EntityControl.Toggle, enabled: Boolean, onControl
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f),
         )
-        Switch(checked = control.on, onCheckedChange = { onControl(control.flipped()) }, enabled = enabled)
+        Switch(
+            checked = control.on,
+            onCheckedChange = { onControl(control.flipped()) },
+            enabled = enabled,
+            colors = haacSwitchColors(),
+        )
     }
 }
 
@@ -74,7 +84,8 @@ private fun PowerRow(control: EntityControl.Power, enabled: Boolean, onControl: 
         OutlinedButton(
             onClick = { onControl(request) },
             enabled = enabled && request != null,
-            shape = HaacShapes.Medium,
+            shape = HaacShapes.Button,
+            colors = haacOutlinedButtonColors(),
         ) {
             Text(stringResource(if (control.on) R.string.detail_turn_off else R.string.detail_turn_on))
         }
@@ -94,7 +105,8 @@ private fun HvacModeRow(control: EntityControl.HvacModes, enabled: Boolean, onCo
                 SegmentedButton(
                     selected = mode == control.current,
                     onClick = { onControl(ControlRequest.SetHvacMode(mode)) },
-                    shape = SegmentedButtonDefaults.itemShape(index, control.modes.size),
+                    shape = SegmentedButtonDefaults.itemShape(index, control.modes.size, HaacShapes.Small),
+                    colors = haacSegmentedColors(),
                     enabled = enabled,
                 ) { Text(modeLabel(mode), maxLines = 1) }
             }
@@ -180,7 +192,9 @@ private fun Chips(choices: List<String>, current: String?, enabled: Boolean, onS
                 onClick = { onSelect(choice) },
                 label = { Text(modeLabel(choice)) },
                 enabled = enabled,
-                shape = HaacShapes.Medium,
+                shape = HaacShapes.Small,
+                colors = haacFilterChipColors(),
+                border = haacFilterChipBorder(enabled, choice == current),
             )
         }
     }

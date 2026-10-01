@@ -8,12 +8,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SecureTextField
+import androidx.compose.material3.OutlinedSecureTextField
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
@@ -28,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacTextFieldColors
 import com.stacknoise.haac.feature.onboarding.R
 
 /** Where the install hint links to (concept 4.2 step 4). */
@@ -37,7 +37,7 @@ private const val BridgeRepositoryUrl = "https://github.com/stacknoise/haac-brid
 @Composable
 internal fun CredentialFields(state: OnboardingUiState, password: TextFieldState, actions: OnboardingActions) {
     Spacer(Modifier.height(16.dp))
-    TextField(
+    OutlinedTextField(
         value = state.username,
         onValueChange = actions.onUsernameChanged,
         placeholder = { Text(stringResource(R.string.onboarding_username)) },
@@ -50,7 +50,7 @@ internal fun CredentialFields(state: OnboardingUiState, password: TextFieldState
         modifier = Modifier.fillMaxWidth().semantics { contentType = ContentType.Username },
     )
     Spacer(Modifier.height(12.dp))
-    SecureTextField(
+    OutlinedSecureTextField(
         state = password,
         placeholder = { Text(stringResource(R.string.onboarding_password)) },
         leadingIcon = { FieldIcon(R.drawable.ic_onboarding_lock) },
@@ -68,7 +68,7 @@ internal fun CodeSection(state: OnboardingUiState, actions: OnboardingActions) {
     Spacer(Modifier.height(8.dp))
     Text(stringResource(R.string.onboarding_code_text), style = MaterialTheme.typography.bodyMedium)
     Spacer(Modifier.height(16.dp))
-    TextField(
+    OutlinedTextField(
         value = state.code,
         onValueChange = actions.onCodeChanged,
         placeholder = { Text(stringResource(R.string.onboarding_code_hint)) },
@@ -98,10 +98,6 @@ private fun FieldIcon(@DrawableRes icon: Int) {
     Icon(painterResource(icon), contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
-/** Filled fields in the surface colour without an indicator line, as in the mockup. */
+/** White fields with a pale outline that turns accent-green on focus. */
 @Composable
-internal fun fieldColors(): TextFieldColors = TextFieldDefaults.colors(
-    focusedIndicatorColor = MaterialTheme.colorScheme.surfaceContainer,
-    unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceContainer,
-    disabledIndicatorColor = MaterialTheme.colorScheme.surfaceContainer,
-)
+internal fun fieldColors(): TextFieldColors = haacTextFieldColors()

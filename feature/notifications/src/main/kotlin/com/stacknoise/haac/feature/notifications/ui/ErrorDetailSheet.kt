@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.feature.notifications.R
 import com.stacknoise.haac.feature.notifications.domain.NotificationItem
@@ -59,10 +60,11 @@ internal fun ErrorDetailSheet(item: NotificationItem, instanceName: String?, onD
                     val details = rows.joinToString("\n") { (label, value) -> "$label: $value" }
                     scope.launch { clipboard.setClipEntry(ClipEntry(ClipData.newPlainText(code.code, details))) }
                 },
-                shape = HaacShapes.Medium,
+                shape = HaacShapes.Button,
+                colors = haacOutlinedButtonColors(),
                 modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
             ) {
-                Text(stringResource(R.string.notifications_detail_copy), color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.notifications_detail_copy))
             }
         }
     }

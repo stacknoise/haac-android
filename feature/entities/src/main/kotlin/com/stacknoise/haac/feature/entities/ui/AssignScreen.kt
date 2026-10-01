@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.feature.entities.R
 
 /** *Add to room* for entities of a notification entry (M-09, concept 9.1); [onClose] after adding or on Back. */
@@ -42,7 +43,7 @@ fun AssignScreen(onClose: () -> Unit, viewModel: AssignViewModel = hiltViewModel
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 20.dp),
     ) {
         IconButton(onClick = onClose, modifier = Modifier.padding(top = 8.dp)) {
             Icon(painterResource(R.drawable.ic_entities_back), stringResource(R.string.add_back))
@@ -76,10 +77,11 @@ fun AssignScreen(onClose: () -> Unit, viewModel: AssignViewModel = hiltViewModel
                 }
             }
         }
-        OutlinedButton(
+        Button(
             onClick = viewModel::onAdd,
             enabled = chosen != null && state.entries.isNotEmpty() && !state.status.busy,
-            shape = HaacShapes.Medium,
+            shape = HaacShapes.Button,
+            colors = haacButtonColors(),
             modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp).height(56.dp),
         ) {
             val label = chosen?.let { stringResource(R.string.assign_button, it.name) }

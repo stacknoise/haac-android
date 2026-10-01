@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -37,6 +37,7 @@ import com.stacknoise.haac.core.common.ui.SecureWindow
 import com.stacknoise.haac.core.common.ui.findActivity
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
+import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.core.error.ErrorCode
 
 /**
@@ -97,11 +98,12 @@ fun UnlockContent(state: UnlockUiState, onUnlock: () -> Unit, onUsePassword: () 
         state.error?.let { ErrorMessage(it) }
         Spacer(Modifier.height(32.dp))
         if (!keyGone) {
-            OutlinedButton(
+            Button(
                 onClick = onUnlock,
                 enabled = !state.busy,
-                shape = HaacShapes.Medium,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = HaacShapes.Button,
+                colors = haacButtonColors(),
+                modifier = Modifier.fillMaxWidth().height(58.dp),
             ) {
                 if (state.busy) {
                     CircularProgressIndicator(modifier = Modifier.height(20.dp), strokeWidth = 2.dp)

@@ -97,7 +97,7 @@ private fun ArcCenter(tile: Tile, climate: TileContent.Climate) {
 /** A 270° arc open at the bottom; the accent part shows [fraction], the track alone when it is null. */
 @Composable
 private fun TemperatureArc(fraction: Float?, modifier: Modifier) {
-    val track = MaterialTheme.colorScheme.surfaceVariant
+    val track = MaterialTheme.colorScheme.outline
     val accent = MaterialTheme.colorScheme.primary
     Canvas(modifier) {
         val width = ArcStroke.toPx()

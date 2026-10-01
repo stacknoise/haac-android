@@ -1,6 +1,7 @@
 package com.stacknoise.haac.feature.notifications.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,12 +15,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.feature.notifications.R
 import com.stacknoise.haac.feature.notifications.domain.NotificationItem
 
@@ -42,7 +45,7 @@ internal fun SwipeToDelete(
     SwipeToDismissBox(
         state = state,
         enableDismissFromStartToEnd = false,
-        modifier = Modifier.semantics {
+        modifier = Modifier.clip(HaacShapes.Card).semantics {
             customActions = listOf(
                 CustomAccessibilityAction(label) {
                     onDelete(item)
@@ -66,6 +69,10 @@ internal fun SwipeToDelete(
             }
         },
     ) {
-        Box(Modifier.background(MaterialTheme.colorScheme.background)) { content() }
+        Box(
+            Modifier
+                .background(MaterialTheme.colorScheme.surface, HaacShapes.Card)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, HaacShapes.Card),
+        ) { content() }
     }
 }

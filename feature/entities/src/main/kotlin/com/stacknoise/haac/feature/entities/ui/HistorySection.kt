@@ -30,6 +30,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
+import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
+import com.stacknoise.haac.core.common.ui.theme.haacSegmentedColors
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.HistoryChart
 import com.stacknoise.haac.feature.entities.domain.HistoryPreset
@@ -79,7 +81,8 @@ private fun PresetRow(current: HistoryPreset, onPreset: (HistoryPreset) -> Unit,
             SegmentedButton(
                 selected = preset == current,
                 onClick = { if (preset == HistoryPreset.CUSTOM) onCustom() else onPreset(preset) },
-                shape = SegmentedButtonDefaults.itemShape(index, HistoryPreset.entries.size),
+                shape = SegmentedButtonDefaults.itemShape(index, HistoryPreset.entries.size, HaacShapes.Small),
+                colors = haacSegmentedColors(),
             ) { Text(stringResource(labels[index]), maxLines = 1) }
         }
     }
@@ -96,7 +99,12 @@ private fun HistoryBody(status: HistoryStatus, onRetry: () -> Unit) {
         HistoryStatus.Offline -> HistoryNote(stringResource(R.string.history_offline))
         is HistoryStatus.Failed -> Column {
             ErrorMessage(status.code)
-            OutlinedButton(onClick = onRetry, shape = HaacShapes.Medium, modifier = Modifier.padding(top = 8.dp)) {
+            OutlinedButton(
+                onClick = onRetry,
+                shape = HaacShapes.Button,
+                colors = haacOutlinedButtonColors(),
+                modifier = Modifier.padding(top = 8.dp),
+            ) {
                 Text(stringResource(R.string.history_retry))
             }
         }

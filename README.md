@@ -55,7 +55,7 @@ This limits what the app shows and controls. It is not a Home Assistant permissi
 - Every error has a code (`HAAC-…`) and a plain-language message; Settings shows diagnostics (connection, last sync, versions).
 
 **App**
-- Dark Material 3 theme with the Inter font, flavors `play` and `sideload`, open-source licenses under *Settings → About*.
+- Light "Salbei" Material 3 theme with the Figtree font, flavors `play` and `sideload`, open-source licenses under *Settings → About*.
 
 ## Build
 
@@ -75,4 +75,4 @@ See [SECURITY.md](SECURITY.md).
 
 ## License
 
-[Apache License 2.0](LICENSE). See [NOTICE](NOTICE). The bundled Inter font is licensed under the SIL Open Font License 1.1 ([core/common/FONT-LICENSE-Inter.txt](core/common/FONT-LICENSE-Inter.txt)).
+[Apache License 2.0](LICENSE). See [NOTICE](NOTICE). The bundled Figtree font is licensed under the SIL Open Font License 1.1 ([core/common/FONT-LICENSE-Figtree.txt](core/common/FONT-LICENSE-Figtree.txt)).

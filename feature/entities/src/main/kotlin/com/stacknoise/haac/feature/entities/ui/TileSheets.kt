@@ -1,8 +1,10 @@
 package com.stacknoise.haac.feature.entities.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.feature.entities.R
@@ -113,9 +116,10 @@ private fun RemoveButtons(ids: List<String>, @StringRes here: Int, @StringRes ev
 private fun SheetButton(@StringRes text: Int, color: Color = Color.Unspecified, onClick: () -> Unit) {
     OutlinedButton(
         onClick = onClick,
-        shape = HaacShapes.Medium,
-        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        shape = HaacShapes.Button,
+        border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 54.dp).padding(top = 8.dp),
     ) {
-        Text(stringResource(text), color = color)
+        Text(stringResource(text), color = if (color == Color.Unspecified) HaacColors.OnSurfaceVariantStrong else color)
     }
 }

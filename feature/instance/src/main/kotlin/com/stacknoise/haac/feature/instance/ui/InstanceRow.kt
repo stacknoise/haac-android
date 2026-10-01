@@ -1,6 +1,7 @@
 package com.stacknoise.haac.feature.instance.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.network.connection.ConnectionState
 import com.stacknoise.haac.feature.instance.R
 import com.stacknoise.haac.feature.instance.domain.InstanceItem
@@ -28,7 +30,13 @@ fun InstanceRow(item: InstanceItem, connection: ConnectionState, modifier: Modif
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = modifier,
     ) {
-        Box(Modifier.size(12.dp).clip(CircleShape).background(Color(item.accent)))
+        Box(
+            Modifier
+                .size(12.dp)
+                .clip(CircleShape)
+                .background(Color(item.accent))
+                .border(1.dp, HaacColors.OutlineStrong, CircleShape),
+        )
         Column {
             Text(item.label(), style = MaterialTheme.typography.titleMedium)
             Text(

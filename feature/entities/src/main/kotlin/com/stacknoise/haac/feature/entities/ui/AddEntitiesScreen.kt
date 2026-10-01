@@ -1,21 +1,22 @@
 package com.stacknoise.haac.feature.entities.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -26,15 +27,24 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.theme.HaacCheckbox
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
+import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
+import com.stacknoise.haac.core.common.ui.theme.haacSegmentedColors
+import com.stacknoise.haac.core.common.ui.theme.haacTextFieldColors
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.PickerRow
 
@@ -48,17 +58,13 @@ fun AddEntitiesScreen(onClose: () -> Unit, viewModel: AddEntitiesViewModel = hil
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .imePadding()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 20.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
             IconButton(onClick = onClose) {
                 Icon(painterResource(R.drawable.ic_entities_back), stringResource(R.string.add_back))
             }
-            Text(
-                state.roomName,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Text(state.roomName.uppercase(), style = SectionLabelStyle)
         }
         Text(stringResource(R.string.add_title), style = MaterialTheme.typography.headlineLarge)
         DomainTabs(state, viewModel::onDomain)
@@ -68,7 +74,8 @@ fun AddEntitiesScreen(onClose: () -> Unit, viewModel: AddEntitiesViewModel = hil
             placeholder = { Text(stringResource(R.string.add_filter)) },
             leadingIcon = { Icon(painterResource(R.drawable.ic_entities_search), contentDescription = null) },
             singleLine = true,
-            shape = HaacShapes.Small,
+            shape = HaacShapes.Medium,
+            colors = haacTextFieldColors(),
             modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
         )
         state.status.error?.let { ErrorMessage(it) }
@@ -91,20 +98,20 @@ private fun DomainTabs(state: AddEntitiesUiState, onSelect: (String) -> Unit) {
     val single = state.domains.singleOrNull()
     if (single != null) {
         Text(
-            "${domainLabel(single)} · ${state.counts[single] ?: 0}",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            "${domainLabel(single)} · ${state.counts[single] ?: 0}".uppercase(),
+            style = SectionLabelStyle,
             modifier = Modifier.padding(top = 16.dp),
         )
         return
     }
     if (state.domains.isEmpty()) return
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(top = 16.dp).height(44.dp)) {
         state.domains.forEachIndexed { index, domain ->
             SegmentedButton(
                 selected = domain == state.input.domain,
                 onClick = { onSelect(domain) },
-                shape = SegmentedButtonDefaults.itemShape(index, state.domains.size),
+                shape = SegmentedButtonDefaults.itemShape(index, state.domains.size, HaacShapes.Small),
+                colors = haacSegmentedColors(),
                 label = { Text("${domainLabel(domain)} ${state.counts[domain] ?: 0}", maxLines = 1) },
             )
         }
@@ -116,11 +123,18 @@ private fun DomainTabs(state: AddEntitiesUiState, onSelect: (String) -> Unit) {
 private fun PickerRowItem(row: PickerRow, picked: Boolean, onToggle: () -> Unit) {
     val enabled = !row.inRoom
     val secondary = MaterialTheme.colorScheme.onSurfaceVariant
+    val checked = picked || row.inRoom
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().clickable(enabled = enabled, onClick = onToggle).padding(vertical = 4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 3.dp)
+            .clip(HaacShapes.Medium)
+            .background(if (picked) HaacColors.AccentTint else Color.Transparent)
+            .toggleable(checked, enabled, Role.Checkbox) { onToggle() }
+            .padding(horizontal = 12.dp, vertical = 12.dp),
     ) {
-        Checkbox(checked = picked || row.inRoom, onCheckedChange = { onToggle() }, enabled = enabled)
+        HaacCheckbox(checked = checked, onCheckedChange = null, enabled = enabled)
         Text(
             row.entry.tile.name,
             style = MaterialTheme.typography.bodyLarge,
@@ -148,11 +162,12 @@ private fun PickerRowItem(row: PickerRow, picked: Boolean, onToggle: () -> Unit)
 @Composable
 private fun AddButton(state: AddEntitiesUiState, onAdd: () -> Unit) {
     val total = state.pickedByDomain.values.sum()
-    OutlinedButton(
+    Button(
         onClick = onAdd,
         enabled = total > 0 && !state.status.busy,
-        shape = HaacShapes.Medium,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp).height(64.dp),
+        shape = HaacShapes.Button,
+        colors = haacButtonColors(),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp).heightIn(min = 58.dp),
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             val label = if (total == 0) {

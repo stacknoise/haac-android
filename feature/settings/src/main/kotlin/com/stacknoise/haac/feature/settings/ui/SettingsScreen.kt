@@ -28,9 +28,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.SecureWindow
 import com.stacknoise.haac.core.common.ui.findActivity
+import com.stacknoise.haac.core.common.ui.theme.HaacCard
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
 import com.stacknoise.haac.feature.settings.R
 
 /**
@@ -85,19 +87,21 @@ fun SettingsContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
     ) {
-        Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineMedium)
+        Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineLarge)
         Spacer(Modifier.height(24.dp))
         Text(stringResource(R.string.settings_instance).uppercase(), style = SectionLabelStyle)
         Spacer(Modifier.height(8.dp))
         val instance = state.instance ?: return@Column
-        Text(instance.name, style = MaterialTheme.typography.titleMedium)
-        Text(
-            stringResource(R.string.settings_signed_in_as, instance.userName),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        HaacCard {
+            Text(instance.name, style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(R.string.settings_signed_in_as, instance.userName),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         Spacer(Modifier.height(32.dp))
         instances()
         Spacer(Modifier.height(32.dp))
@@ -113,7 +117,8 @@ fun SettingsContent(
         OutlinedButton(
             onClick = onSignOut,
             enabled = !state.busy,
-            shape = HaacShapes.Medium,
+            shape = HaacShapes.Button,
+            colors = haacOutlinedButtonColors(),
             modifier = Modifier.fillMaxWidth().height(56.dp),
         ) {
             if (state.busy) {

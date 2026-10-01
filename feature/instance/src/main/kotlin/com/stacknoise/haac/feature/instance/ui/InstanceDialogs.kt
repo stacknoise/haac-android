@@ -25,7 +25,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.InstanceAccents
+import com.stacknoise.haac.core.common.ui.theme.haacTextFieldColors
 import com.stacknoise.haac.feature.instance.R
 import com.stacknoise.haac.feature.instance.domain.InstanceItem
 
@@ -44,6 +46,8 @@ fun EditInstanceDialog(item: InstanceItem, onSave: (String, Long) -> Unit, onDis
                     onValueChange = { name = it },
                     label = { Text(stringResource(R.string.instance_name)) },
                     singleLine = true,
+                    shape = HaacShapes.Medium,
+                    colors = haacTextFieldColors(),
                 )
                 AccentChoices(selected = accent, onSelect = { accent = it })
             }

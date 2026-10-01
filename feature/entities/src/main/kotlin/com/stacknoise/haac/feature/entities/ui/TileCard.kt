@@ -30,11 +30,16 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
+import com.stacknoise.haac.core.common.ui.theme.haacSwitchColors
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.Tile
@@ -51,20 +56,23 @@ import com.stacknoise.haac.feature.entities.domain.TileIcon
 @Composable
 internal fun TileCard(tile: Tile, enabled: Boolean, actions: TileActions, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
+    val shape = HaacShapes.Tile
     val on = (tile.content as? TileContent.Switch)?.on == true && tile.available && !tile.withdrawn
     val frame = when {
         tile.withdrawn -> Modifier.dashedBorder(colors.outline)
         on -> Modifier
-            .background(colors.primaryContainer, HaacShapes.Medium)
-            .border(1.dp, colors.primary, HaacShapes.Medium)
-        else -> Modifier.background(colors.surface, HaacShapes.Medium)
+            .background(HaacColors.AccentTint, shape)
+            .border(1.5.dp, HaacColors.AccentBorder, shape)
+        else -> Modifier
+            .background(colors.surface, shape)
+            .border(1.dp, colors.outlineVariant, shape)
     }
     Box(
         modifier = modifier
-            .clip(HaacShapes.Medium)
+            .clip(shape)
             .then(frame)
             .combinedClickable(onClick = { actions.onClick(tile) }, onLongClick = { actions.onLongClick(tile) })
-            .padding(16.dp),
+            .padding(18.dp),
     ) {
         when {
             tile.withdrawn -> WithdrawnContent(tile)
@@ -77,15 +85,9 @@ internal fun TileCard(tile: Tile, enabled: Boolean, actions: TileActions, modifi
 /** Icon (with the toggle of a switch), then value or name and state (switch, sensor, other domains). */
 @Composable
 private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: TileActions) {
-    val accent = if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
     Column(modifier = Modifier.fillMaxSize()) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            Icon(
-                painterResource(iconOf(tile.icon)),
-                contentDescription = null,
-                tint = accent,
-                modifier = Modifier.size(24.dp),
-            )
+            IconBox(tile.icon, on)
             Spacer(Modifier.weight(1f))
             if (tile.content is TileContent.Switch) {
                 // The whole tile is the touch target, so the switch need not reserve 48 dp of height (concept 8.2).
@@ -94,6 +96,7 @@ private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: Til
                         checked = on,
                         onCheckedChange = { actions.onToggle(tile) },
                         enabled = enabled && tile.control is EntityControl.Toggle,
+                        colors = haacSwitchColors(),
                     )
                 }
             }
@@ -110,11 +113,29 @@ private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: Til
             TileName(tile.name)
             Text(
                 stateText(tile),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (on) MaterialTheme.colorScheme.onPrimaryContainer else secondaryColor(),
+                style = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp),
+                color = if (on) HaacColors.Accent else secondaryColor(),
                 maxLines = 1,
             )
         }
+    }
+}
+
+/** The 48 dp rounded icon box of a tile: accent with a white icon when [on], muted otherwise. */
+@Composable
+private fun IconBox(icon: TileIcon, on: Boolean) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(48.dp)
+            .background(if (on) HaacColors.Accent else HaacColors.SurfaceMuted, HaacShapes.Medium),
+    ) {
+        Icon(
+            painterResource(iconOf(icon)),
+            contentDescription = null,
+            tint = if (on) HaacColors.OnAccent else HaacColors.OnSurfaceVariant,
+            modifier = Modifier.size(24.dp),
+        )
     }
 }
 
@@ -148,12 +169,17 @@ private fun WithdrawnContent(tile: Tile) {
     }
 }
 
+/** Name style of a tile: 18 sp bold. */
+@Composable
+private fun tileNameStyle(): TextStyle =
+    MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
 /** Tile name, one line. */
 @Composable
 private fun TileName(name: String, secondary: Boolean = false) {
     Text(
         name,
-        style = if (secondary) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.titleMedium,
+        style = if (secondary) MaterialTheme.typography.bodyMedium else tileNameStyle(),
         color = if (secondary) MaterialTheme.colorScheme.onSurfaceVariant else Color.Unspecified,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
@@ -192,12 +218,12 @@ internal fun secondaryColor(): Color = MaterialTheme.colorScheme.onSurfaceVarian
 /** Dash and gap of the removed-entity border, in px. */
 private val DashPattern = floatArrayOf(12f, 8f)
 
-/** A dashed 1 dp border with the tile's corner radius (removed-entity tile, concept 15.2). */
-private fun Modifier.dashedBorder(color: Color): Modifier = drawBehind {
-    val radius = 12.dp.toPx()
+/** A dashed border of [width] with the tile's corner radius (removed-entity tile, concept 15.2). */
+internal fun Modifier.dashedBorder(color: Color, width: Dp = 1.dp): Modifier = drawBehind {
+    val radius = 26.dp.toPx()
     drawRoundRect(
         color = color,
         cornerRadius = CornerRadius(radius, radius),
-        style = Stroke(width = 1.dp.toPx(), pathEffect = PathEffect.dashPathEffect(DashPattern)),
+        style = Stroke(width = width.toPx(), pathEffect = PathEffect.dashPathEffect(DashPattern)),
     )
 }

@@ -1,17 +1,21 @@
 package com.stacknoise.haac.feature.layout.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -26,31 +30,41 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.PlaceIcon
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
+import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
-import com.stacknoise.haac.feature.layout.R
-import com.stacknoise.haac.feature.layout.data.PlaceTrash
 import com.stacknoise.haac.core.database.layout.Floor
 import com.stacknoise.haac.core.database.layout.Home
+import com.stacknoise.haac.core.database.layout.Places
+import com.stacknoise.haac.core.database.layout.Room
+import com.stacknoise.haac.feature.layout.R
+import com.stacknoise.haac.feature.layout.data.PlaceTrash
 import com.stacknoise.haac.feature.layout.domain.PlaceFilter
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
 import com.stacknoise.haac.feature.layout.domain.PlaceRow
-import com.stacknoise.haac.core.database.layout.Places
 import com.stacknoise.haac.feature.layout.domain.Relation
-import com.stacknoise.haac.core.database.layout.Room
 import com.stacknoise.haac.feature.layout.domain.count
 import com.stacknoise.haac.feature.layout.domain.rows
 import kotlinx.coroutines.withTimeoutOrNull
@@ -84,12 +98,32 @@ fun PlacesScreen(
         }
     }
     val hasHome = !state.places?.homes.isNullOrEmpty()
+    var menuOpen by rememberSaveable { mutableStateOf(false) }
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
-        floatingActionButton = { CreateMenu(hasHome = hasHome, onCreate = { onOpen(it, null) }, onImport = onImport) },
+        floatingActionButton = {
+            CreateMenu(
+                open = menuOpen,
+                onOpenChange = { menuOpen = it },
+                hasHome = hasHome,
+                onCreate = { onOpen(it, null) },
+                onImport = onImport,
+            )
+        },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
-        PlacesContent(state, viewModel::onFilter, onOpen = { onOpen(it.kind, it.id) }, Modifier.padding(padding))
+        Box {
+            PlacesContent(state, viewModel::onFilter, onOpen = { onOpen(it.kind, it.id) }, Modifier.padding(padding))
+            // The open speed dial dims the list; the bottom bar lies outside this Scaffold and stays clear.
+            if (menuOpen) {
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .background(HaacColors.Background.copy(alpha = 0.9f))
+                        .clickable(onClick = { menuOpen = false }),
+                )
+            }
+        }
     }
 }
 
@@ -102,23 +136,23 @@ fun PlacesContent(
     modifier: Modifier = Modifier,
 ) {
     val places = state.places ?: return
-    LazyColumn(modifier = modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 96.dp)) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 96.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
         item {
             Text(
                 stringResource(R.string.places_title),
                 style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp),
+                modifier = Modifier.padding(start = 20.dp, top = 24.dp),
             )
         }
         item { FilterTabs(places, state.filter, onFilter) }
-        state.error?.let { item { ErrorMessage(it, Modifier.padding(horizontal = 16.dp)) } }
+        state.error?.let { item { ErrorMessage(it, Modifier.padding(horizontal = 20.dp)) } }
         if (places.homes.isEmpty()) item { EmptyHint() }
         items(places.rows(state.filter), key = { "${it.kind}-${it.id}" }) { row ->
             PlaceRowItem(row, onClick = { onOpen(row) })
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
         }
     }
 }
@@ -134,15 +168,20 @@ private fun FilterTabs(places: Places, selected: PlaceFilter, onFilter: (PlaceFi
     )
     PrimaryScrollableTabRow(
         selectedTabIndex = selected.ordinal,
-        edgePadding = 16.dp,
+        edgePadding = 20.dp,
         containerColor = MaterialTheme.colorScheme.background,
-        divider = {},
+        divider = { HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) },
     ) {
         PlaceFilter.entries.forEach { filter ->
             Tab(
                 selected = filter == selected,
                 onClick = { onFilter(filter) },
-                text = { Text("${stringResource(labels.getValue(filter))} ${places.count(filter)}") },
+                text = {
+                    Text(
+                        "${stringResource(labels.getValue(filter))} ${places.count(filter)}",
+                        fontWeight = if (filter == selected) FontWeight.Bold else FontWeight.Medium,
+                    )
+                },
                 selectedContentColor = MaterialTheme.colorScheme.primary,
                 unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -153,37 +192,38 @@ private fun FilterTabs(places: Places, selected: PlaceFilter, onFilter: (PlaceFi
 /** Type label, name and relation of one place. */
 @Composable
 private fun PlaceRowItem(row: PlaceRow, onClick: () -> Unit) {
-    val (type, typeColor) = when (row.kind) {
-        PlaceKind.HOME -> R.string.places_type_home to MaterialTheme.colorScheme.primary
-        PlaceKind.FLOOR -> R.string.places_type_level to MaterialTheme.colorScheme.onSurfaceVariant
-        PlaceKind.ROOM -> R.string.places_type_room to MaterialTheme.colorScheme.onSurfaceVariant
+    val type = when (row.kind) {
+        PlaceKind.HOME -> R.string.places_type_home
+        PlaceKind.FLOOR -> R.string.places_type_level
+        PlaceKind.ROOM -> R.string.places_type_room
     }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
+            .padding(horizontal = 20.dp)
             .fillMaxWidth()
+            .clip(HaacShapes.Card)
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, HaacShapes.Card)
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .heightIn(min = 68.dp)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
     ) {
-        Text(
-            stringResource(type).uppercase(),
-            style = SectionLabelStyle.copy(color = typeColor),
-            modifier = Modifier.width(72.dp),
-        )
+        TypeBadge(stringResource(type))
         PlaceIcon.fromKey(row.icon)?.let { icon ->
             Icon(
                 painterResource(icon.drawable),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(end = 8.dp).size(20.dp),
+                modifier = Modifier.padding(start = 12.dp).size(20.dp),
             )
         }
         Text(
             row.name,
-            style = MaterialTheme.typography.bodyLarge,
+            style = MaterialTheme.typography.titleMedium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).padding(start = 12.dp),
         )
         Text(
             relationText(row.relation),
@@ -193,6 +233,21 @@ private fun PlaceRowItem(row: PlaceRow, onClick: () -> Unit) {
             modifier = Modifier.padding(start = 8.dp),
         )
     }
+}
+
+/** HOME, LEVEL or ROOM: accent text on the accent tint, at least 60 dp wide. */
+@Composable
+private fun TypeBadge(text: String) {
+    Text(
+        text.uppercase(),
+        style = SectionLabelStyle.copy(fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 0.1.em),
+        color = HaacColors.Accent,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .widthIn(min = 60.dp)
+            .background(HaacColors.AccentTint, RoundedCornerShape(8.dp))
+            .padding(horizontal = 8.dp, vertical = 5.dp),
+    )
 }
 
 /** "2 levels", "3 rooms" or the name of the linked place. */
@@ -206,7 +261,7 @@ private fun relationText(relation: Relation): String = when (relation) {
 /** Shown while the instance has no home. */
 @Composable
 private fun EmptyHint() {
-    Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+    Box(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
         Text(
             stringResource(R.string.places_empty),
             style = MaterialTheme.typography.bodyMedium,

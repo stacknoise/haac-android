@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,13 +23,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stacknoise.haac.core.common.ui.theme.HaacCard
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
 import com.stacknoise.haac.feature.instance.R
 import com.stacknoise.haac.feature.instance.domain.InstanceItem
 
@@ -57,30 +61,34 @@ fun InstancesSection(
     val items by viewModel.items.collectAsStateWithLifecycle()
     val connection by viewModel.connection.collectAsStateWithLifecycle()
     var dialog by remember { mutableStateOf<InstanceDialog?>(null) }
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(stringResource(R.string.instance_section_title).uppercase(), style = SectionLabelStyle)
         items.forEach { item ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                InstanceRow(
-                    item = item,
-                    connection = connection,
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(enabled = !item.active) {
-                            viewModel.onSelect(item.id) { step -> actions.onSwitched(item.id, step) }
-                        }
-                        .padding(vertical = 4.dp),
-                )
-                InstanceMenu(
-                    onEdit = { dialog = InstanceDialog.Edit(item) },
-                    onRemove = { dialog = InstanceDialog.Remove(item) },
-                )
+            HaacCard(selected = item.active, contentPadding = PaddingValues(start = 16.dp, top = 8.dp, bottom = 8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    InstanceRow(
+                        item = item,
+                        connection = connection,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(HaacShapes.Medium)
+                            .clickable(enabled = !item.active) {
+                                viewModel.onSelect(item.id) { step -> actions.onSwitched(item.id, step) }
+                            }
+                            .padding(vertical = 8.dp),
+                    )
+                    InstanceMenu(
+                        onEdit = { dialog = InstanceDialog.Edit(item) },
+                        onRemove = { dialog = InstanceDialog.Remove(item) },
+                    )
+                }
             }
         }
         OutlinedButton(
             onClick = actions.onAdd,
-            shape = HaacShapes.Medium,
-            modifier = Modifier.fillMaxWidth().height(48.dp),
+            shape = HaacShapes.Button,
+            colors = haacOutlinedButtonColors(),
+            modifier = Modifier.fillMaxWidth().height(54.dp),
         ) {
             Text(stringResource(R.string.instance_add), style = MaterialTheme.typography.titleSmall)
         }

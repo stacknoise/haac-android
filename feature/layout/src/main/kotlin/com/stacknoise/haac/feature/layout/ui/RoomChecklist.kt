@@ -1,9 +1,9 @@
 package com.stacknoise.haac.feature.layout.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
@@ -19,18 +19,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.stacknoise.haac.core.common.ui.theme.HaacCheckbox
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
+import com.stacknoise.haac.core.common.ui.theme.haacTextFieldColors
+import com.stacknoise.haac.core.database.layout.Places
+import com.stacknoise.haac.core.database.layout.Room
 import com.stacknoise.haac.feature.layout.R
 import com.stacknoise.haac.feature.layout.domain.PlaceForm
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
-import com.stacknoise.haac.core.database.layout.Places
-import com.stacknoise.haac.core.database.layout.Room
 
 /**
  * *Rooms on this level* (the rooms of the level's home) or *Rooms in this home* (the home's own rooms, fixed,
@@ -87,9 +91,13 @@ private fun ownLink(room: Room, places: Places): String {
 private fun CheckRow(name: String, hint: String?, checked: Boolean, enabled: Boolean = true, onToggle: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().clickable(enabled = enabled, onClick = onToggle),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(HaacShapes.Medium)
+            .toggleable(checked, enabled, Role.Checkbox) { onToggle() }
+            .padding(horizontal = 4.dp, vertical = 10.dp),
     ) {
-        Checkbox(checked = checked, onCheckedChange = { onToggle() }, enabled = enabled)
+        HaacCheckbox(checked = checked, onCheckedChange = null, enabled = enabled)
         Text(
             name,
             style = MaterialTheme.typography.bodyLarge,
@@ -131,7 +139,8 @@ private fun NewRoomInput(label: String, onAdd: (String) -> Unit) {
             onValueChange = { name = it },
             placeholder = { Text(stringResource(R.string.editor_new_room_hint)) },
             singleLine = true,
-            shape = HaacShapes.Small,
+            shape = HaacShapes.Medium,
+            colors = haacTextFieldColors(),
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Sentences,
                 imeAction = ImeAction.Done,

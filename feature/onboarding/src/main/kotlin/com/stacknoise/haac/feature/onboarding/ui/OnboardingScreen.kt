@@ -18,10 +18,10 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -46,11 +46,12 @@ import com.stacknoise.haac.core.common.ui.SecureWindow
 import com.stacknoise.haac.core.common.ui.findActivity
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
+import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.core.error.ErrorCode
+import com.stacknoise.haac.core.network.discovery.DiscoveredServer
 import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.feature.onboarding.R
 import com.stacknoise.haac.feature.onboarding.domain.SignInResult
-import com.stacknoise.haac.core.network.discovery.DiscoveredServer
 /** M-01: pick a HA server, sign in, optional MFA code (concept 4.2, 5.1, 15.3); [onSignedIn] after success. */
 @Composable
 fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hiltViewModel()) {
@@ -157,14 +158,15 @@ private fun PrimaryAction(state: OnboardingUiState, actions: OnboardingActions) 
     PrimaryButton(stringResource(label), enabled = !state.busy && complete, busy = state.busy, onClick = onClick)
 }
 
-/** Primary action: outlined in the accent colour with an arrow (concept 15.2). */
+/** Primary action: filled accent button with an arrow, soft grey-green while disabled. */
 @Composable
 private fun PrimaryButton(label: String, enabled: Boolean, busy: Boolean, onClick: () -> Unit) {
-    OutlinedButton(
+    Button(
         onClick = onClick,
         enabled = enabled,
-        shape = HaacShapes.Medium,
-        modifier = Modifier.fillMaxWidth().height(56.dp),
+        shape = HaacShapes.Button,
+        colors = haacButtonColors(),
+        modifier = Modifier.fillMaxWidth().height(58.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

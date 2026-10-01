@@ -33,8 +33,8 @@ fun LicensesScreen(onBack: () -> Unit) {
         }
         Text(
             stringResource(R.string.licenses_title),
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
         )
         LibrariesContainer(libraries, Modifier.fillMaxSize())
     }
