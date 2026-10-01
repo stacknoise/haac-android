@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.core.common.ui.theme.haacSegmentedColors
@@ -130,7 +131,7 @@ private fun ModeRow(mode: ArrangeMode, onMode: (ArrangeMode) -> Unit) {
                 selected = entry == mode,
                 onClick = { onMode(entry) },
                 shape = SegmentedButtonDefaults.itemShape(index, ArrangeMode.entries.size, HaacShapes.Small),
-                colors = haacSegmentedColors(),
+                colors = haacSegmentedColors(selected = HaacColors.Accent, onSelected = HaacColors.OnAccent),
             ) { Text(stringResource(labels[index])) }
         }
     }
