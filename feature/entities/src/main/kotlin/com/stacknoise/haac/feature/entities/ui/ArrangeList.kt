@@ -89,14 +89,23 @@ private fun ArrangeRow(
 ) {
     val colors = MaterialTheme.colorScheme
     val frame = if (lifted) {
-        Modifier.shadow(8.dp, HaacShapes.Medium).background(colors.surface, HaacShapes.Medium)
-            .border(1.dp, colors.primary, HaacShapes.Medium)
+        Modifier
+            .shadow(8.dp, HaacShapes.Card)
+            .background(colors.primaryContainer, HaacShapes.Card)
+            .border(1.5.dp, colors.primary, HaacShapes.Card)
     } else {
         Modifier
+            .background(colors.surface, HaacShapes.Card)
+            .border(1.dp, colors.outlineVariant, HaacShapes.Card)
     }
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth().height(RowHeight).then(frame).padding(horizontal = 4.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(RowHeight)
+            .padding(vertical = RowGap / 2)
+            .then(frame)
+            .padding(horizontal = 4.dp),
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -108,5 +117,8 @@ private fun ArrangeRow(
     }
 }
 
-/** Height of one row (touch target of the handle is 48 dp). */
-private val RowHeight = 56.dp
+/** Height of one row including the gap to the next card; the handle's touch target is 48 dp. */
+private val RowHeight = 72.dp
+
+/** Space between two row cards. */
+private val RowGap = 8.dp

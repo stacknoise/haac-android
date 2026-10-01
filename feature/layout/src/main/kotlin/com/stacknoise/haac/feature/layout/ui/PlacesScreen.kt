@@ -52,6 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.PlaceIcon
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
+import com.stacknoise.haac.core.common.ui.theme.HaacEmptyState
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
@@ -261,13 +262,7 @@ private fun relationText(relation: Relation): String = when (relation) {
 /** Shown while the instance has no home. */
 @Composable
 private fun EmptyHint() {
-    Box(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
-        Text(
-            stringResource(R.string.places_empty),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
+    HaacEmptyState(painterResource(PlaceIcon.HOME.drawable), stringResource(R.string.places_empty))
 }
 
 /** Preview with two homes, levels and rooms. */

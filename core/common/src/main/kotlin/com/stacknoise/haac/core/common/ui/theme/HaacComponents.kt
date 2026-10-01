@@ -1,6 +1,5 @@
 package com.stacknoise.haac.core.common.ui.theme
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -8,77 +7,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SegmentedButtonColors
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SelectableChipColors
-import androidx.compose.material3.SwitchColors
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.TextFieldColors
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-
-/** Switch colours of the Salbei theme: accent track when on, grey-green track when off, white knob, no outline. */
-@Composable
-fun haacSwitchColors(): SwitchColors = SwitchDefaults.colors(
-    checkedThumbColor = HaacColors.OnAccent,
-    checkedTrackColor = HaacColors.Accent,
-    checkedBorderColor = Color.Transparent,
-    uncheckedThumbColor = HaacColors.OnAccent,
-    uncheckedTrackColor = HaacColors.SwitchTrackOff,
-    uncheckedBorderColor = Color.Transparent,
-)
-
-/** Colours of primary buttons: accent with white text, soft green-grey when disabled. */
-@Composable
-fun haacButtonColors(): ButtonColors = ButtonDefaults.buttonColors(
-    containerColor = HaacColors.Accent,
-    contentColor = HaacColors.OnAccent,
-    disabledContainerColor = HaacColors.DisabledBackground,
-    disabledContentColor = HaacColors.DisabledText,
-)
-
-/** Colours of segmented controls: [selected] segment (accent green by default) on a pale track, no outline. */
-@Composable
-fun haacSegmentedColors(
-    selected: Color = HaacColors.Accent,
-    onSelected: Color = HaacColors.OnAccent,
-): SegmentedButtonColors = SegmentedButtonDefaults.colors(
-    activeContainerColor = selected,
-    activeBorderColor = Color.Transparent,
-    activeContentColor = onSelected,
-    inactiveContainerColor = HaacColors.SegmentTrack,
-    inactiveContentColor = HaacColors.OnSurfaceVariantStrong,
-    inactiveBorderColor = Color.Transparent,
-)
-
-/** Colours of text fields: white field, pale outline, accent outline on focus, muted leading icon. */
-@Composable
-fun haacTextFieldColors(): TextFieldColors = OutlinedTextFieldDefaults.colors(
-    focusedContainerColor = HaacColors.Surface,
-    unfocusedContainerColor = HaacColors.Surface,
-    disabledContainerColor = HaacColors.Surface,
-    focusedBorderColor = HaacColors.Accent,
-    unfocusedBorderColor = HaacColors.Outline,
-    cursorColor = HaacColors.Accent,
-    focusedLeadingIconColor = HaacColors.OnSurfaceVariant,
-    unfocusedLeadingIconColor = HaacColors.OnSurfaceVariant,
-)
 
 /**
  * The 26 dp checkbox of the Salbei theme: accent square with a white tick when [checked], grey when checked but not
@@ -127,32 +76,6 @@ fun HaacCheckbox(
 /** Side of [HaacCheckbox]. */
 private val CheckboxSize = 26.dp
 
-/** Colours of outlined buttons: dark-green text on the transparent background. */
-@Composable
-fun haacOutlinedButtonColors(): ButtonColors =
-    ButtonDefaults.outlinedButtonColors(contentColor = HaacColors.OutlinedText)
-
-/** Colours of filter chips: outlined when unselected, filled dark-green with pale text when selected. */
-@Composable
-fun haacFilterChipColors(): SelectableChipColors = FilterChipDefaults.filterChipColors(
-    containerColor = Color.Transparent,
-    labelColor = HaacColors.OnSurfaceVariantStrong,
-    iconColor = HaacColors.OnSurfaceVariantStrong,
-    selectedContainerColor = HaacColors.OnSurface,
-    selectedLabelColor = HaacColors.Background,
-    selectedLeadingIconColor = HaacColors.Background,
-)
-
-/** Border of a filter chip: 1 dp strong outline, none when [selected] (the dark fill carries it). */
-@Composable
-fun haacFilterChipBorder(enabled: Boolean, selected: Boolean): BorderStroke =
-    FilterChipDefaults.filterChipBorder(
-        enabled = enabled,
-        selected = selected,
-        borderColor = HaacColors.OutlineStrong,
-        selectedBorderColor = HaacColors.OnSurface,
-    )
-
 /**
  * A list card: white surface with a 1 dp outline and 22 dp corners; [selected] uses the accent tint with a 1.5 dp
  * accent border instead.
@@ -176,22 +99,37 @@ fun HaacCard(
     Column(modifier = modifier.fillMaxWidth().then(frame).padding(contentPadding), content = content)
 }
 
-/** Colours of chips that stay outlined when selected: the accent green marks the choice, the fill stays clear. */
+/**
+ * An empty state: an 80 dp accent-tint square holding [icon], the explaining [text] below it and, optionally, an
+ * [action] such as a button.
+ */
 @Composable
-fun haacOutlinedChipColors(): SelectableChipColors = FilterChipDefaults.filterChipColors(
-    containerColor = Color.Transparent,
-    labelColor = HaacColors.OnSurfaceVariantStrong,
-    selectedContainerColor = Color.Transparent,
-    selectedLabelColor = HaacColors.Accent,
-)
-
-/** Border for [haacOutlinedChipColors]: 1.5 dp accent green when [selected], the strong outline otherwise. */
-@Composable
-fun haacOutlinedChipBorder(enabled: Boolean, selected: Boolean): BorderStroke =
-    FilterChipDefaults.filterChipBorder(
-        enabled = enabled,
-        selected = selected,
-        borderColor = HaacColors.OutlineStrong,
-        selectedBorderColor = HaacColors.Accent,
-        selectedBorderWidth = 1.5.dp,
-    )
+fun HaacEmptyState(
+    icon: Painter,
+    text: String,
+    modifier: Modifier = Modifier,
+    action: (@Composable () -> Unit)? = null,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth().padding(top = 72.dp),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(80.dp).background(HaacColors.AccentTintStrong, RoundedCornerShape(28.dp)),
+        ) {
+            Icon(icon, contentDescription = null, tint = HaacColors.Accent, modifier = Modifier.size(36.dp))
+        }
+        Text(
+            text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(start = 20.dp, top = 20.dp, end = 20.dp),
+        )
+        if (action != null) {
+            Spacer(Modifier.height(16.dp))
+            action()
+        }
+    }
+}

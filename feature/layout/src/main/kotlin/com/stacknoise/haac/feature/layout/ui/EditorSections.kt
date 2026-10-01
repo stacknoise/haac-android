@@ -13,9 +13,9 @@ import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -79,16 +79,16 @@ internal fun FloorChips(form: PlaceForm, places: Places, onSelect: (String?) -> 
 internal fun LevelStepper(level: Int, onChange: (Int) -> Unit) {
     SectionLabel(R.string.editor_level_number)
     Row(verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = { onChange(level - 1) }) {
+        OutlinedIconButton(onClick = { onChange(level - 1) }, shape = HaacShapes.Medium) {
             Icon(painterResource(R.drawable.ic_layout_remove), stringResource(R.string.editor_level_down))
         }
         Text(
             level.toString(),
             style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center,
-            modifier = Modifier.widthIn(min = 40.dp),
+            modifier = Modifier.widthIn(min = 56.dp),
         )
-        IconButton(onClick = { onChange(level + 1) }) {
+        OutlinedIconButton(onClick = { onChange(level + 1) }, shape = HaacShapes.Medium) {
             Icon(painterResource(R.drawable.ic_layout_add), stringResource(R.string.editor_level_up))
         }
     }
