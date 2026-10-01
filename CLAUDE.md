@@ -47,7 +47,7 @@ docs/
   icons/               # playstore-icon-512.png, launcher previews (concept 15.6)
   code-index.md        # GENERATED: every class and function with a one-line description (concept 17.5)
   error-codes.md       # GENERATED: every error code (concept 17.3)
-app/src/main/res/      # launcher icons (adaptive + legacy mipmaps) already in place; do not regenerate or replace them
+app/src/main/res/      # launcher icons (adaptive + legacy mipmaps, Salbei design); only replace them on an explicit request for a new icon
 app/  core/common/  core/error/  core/security/  core/network/  core/database/
 feature/onboarding/  feature/instance/  feature/layout/  feature/entities/  feature/notifications/  feature/settings/
 gradle/libs.versions.toml   # all versions; modules never declare versions themselves
@@ -63,7 +63,7 @@ LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 - A module's `build.gradle.kts` applies convention plugins (`haac.android.library`, `haac.android.feature`, …) and lists its dependencies; no Android/Kotlin settings there.
 - `./gradlew assembleDebug lint detekt test codeIndexCheck` must pass before a PR; CI also runs PMD CPD and `./gradlew -p build-logic test`.
 - `HaacTheme` (colors, Figtree, shapes of the Salbei redesign) lives in `:core:common`, package `com.stacknoise.haac.core.common.ui.theme`.
-- The launcher-icon files are excluded from two lint checks in `app/lint.xml`; do not "fix" them by moving or regenerating icons.
+- The launcher-icon files are excluded from two lint checks in `app/lint.xml`; do not "fix" them by moving them. Regenerate them only when a new icon is asked for.
 
 - The integration is NOT part of this repo. For its API, read concept chapters 10 and 11; do not add Python code here.
 - Branches, commits, versions and CI follow concept chapter 16 (Conventional Commits, tags `vX.Y.Z`, protected `main`).
