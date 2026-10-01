@@ -1,0 +1,67 @@
+name: Release
+
+# Builds the signed sideload APK for a version tag and attaches it, with its SHA-256, to the GitHub Release.
+# Run it by hand ("Run workflow") with the tag to build a release for a tag that already exists.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build, e.g. v0.1.0
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    name: Signed APK
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v6
+      - name: versionName equals tag (concept 16.4)
+        run: |
+          version=$(sed -n 's/^val appVersion = "\(.*\)"/\1/p' app/build.gradle.kts)
+          if [ "v${version}" != "${TAG}" ]; then
+            echo "::error::appVersion ${version} does not match tag ${TAG}"
+            exit 1
+          fi
+      - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.HAAC_KEYSTORE_BASE64 }}
+        run: |
+          echo "${KEYSTORE_BASE64}" | base64 -d > "${RUNNER_TEMP}/haac-release.jks"
+          echo "HAAC_KEYSTORE_FILE=${RUNNER_TEMP}/haac-release.jks" >> "${GITHUB_ENV}"
+      - name: Build signed sideload APK
+        env:
+          HAAC_KEYSTORE_PASSWORD: ${{ secrets.HAAC_KEYSTORE_PASSWORD }}
+          HAAC_KEY_ALIAS: ${{ secrets.HAAC_KEY_ALIAS }}
+          HAAC_KEY_PASSWORD: ${{ secrets.HAAC_KEY_PASSWORD }}
+        run: ./gradlew assembleSideloadRelease
+      - name: Name the APK, verify the signature, write the checksum
+        run: |
+          mkdir dist
+          cp app/build/outputs/apk/sideload/release/app-sideload-release.apk "dist/haac-${TAG}-sideload.apk"
+          apksigner=$(ls "${ANDROID_HOME}"/build-tools/*/apksigner | sort -V | tail -n 1)
+          "${apksigner}" verify --print-certs "dist/haac-${TAG}-sideload.apk"
+          (cd dist && sha256sum "haac-${TAG}-sideload.apk" > "haac-${TAG}-sideload.apk.sha256")
+      - name: Attach to the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${TAG}" >/dev/null 2>&1 \
+            || gh release create "${TAG}" --verify-tag --generate-notes --title "${TAG}"
+          gh release upload "${TAG}" dist/* --clobber

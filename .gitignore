@@ -10,3 +10,7 @@ captures/
 .cxx/
 *.jks
 *.keystore
+
+# Signed APK output of Android Studio and local builds
+*.apk
+app/sideload/
