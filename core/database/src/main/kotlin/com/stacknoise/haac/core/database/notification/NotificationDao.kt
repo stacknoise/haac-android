@@ -2,6 +2,7 @@ package com.stacknoise.haac.core.database.notification
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
@@ -18,6 +19,7 @@ private const val MarkAllReadQuery = "UPDATE notification SET read_at = :at " +
     "WHERE (server_id = :serverId OR server_id IS NULL) AND read_at IS NULL"
 
 /** Access to the `notification` table (concept 9.1, 12, 17.4); lists show an instance plus global entries. */
+@Suppress("TooManyFunctions") // one small function per list operation
 @Dao
 interface NotificationDao {
     /** Adds an entry and returns its id. */
@@ -51,6 +53,18 @@ interface NotificationDao {
     /** Dismisses entry [id] (*Dismiss*, *Keep*); it stays in the list without actions and counts as read. */
     @Query("UPDATE notification SET resolved_at = :at, read_at = COALESCE(read_at, :at) WHERE id = :id")
     suspend fun resolve(id: Long, at: Long)
+
+    /** Entry [id], or null; the snapshot an undo restores. */
+    @Query("SELECT * FROM notification WHERE id = :id")
+    suspend fun get(id: Long): NotificationEntity?
+
+    /** The entries [observe] shows for [serverId], the snapshot of *Delete all* that an undo restores. */
+    @Query("SELECT * FROM notification WHERE server_id = :serverId OR server_id IS NULL")
+    suspend fun shown(serverId: String?): List<NotificationEntity>
+
+    /** Puts deleted entries back with their old ids (undo). */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun restore(entries: List<NotificationEntity>)
 
     /** Deletes entry [id]. */
     @Query("DELETE FROM notification WHERE id = :id")

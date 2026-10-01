@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,16 +13,23 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -55,7 +63,9 @@ fun NotificationsScreen(
     viewModel: NotificationsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    NotificationsContent(
+    val snackbar = remember { SnackbarHostState() }
+    Box(modifier = Modifier.fillMaxSize()) {
+        NotificationsContent(
         state = state,
         actions = NotificationActions(
             onBack = onBack,
@@ -71,8 +81,28 @@ fun NotificationsScreen(
             onDelete = viewModel::onDelete,
             onDeleteAll = viewModel::onDeleteAll,
         ),
-    )
+        )
+        SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding())
+    }
+    UndoSnackbar(state.undo, snackbar, viewModel::onUndo, viewModel::onUndoClosed)
     state.detail?.let { ErrorDetailSheet(it, state.instanceName, onDismiss = viewModel::onCloseDetail) }
+}
+
+/** Offers *Undo* for the last deletion in [snackbar]; [onClosed] when the offer ran out or was replaced by none. */
+@Composable
+private fun UndoSnackbar(
+    offer: UndoOffer?,
+    snackbar: SnackbarHostState,
+    onUndo: () -> Unit,
+    onClosed: () -> Unit,
+) {
+    val shown = offer ?: return
+    val text = pluralStringResource(R.plurals.notifications_deleted, shown.count, shown.count)
+    val action = stringResource(R.string.notifications_undo)
+    LaunchedEffect(shown.token) {
+        val result = snackbar.showSnackbar(text, action, duration = SnackbarDuration.Long)
+        if (result == SnackbarResult.ActionPerformed) onUndo() else onClosed()
+    }
 }
 
 /** Stateless layout: header, then the entries grouped by day. */

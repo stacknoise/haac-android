@@ -22,6 +22,11 @@
     <string name="notifications_times">×%1$d</string>
     <string name="notifications_delete">Delete</string>
     <string name="notifications_cancel">Cancel</string>
+    <plurals name="notifications_deleted">
+        <item quantity="one">Notification deleted</item>
+        <item quantity="other">%1$d notifications deleted</item>
+    </plurals>
+    <string name="notifications_undo">Undo</string>
     <string name="notifications_delete_all">Delete all notifications</string>
     <string name="notifications_delete_all_title">Delete all notifications?</string>
     <string name="notifications_delete_all_text">This removes every entry of this instance from the list. It does not change any rooms or tiles.</string>
