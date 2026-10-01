@@ -63,6 +63,14 @@ class NotificationRepositoryTest {
         override suspend fun resolve(id: Long, at: Long) =
             change(id) { it.copy(resolvedAt = at, readAt = it.readAt ?: at) }
 
+        override suspend fun get(id: Long): NotificationEntity? = table.value.firstOrNull { it.id == id }
+
+        override suspend fun shown(serverId: String?): List<NotificationEntity> = visible(serverId)
+
+        override suspend fun restore(entries: List<NotificationEntity>) {
+            table.value = (table.value.filter { old -> entries.none { it.id == old.id } } + entries).sortedBy { it.id }
+        }
+
         override suspend fun delete(id: Long) {
             table.value = table.value.filter { it.id != id }
         }
@@ -207,6 +215,33 @@ class NotificationRepositoryTest {
 
         assertEquals(1, repository.items("s1").first().size)
         assertTrue(repository.items("s1").first().none { it.id == first.id })
+    }
+
+    @Test
+    fun `a deleted entry comes back with its state`() = runTest {
+        repository.addEntityChanges("s1", added = listOf("switch.hall"), removed = emptyList())
+        val entry = repository.items("s1").first().single()
+        repository.markRead(entry.id)
+        val before = table.value
+
+        val deleted = repository.delete(entry.id)
+        assertTrue(repository.items("s1").first().isEmpty())
+        repository.restore(deleted)
+
+        assertEquals(before, table.value)
+    }
+
+    @Test
+    fun `delete all can be undone`() = runTest {
+        repository.addEntityChanges("s1", listOf("switch.hall"), listOf("sensor.h"))
+        repository.addError(NetworkException(ErrorCode.NET_UNREACHABLE), null)
+        val before = table.value
+
+        val deleted = repository.deleteAll("s1")
+        assertEquals(3, deleted.count)
+        repository.restore(deleted)
+
+        assertEquals(before, table.value)
     }
 
     @Test

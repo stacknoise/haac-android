@@ -23,6 +23,14 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 
 /**
+ * Entries a deletion removed, kept so that *Undo* can put them back; opaque outside the data layer.
+ */
+class DeletedNotifications internal constructor(internal val rows: List<NotificationEntity>) {
+    /** How many entries were deleted. */
+    val count: Int get() = rows.size
+}
+
+/**
  * The notification list (concept 9.1, 17.4): entity changes of a sync, errors grouped by code within 10
  * minutes, entries purged after 30 days. Writes are serialised, so a repeated error never creates two entries.
  */
@@ -99,11 +107,22 @@ class NotificationRepository internal constructor(
     /** *Dismiss* or *Keep*: the entry stays without actions. */
     suspend fun resolve(id: Long) = errors.database { notifications.resolve(id, clock()) }
 
-    /** Deletes entry [id] from the list. */
-    suspend fun delete(id: Long) = errors.database { notifications.delete(id) }
+    /** Deletes entry [id] from the list; the result puts it back with [restore]. */
+    suspend fun delete(id: Long): DeletedNotifications = errors.database {
+        val rows = listOfNotNull(notifications.get(id))
+        notifications.delete(id)
+        DeletedNotifications(rows)
+    }
 
-    /** *Delete all*: deletes the entries of [serverId] and the global ones. */
-    suspend fun deleteAll(serverId: String?) = errors.database { notifications.deleteAll(serverId) }
+    /** *Delete all*: deletes the entries of [serverId] and the global ones; the result puts them back. */
+    suspend fun deleteAll(serverId: String?): DeletedNotifications = errors.database {
+        val rows = notifications.shown(serverId)
+        notifications.deleteAll(serverId)
+        DeletedNotifications(rows)
+    }
+
+    /** Undo of a deletion: the entries return with their ids, read state and time. */
+    suspend fun restore(deleted: DeletedNotifications) = errors.database { notifications.restore(deleted.rows) }
 
     /** *Remove tile*: removes the entities of [item] from every room of its instance, then resolves it (7.4). */
     suspend fun removeTiles(item: NotificationItem) = errors.database {
