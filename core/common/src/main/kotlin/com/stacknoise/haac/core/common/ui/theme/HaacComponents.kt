@@ -53,11 +53,11 @@ fun haacButtonColors(): ButtonColors = ButtonDefaults.buttonColors(
     disabledContentColor = HaacColors.DisabledText,
 )
 
-/** Colours of segmented controls: [selected] segment (dark by default) on a pale track, no outline. */
+/** Colours of segmented controls: [selected] segment (accent green by default) on a pale track, no outline. */
 @Composable
 fun haacSegmentedColors(
-    selected: Color = HaacColors.OnSurface,
-    onSelected: Color = HaacColors.Background,
+    selected: Color = HaacColors.Accent,
+    onSelected: Color = HaacColors.OnAccent,
 ): SegmentedButtonColors = SegmentedButtonDefaults.colors(
     activeContainerColor = selected,
     activeBorderColor = Color.Transparent,
