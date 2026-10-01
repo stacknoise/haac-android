@@ -13,8 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.stacknoise.haac.core.common.ui.theme.HaacCard
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
 import com.stacknoise.haac.feature.settings.R
 
 /** *Settings → About*: app version, the app's own license and the entry to the library licenses (concept 16.2). */
@@ -23,19 +25,22 @@ fun AboutSection(onOpenLicenses: () -> Unit) {
     val version = LocalContext.current.versionName()
     Text(stringResource(R.string.settings_about).uppercase(), style = SectionLabelStyle)
     Spacer(Modifier.height(8.dp))
-    version?.let {
-        Text(stringResource(R.string.about_version, it), style = MaterialTheme.typography.bodyMedium)
+    HaacCard {
+        version?.let {
+            Text(stringResource(R.string.about_version, it), style = MaterialTheme.typography.bodyMedium)
+        }
+        Text(
+            stringResource(R.string.about_license),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
-    Text(
-        stringResource(R.string.about_license),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Spacer(Modifier.height(12.dp))
+    Spacer(Modifier.height(10.dp))
     OutlinedButton(
         onClick = onOpenLicenses,
-        shape = HaacShapes.Medium,
-        modifier = Modifier.fillMaxWidth().height(48.dp),
+        shape = HaacShapes.Button,
+        colors = haacOutlinedButtonColors(),
+        modifier = Modifier.fillMaxWidth().height(54.dp),
     ) {
         Text(stringResource(R.string.about_open_licenses), style = MaterialTheme.typography.titleMedium)
     }

@@ -16,12 +16,12 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,8 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.theme.HaacCheckbox
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
+import com.stacknoise.haac.core.common.ui.theme.haacTextFieldColors
 import com.stacknoise.haac.feature.layout.R
 import com.stacknoise.haac.feature.layout.domain.HaArea
 
@@ -56,7 +59,7 @@ fun AreaImportScreen(onClose: () -> Unit, viewModel: AreaImportViewModel = hiltV
             .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .imePadding()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 20.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
             IconButton(onClick = onClose) {
@@ -114,6 +117,8 @@ private fun ImportBody(state: AreaImportUiState, viewModel: AreaImportViewModel,
                 onValueChange = viewModel::onNewHomeName,
                 singleLine = true,
                 placeholder = { Text(stringResource(R.string.import_new_home_hint)) },
+                shape = HaacShapes.Medium,
+                colors = haacTextFieldColors(),
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
             )
         }
@@ -141,7 +146,7 @@ private fun AreaGroup(title: String, areas: List<HaArea>, state: AreaImportUiSta
                 .fillMaxWidth()
                 .toggleable(value = checked, role = Role.Checkbox, onValueChange = { onToggle(area.id) }),
         ) {
-            Checkbox(checked = checked, onCheckedChange = null, modifier = Modifier.padding(12.dp))
+            HaacCheckbox(checked = checked, onCheckedChange = null, modifier = Modifier.padding(12.dp))
             Text(area.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             Text(
                 pluralStringResource(R.plurals.import_entities, area.entityCount, area.entityCount),
@@ -169,10 +174,11 @@ private fun ImportBar(state: AreaImportUiState, onImport: () -> Unit) {
                 )
             }
             state.error?.let { ErrorMessage(it) }
-            OutlinedButton(
+            Button(
                 onClick = onImport,
                 enabled = state.canImport,
-                shape = HaacShapes.Medium,
+                shape = HaacShapes.Button,
+                colors = haacButtonColors(),
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(56.dp),
             ) {
                 Text(stringResource(R.string.import_action), style = MaterialTheme.typography.titleMedium)

@@ -1,17 +1,20 @@
 package com.stacknoise.haac.feature.layout.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledIconToggleButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,12 +25,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.common.ui.PlaceIcon
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacFilterChipBorder
+import com.stacknoise.haac.core.common.ui.theme.haacFilterChipColors
+import com.stacknoise.haac.core.database.layout.Places
 import com.stacknoise.haac.feature.layout.R
 import com.stacknoise.haac.feature.layout.domain.PlaceForm
 import com.stacknoise.haac.feature.layout.domain.PlaceKind
-import com.stacknoise.haac.core.database.layout.Places
 
 /** Small uppercase label above a section of the form. */
 @Composable
@@ -103,7 +109,16 @@ internal fun IconPicker(selected: String?, onSelect: (String?) -> Unit) {
             FilledIconToggleButton(
                 checked = chosen,
                 onCheckedChange = { onSelect(if (chosen) null else icon.key) },
-                modifier = Modifier.size(48.dp),
+                shape = HaacShapes.Medium,
+                colors = IconButtonDefaults.filledIconToggleButtonColors(
+                    containerColor = HaacColors.Surface,
+                    contentColor = HaacColors.OnSurfaceVariant,
+                    checkedContainerColor = HaacColors.Accent,
+                    checkedContentColor = HaacColors.OnAccent,
+                ),
+                modifier = Modifier
+                    .size(52.dp)
+                    .border(1.dp, if (chosen) HaacColors.Accent else HaacColors.Outline, HaacShapes.Medium),
             ) {
                 Icon(painterResource(icon.drawable), stringResource(icon.label))
             }
@@ -118,11 +133,14 @@ internal fun Choice(label: String, selected: Boolean, onClick: () -> Unit) {
         selected = selected,
         onClick = onClick,
         shape = HaacShapes.Small,
-        label = { Text(label, modifier = Modifier.padding(vertical = 8.dp)) },
+        colors = haacFilterChipColors(),
+        border = haacFilterChipBorder(enabled = true, selected = selected),
+        label = { Text(label, style = MaterialTheme.typography.labelLarge) },
         leadingIcon = if (selected) {
             { Icon(painterResource(R.drawable.ic_layout_check), null, Modifier.size(FilterChipDefaults.IconSize)) }
         } else {
             null
         },
+        modifier = Modifier.height(40.dp),
     )
 }

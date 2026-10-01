@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -24,8 +26,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.CertificateDetails
 import com.stacknoise.haac.core.common.ui.CertificateDialog
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.theme.HaacCard
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
+import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacSwitchColors
+import com.stacknoise.haac.core.common.ui.theme.haacTextFieldColors
 import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.feature.settings.R
 
@@ -57,22 +64,26 @@ fun AddressesContent(state: AddressesUiState, actions: AddressActions) {
     Spacer(Modifier.height(8.dp))
     val both = state.internal != null && state.external != null
     AddressRow(AddressSlot.INTERNAL, state.internal, removable = both, enabled = !state.busy, actions = actions)
+    Spacer(Modifier.height(10.dp))
     AddressRow(AddressSlot.EXTERNAL, state.external, removable = both, enabled = !state.busy, actions = actions)
-    Spacer(Modifier.height(8.dp))
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(R.string.settings_always_internal), style = MaterialTheme.typography.titleMedium)
-            Text(
-                stringResource(R.string.settings_always_internal_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+    Spacer(Modifier.height(10.dp))
+    HaacCard {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                Text(stringResource(R.string.settings_always_internal), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(R.string.settings_always_internal_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(
+                checked = state.alwaysUseInternal,
+                onCheckedChange = actions.onAlwaysUseInternalChanged,
+                enabled = !state.busy && state.internal != null,
+                colors = haacSwitchColors(),
             )
         }
-        Switch(
-            checked = state.alwaysUseInternal,
-            onCheckedChange = actions.onAlwaysUseInternalChanged,
-            enabled = !state.busy && state.internal != null,
-        )
     }
     TextButton(onClick = actions.onUseHaAddresses, enabled = !state.busy) {
         Text(stringResource(R.string.settings_use_ha_addresses))
@@ -91,26 +102,28 @@ private fun AddressRow(
     enabled: Boolean,
     actions: AddressActions,
 ) {
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(slot.label()), style = MaterialTheme.typography.titleMedium)
-            Text(
-                url ?: stringResource(R.string.settings_address_not_set),
-                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFontFamily),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (url?.startsWith("https://") == true) {
-            TextButton(onClick = { actions.onCertificate(slot) }, enabled = enabled) {
-                Text(stringResource(R.string.settings_address_certificate))
+    HaacCard {
+        Text(stringResource(slot.label()), style = MaterialTheme.typography.titleMedium)
+        Text(
+            url ?: stringResource(R.string.settings_address_not_set),
+            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = MonoFontFamily),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row {
+            TextButton(onClick = { actions.onEdit(slot) }, enabled = enabled) {
+                Text(stringResource(R.string.settings_address_edit))
             }
-        }
-        TextButton(onClick = { actions.onEdit(slot) }, enabled = enabled) {
-            Text(stringResource(R.string.settings_address_edit))
-        }
-        if (removable) {
-            TextButton(onClick = { actions.onRemove(slot) }, enabled = enabled) {
-                Text(stringResource(R.string.settings_address_remove))
+            if (url?.startsWith("https://") == true) {
+                TextButton(onClick = { actions.onCertificate(slot) }, enabled = enabled) {
+                    Text(stringResource(R.string.settings_address_certificate))
+                }
+            }
+            if (removable) {
+                TextButton(
+                    onClick = { actions.onRemove(slot) },
+                    enabled = enabled,
+                    colors = ButtonDefaults.textButtonColors(contentColor = HaacColors.Danger),
+                ) { Text(stringResource(R.string.settings_address_remove)) }
             }
         }
     }
@@ -130,6 +143,8 @@ private fun EditAddressDialog(slot: AddressSlot, state: AddressesUiState, action
                     placeholder = { Text(stringResource(R.string.settings_address_placeholder)) },
                     singleLine = true,
                     enabled = !state.busy,
+                    shape = HaacShapes.Medium,
+                    colors = haacTextFieldColors(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                 )
                 state.error?.let { ErrorMessage(it) }

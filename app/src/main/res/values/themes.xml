@@ -7,5 +7,5 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
-    <color name="haac_background">#161826</color>
+    <color name="haac_background">#F3F5F0</color>
 </resources>

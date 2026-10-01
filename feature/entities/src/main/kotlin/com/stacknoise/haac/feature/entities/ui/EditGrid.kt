@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -126,13 +127,13 @@ private fun Modifier.at(rect: IntRect, density: Density, dragged: Offset? = null
 private fun EditTile(tile: Tile, actions: EditActions, modifier: Modifier, lifted: Boolean) {
     val colors = MaterialTheme.colorScheme
     val frame = if (lifted) {
-        Modifier.shadow(8.dp, HaacShapes.Medium).background(colors.primaryContainer, HaacShapes.Medium)
-            .border(1.dp, colors.primary, HaacShapes.Medium)
+        Modifier.shadow(8.dp, HaacShapes.Tile).background(colors.primaryContainer, HaacShapes.Tile)
+            .border(1.5.dp, colors.primary, HaacShapes.Tile)
     } else {
-        Modifier.background(colors.surface, HaacShapes.Medium).border(1.dp, colors.outline, HaacShapes.Medium)
+        Modifier.background(colors.surface, HaacShapes.Tile).border(1.dp, colors.outlineVariant, HaacShapes.Tile)
     }
-    Box(modifier = modifier.then(frame).clip(HaacShapes.Medium)) {
-        Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
+    Box(modifier = modifier.then(frame).clip(HaacShapes.Tile)) {
+        Column(modifier = Modifier.fillMaxSize().padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 DragHandle()
                 Spacer(Modifier.weight(1f))
@@ -151,18 +152,25 @@ private fun AddTile(onAdd: () -> Unit, modifier: Modifier) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .clip(HaacShapes.Medium)
-            .border(1.dp, MaterialTheme.colorScheme.outline, HaacShapes.Medium)
+            .clip(HaacShapes.Tile)
+            .dashedBorder(AddTileDash, width = 1.5.dp)
             .clickable(onClick = onAdd)
             .padding(12.dp),
     ) {
         Spacer(Modifier.weight(1f))
-        Icon(painterResource(R.drawable.ic_entities_add), contentDescription = null)
+        Icon(
+            painterResource(R.drawable.ic_entities_add),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Text(
             stringResource(R.string.rooms_add_entities),
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.labelLarge,
             color = secondaryColor(),
         )
         Spacer(Modifier.weight(1f))
     }
 }
+
+/** Colour of the dashed border of the *Add entities* tile. */
+private val AddTileDash = Color(0xFF9AA89E)

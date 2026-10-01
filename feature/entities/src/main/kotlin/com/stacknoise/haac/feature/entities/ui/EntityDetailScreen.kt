@@ -53,7 +53,7 @@ fun EntityDetailScreen(onClose: () -> Unit, viewModel: EntityDetailViewModel = h
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 20.dp),
         ) {
             TopRow(canRename = state.detail != null, onClose = onClose, onRename = { renaming = true })
             state.error?.let { ErrorMessage(it) }

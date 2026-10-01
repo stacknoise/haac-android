@@ -29,8 +29,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.database.assignment.TileSize
 import com.stacknoise.haac.feature.entities.R
@@ -59,7 +62,7 @@ internal fun EditName(tile: Tile, onRename: (Tile) -> Unit, modifier: Modifier =
     ) {
         Text(
             tile.name,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp, fontWeight = FontWeight.Bold),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f, fill = false),
@@ -81,12 +84,12 @@ internal fun SizeMenu(tile: Tile, onResize: (String, TileSize) -> Unit) {
         Text(
             tile.size.label,
             style = MaterialTheme.typography.labelLarge,
-            color = secondaryColor(),
+            color = HaacColors.OnSurfaceVariantStrong,
             modifier = Modifier
                 .clip(HaacShapes.Small)
                 .clickable { open = true }
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, HaacShapes.Small)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                .border(1.5.dp, MaterialTheme.colorScheme.outline, HaacShapes.Small)
+                .padding(horizontal = 10.dp, vertical = 6.dp),
         )
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             TileSize.entries.forEach { size ->
@@ -158,7 +161,7 @@ internal fun Modifier.moveActions(index: Int, count: Int, labels: MoveLabels, on
 
 /** The drop target: diagonal stripes in the accent [color] (M-06). */
 internal fun Modifier.hatched(color: Color): Modifier =
-    border(2.dp, color, HaacShapes.Medium).clip(HaacShapes.Medium).drawBehind {
+    border(2.dp, color, HaacShapes.Tile).clip(HaacShapes.Tile).drawBehind {
         val step = 14.dp.toPx()
         var x = -size.height
         while (x < size.width) {

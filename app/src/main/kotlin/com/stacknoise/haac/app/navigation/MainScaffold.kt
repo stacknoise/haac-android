@@ -1,20 +1,35 @@
 package com.stacknoise.haac.app.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +43,7 @@ import com.stacknoise.haac.app.access.RequestLocalNetworkAccess
 import com.stacknoise.haac.app.connection.ConnectionBanner
 import com.stacknoise.haac.app.connection.ConnectionViewModel
 import com.stacknoise.haac.app.licenses.LicensesScreen
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.error.ErrorAction
 import com.stacknoise.haac.feature.instance.ui.InstanceBar
 import com.stacknoise.haac.feature.instance.ui.InstancesSection
@@ -113,20 +129,59 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
     }
 }
 
-/** Bottom bar with Rooms, Places and Settings; [currentRoute] is selected. */
+/** Bottom bar with Rooms, Places and Settings; [currentRoute] is selected. Draws an accent bar, not M3's pill. */
 @Composable
 private fun BottomBar(currentRoute: String?, onOpen: (TopLevelDestination) -> Unit) {
-    NavigationBar {
-        TopLevelDestination.entries.forEach { destination ->
-            NavigationBarItem(
-                selected = currentRoute == destination.route,
-                onClick = { onOpen(destination) },
-                icon = { Icon(painterResource(destination.icon), contentDescription = null) },
-                label = { Text(stringResource(destination.label)) },
+    Column(Modifier.fillMaxWidth().background(HaacColors.NavBackground)) {
+        HorizontalDivider(color = HaacColors.NavBorder)
+        Row(Modifier.navigationBarsPadding().selectableGroup()) {
+            TopLevelDestination.entries.forEach { destination ->
+                BottomBarItem(destination, selected = currentRoute == destination.route) { onOpen(destination) }
+            }
+        }
+    }
+}
+
+/** One item of the bottom bar: icon over label, with a 24×3 dp accent bar at the top edge when [selected]. */
+@Composable
+private fun RowScope.BottomBarItem(destination: TopLevelDestination, selected: Boolean, onClick: () -> Unit) {
+    val color = if (selected) HaacColors.Accent else HaacColors.OnSurfaceVariant
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .heightIn(min = BarItemHeight)
+            .selectable(selected = selected, onClick = onClick, role = Role.Tab),
+    ) {
+        if (selected) {
+            Box(
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .size(width = 24.dp, height = 3.dp)
+                    .background(color, RoundedCornerShape(bottomStart = 3.dp, bottomEnd = 3.dp)),
+            )
+        }
+        Column(
+            modifier = Modifier.align(Alignment.Center).padding(vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                painterResource(destination.icon),
+                contentDescription = null,
+                tint = color,
+                modifier = Modifier.size(24.dp),
+            )
+            Text(
+                stringResource(destination.label),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                color = color,
             )
         }
     }
 }
+
+/** Minimum height of a bottom bar item, above the navigation bar inset. */
+private val BarItemHeight = 64.dp
 
 /** Opens a tab of the bottom bar and keeps the state of the others. */
 internal fun NavController.openTopLevel(destination: TopLevelDestination) {

@@ -1,14 +1,18 @@
 package com.stacknoise.haac.feature.notifications.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.core.database.notification.NotificationType
@@ -82,7 +87,7 @@ fun NotificationsContent(state: NotificationsUiState, actions: NotificationActio
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 20.dp),
     ) {
         item { Header(actions, canDeleteAll = state.days.isNotEmpty()) }
         state.error?.let { item { ErrorMessage(it) } }
@@ -90,8 +95,9 @@ fun NotificationsContent(state: NotificationsUiState, actions: NotificationActio
         state.days.forEach { day ->
             item(key = "day-${day.date}") { DayLabel(day.date, today) }
             items(day.items, key = { it.id }) { entry ->
-                SwipeToDelete(entry, actions.onDelete) { NotificationRow(entry, actions) }
-                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+                Box(Modifier.padding(vertical = 5.dp)) {
+                    SwipeToDelete(entry, actions.onDelete) { NotificationRow(entry, actions) }
+                }
             }
         }
     }
@@ -138,7 +144,7 @@ private fun Header(actions: NotificationActions, canDeleteAll: Boolean) {
     }
     Text(
         stringResource(R.string.notifications_title),
-        style = MaterialTheme.typography.headlineMedium,
+        style = MaterialTheme.typography.headlineLarge,
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
     )
 }
@@ -158,15 +164,31 @@ private fun DayLabel(date: LocalDate, today: LocalDate) {
     )
 }
 
-/** Shown while the list is empty. */
+/** Shown while the list is empty: a bell in an accent square above the message. */
 @Composable
 private fun EmptyHint() {
-    Text(
-        stringResource(R.string.notifications_empty),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(8.dp),
-    )
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth().padding(top = 72.dp),
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(80.dp).background(HaacColors.AccentTintStrong, RoundedCornerShape(28.dp)),
+        ) {
+            Icon(
+                painterResource(R.drawable.ic_notifications_bell),
+                contentDescription = null,
+                tint = HaacColors.Accent,
+                modifier = Modifier.size(36.dp),
+            )
+        }
+        Text(
+            stringResource(R.string.notifications_empty),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 20.dp),
+        )
+    }
 }
 
 /** Preview with an added entity, a removed one and an error. */

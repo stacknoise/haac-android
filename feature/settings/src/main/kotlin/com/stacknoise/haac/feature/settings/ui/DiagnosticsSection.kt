@@ -1,6 +1,7 @@
 package com.stacknoise.haac.feature.settings.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.theme.HaacCard
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.core.network.connection.ConnectionState
 import com.stacknoise.haac.feature.settings.R
@@ -33,11 +35,13 @@ fun DiagnosticsSection(viewModel: DiagnosticsViewModel = hiltViewModel()) {
 fun DiagnosticsContent(state: DiagnosticsUiState) {
     Text(stringResource(R.string.settings_diagnostics).uppercase(), style = SectionLabelStyle)
     Spacer(Modifier.height(8.dp))
-    DiagnosticsRow(R.string.diagnostics_connection, stringResource(state.connection.label()))
-    DiagnosticsRow(R.string.diagnostics_last_sync, state.lastSyncAt.asTime())
-    DiagnosticsRow(R.string.diagnostics_ha_version, state.haVersion ?: None)
-    DiagnosticsRow(R.string.diagnostics_bridge_api, state.bridgeApiVersion?.toString() ?: None)
-    DiagnosticsRow(R.string.diagnostics_revision, state.revision?.take(RevisionChars) ?: None)
+    HaacCard(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)) {
+        DiagnosticsRow(R.string.diagnostics_connection, stringResource(state.connection.label()))
+        DiagnosticsRow(R.string.diagnostics_last_sync, state.lastSyncAt.asTime())
+        DiagnosticsRow(R.string.diagnostics_ha_version, state.haVersion ?: None)
+        DiagnosticsRow(R.string.diagnostics_bridge_api, state.bridgeApiVersion?.toString() ?: None)
+        DiagnosticsRow(R.string.diagnostics_revision, state.revision?.take(RevisionChars) ?: None)
+    }
     when (val connection = state.connection) {
         is ConnectionState.Reconnecting -> ErrorMessage(connection.error.code)
         is ConnectionState.Failed -> ErrorMessage(connection.error.code)

@@ -30,6 +30,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.core.database.notification.NotificationType
@@ -48,7 +49,7 @@ internal fun NotificationRow(item: NotificationItem, actions: NotificationAction
         modifier = Modifier
             .fillMaxWidth()
             .clickable { actions.onOpen(item) }
-            .padding(horizontal = 8.dp, vertical = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
         EntryIcon(item)
         Spacer(Modifier.width(16.dp))
@@ -82,7 +83,7 @@ private fun EntryIcon(item: NotificationItem) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(40.dp)
-            .background(if (item.unread) colors.primaryContainer else colors.surface, HaacShapes.Medium),
+            .background(if (item.unread) colors.primaryContainer else HaacColors.SurfaceMuted, HaacShapes.Medium),
     ) {
         Icon(painterResource(icon), contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
     }
@@ -138,8 +139,8 @@ private fun EntryActions(item: NotificationItem, actions: NotificationActions) {
 /** Outlined button in the accent colour ([primary]) or neutral (concept 15.2). */
 @Composable
 private fun ActionButton(text: String, primary: Boolean, onClick: () -> Unit) {
-    val color = if (primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
-    OutlinedButton(onClick = onClick, shape = HaacShapes.Medium) { Text(text, color = color) }
+    val color = if (primary) MaterialTheme.colorScheme.primary else HaacColors.OnSurfaceVariantStrong
+    OutlinedButton(onClick = onClick, shape = HaacShapes.Button) { Text(text, color = color) }
 }
 
 /** Title of an entry: what happened, or the error's user message. */

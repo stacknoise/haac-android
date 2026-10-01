@@ -1,6 +1,7 @@
 package com.stacknoise.haac.feature.entities.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -43,6 +45,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.PlaceIcon
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
+import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacFilterChipBorder
+import com.stacknoise.haac.core.common.ui.theme.haacFilterChipColors
+import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.feature.entities.R
@@ -90,7 +96,7 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 20.dp),
     ) {
         Header(state, groups, navigation, viewModel::onSelectRoom)
         state.error?.let { ErrorMessage(it) }
@@ -182,11 +188,7 @@ private fun Header(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable { menu = true }.padding(vertical = 8.dp),
                 ) {
-                    Text(
-                        groupLabel(group),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    Text(groupLabel(group).uppercase(), style = SectionLabelStyle)
                     Icon(
                         painterResource(R.drawable.ic_entities_expand),
                         stringResource(R.string.rooms_choose_group),
@@ -250,11 +252,14 @@ private fun RoomChips(group: RoomGroup?, selected: String, onSelect: (String) ->
             FilterChip(
                 selected = false,
                 onClick = { onSelect(room.id) },
-                label = { Text(room.name, modifier = Modifier.padding(vertical = 8.dp)) },
+                label = { Text(room.name, style = MaterialTheme.typography.labelLarge) },
                 leadingIcon = PlaceIcon.fromKey(room.icon)?.let { icon ->
                     { Icon(painterResource(icon.drawable), null, Modifier.size(FilterChipDefaults.IconSize)) }
                 },
-                shape = HaacShapes.Medium,
+                shape = HaacShapes.Small,
+                colors = haacFilterChipColors(),
+                border = haacFilterChipBorder(enabled = true, selected = false),
+                modifier = Modifier.height(40.dp),
             )
         }
     }
@@ -271,7 +276,8 @@ private fun StaleBanner() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp)
-            .background(MaterialTheme.colorScheme.surface, HaacShapes.Medium)
+            .background(MaterialTheme.colorScheme.surface, HaacShapes.Card)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, HaacShapes.Card)
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Icon(painterResource(R.drawable.ic_entities_warning), contentDescription = null, Modifier.size(20.dp))
@@ -291,7 +297,8 @@ private fun WithdrawnBanner(count: Int, onReview: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp)
-            .background(MaterialTheme.colorScheme.surface, HaacShapes.Medium)
+            .background(MaterialTheme.colorScheme.surface, HaacShapes.Card)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, HaacShapes.Card)
             .padding(start = 16.dp, top = 4.dp, bottom = 4.dp, end = 4.dp),
     ) {
         Icon(
@@ -317,7 +324,7 @@ private fun NoRooms(onOpenPlaces: () -> Unit) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(vertical = 24.dp),
     )
-    OutlinedButton(onClick = onOpenPlaces, shape = HaacShapes.Medium) {
+    OutlinedButton(onClick = onOpenPlaces, shape = HaacShapes.Button, colors = haacOutlinedButtonColors()) {
         Text(stringResource(R.string.rooms_open_places))
     }
 }
@@ -331,5 +338,7 @@ private fun EmptyRoom(onAdd: () -> Unit) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(top = 24.dp, bottom = 16.dp),
     )
-    OutlinedButton(onClick = onAdd, shape = HaacShapes.Medium) { Text(stringResource(R.string.rooms_add_entities)) }
+    OutlinedButton(onClick = onAdd, shape = HaacShapes.Button, colors = haacOutlinedButtonColors()) {
+        Text(stringResource(R.string.rooms_add_entities))
+    }
 }

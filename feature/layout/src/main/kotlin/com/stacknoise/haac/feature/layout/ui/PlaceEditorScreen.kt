@@ -12,11 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -40,13 +40,14 @@ import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
-import com.stacknoise.haac.feature.layout.R
+import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.core.database.layout.Floor
 import com.stacknoise.haac.core.database.layout.Home
-import com.stacknoise.haac.feature.layout.domain.PlaceForm
-import com.stacknoise.haac.feature.layout.domain.PlaceKind
 import com.stacknoise.haac.core.database.layout.Places
 import com.stacknoise.haac.core.database.layout.Room
+import com.stacknoise.haac.feature.layout.R
+import com.stacknoise.haac.feature.layout.domain.PlaceForm
+import com.stacknoise.haac.feature.layout.domain.PlaceKind
 
 /**
  * Form for a new or existing home, level or room (M-03, concept 6.1, 6.2); [onClose] after saving, deleting or
@@ -94,7 +95,7 @@ fun PlaceEditorContent(state: PlaceEditorUiState, actions: EditorActions) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .imePadding()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 20.dp),
     ) {
         Header(form, actions)
         Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
@@ -144,21 +145,27 @@ private fun NameField(name: String, onChange: (String) -> Unit) {
         value = name,
         onValueChange = onChange,
         placeholder = {
-            Text(stringResource(R.string.editor_name_hint), style = MaterialTheme.typography.displaySmall)
+            Text(
+                stringResource(R.string.editor_name_hint),
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.outline,
+            )
         },
-        textStyle = MaterialTheme.typography.displaySmall,
+        textStyle = MaterialTheme.typography.headlineLarge,
         singleLine = true,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.Transparent,
             unfocusedContainerColor = Color.Transparent,
-            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+            focusedIndicatorColor = MaterialTheme.colorScheme.outline,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.outline,
+            cursorColor = MaterialTheme.colorScheme.primary,
         ),
         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
     )
 }
 
-/** Summary line for a new place and the outlined *Create …* or *Save* button. */
+/** Summary line for a new place and the primary *Create …* or *Save* button. */
 @Composable
 private fun SaveBar(form: PlaceForm, places: Places, status: EditorStatus, onSave: () -> Unit) {
     Column(modifier = Modifier.padding(vertical = 16.dp)) {
@@ -170,11 +177,12 @@ private fun SaveBar(form: PlaceForm, places: Places, status: EditorStatus, onSav
                 modifier = Modifier.padding(bottom = 16.dp),
             )
         }
-        OutlinedButton(
+        Button(
             onClick = onSave,
             enabled = form.canSave && !status.busy,
-            shape = HaacShapes.Medium,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = HaacShapes.Button,
+            colors = haacButtonColors(),
+            modifier = Modifier.fillMaxWidth().height(58.dp),
         ) {
             if (status.busy) {
                 CircularProgressIndicator(modifier = Modifier.height(24.dp))

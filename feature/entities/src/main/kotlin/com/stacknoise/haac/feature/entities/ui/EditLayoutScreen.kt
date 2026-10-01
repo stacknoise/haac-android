@@ -3,13 +3,16 @@ package com.stacknoise.haac.feature.entities.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.theme.HaacShapes
+import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
+import com.stacknoise.haac.core.common.ui.theme.haacSegmentedColors
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.Tile
 
@@ -63,7 +69,7 @@ fun EditLayoutScreen(
     )
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         TopBar(state, onClose = close, onDone = viewModel::onDone)
-        Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
+        Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
             ModeRow(state.mode, viewModel::onMode)
             state.error?.let { ErrorMessage(it) }
             val hint = if (state.mode == ArrangeMode.GRID) R.string.edit_hint_grid else R.string.edit_hint_list
@@ -91,7 +97,7 @@ fun EditLayoutScreen(
 private fun TopBar(state: EditLayoutUiState, onClose: () -> Unit, onDone: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface).padding(4.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
     ) {
         IconButton(onClick = onClose) {
             Icon(painterResource(R.drawable.ic_entities_close), stringResource(R.string.edit_close))
@@ -103,9 +109,14 @@ private fun TopBar(state: EditLayoutUiState, onClose: () -> Unit, onDone: () -> 
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
         )
-        TextButton(onClick = onDone, enabled = !state.saving && state.draft != null) {
-            Text(stringResource(R.string.edit_done))
-        }
+        Button(
+            onClick = onDone,
+            enabled = !state.saving && state.draft != null,
+            shape = HaacShapes.Full,
+            colors = haacButtonColors(),
+            contentPadding = PaddingValues(horizontal = 18.dp),
+            modifier = Modifier.height(40.dp).padding(end = 12.dp),
+        ) { Text(stringResource(R.string.edit_done)) }
     }
 }
 
@@ -113,12 +124,13 @@ private fun TopBar(state: EditLayoutUiState, onClose: () -> Unit, onDone: () -> 
 @Composable
 private fun ModeRow(mode: ArrangeMode, onMode: (ArrangeMode) -> Unit) {
     val labels = listOf(R.string.edit_grid, R.string.edit_list)
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().height(44.dp)) {
         ArrangeMode.entries.forEachIndexed { index, entry ->
             SegmentedButton(
                 selected = entry == mode,
                 onClick = { onMode(entry) },
-                shape = SegmentedButtonDefaults.itemShape(index, ArrangeMode.entries.size),
+                shape = SegmentedButtonDefaults.itemShape(index, ArrangeMode.entries.size, HaacShapes.Small),
+                colors = haacSegmentedColors(),
             ) { Text(stringResource(labels[index])) }
         }
     }

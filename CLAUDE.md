@@ -62,7 +62,7 @@ LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 - JDK 21, Gradle via the wrapper. `compileSdk` 37, `targetSdk` 36, `minSdk` 28 are set only in `build-logic` (`AndroidSdk`).
 - A module's `build.gradle.kts` applies convention plugins (`haac.android.library`, `haac.android.feature`, …) and lists its dependencies; no Android/Kotlin settings there.
 - `./gradlew assembleDebug lint detekt test codeIndexCheck` must pass before a PR; CI also runs PMD CPD and `./gradlew -p build-logic test`.
-- `HaacTheme` (colors, Inter, shapes of concept 15.2) lives in `:core:common`, package `com.stacknoise.haac.core.common.ui.theme`.
+- `HaacTheme` (colors, Figtree, shapes of the Salbei redesign) lives in `:core:common`, package `com.stacknoise.haac.core.common.ui.theme`.
 - The launcher-icon files are excluded from two lint checks in `app/lint.xml`; do not "fix" them by moving or regenerating icons.
 
 - The integration is NOT part of this repo. For its API, read concept chapters 10 and 11; do not add Python code here.
@@ -108,7 +108,7 @@ LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 
 - Kotlin, Jetpack Compose, Material 3, Hilt, Room, OkHttp, kotlinx.serialization (concept 3.3). minSdk 28.
 - Manifest: `android:icon="@mipmap/ic_launcher"`, `android:roundIcon="@mipmap/ic_launcher_round"` (concept 15.6).
-- UI: dark theme `HaacTheme` with the tokens from concept 15.2; font Inter. UI says "Level", code says `Floor`.
+- UI: light "Salbei" theme `HaacTheme` (tokens in `HaacColors`, font Figtree; handoff "HAAC UI Redesign: Salbei"); concept 15.2 still describes the former dark theme. UI says "Level", code says `Floor`.
 - UI strings in `strings.xml` (English); mockup texts are sample data.
 - Tests as in concept 14.2 (JUnit 5, Turbine, MockK, MockWebServer, Compose UI tests).
 - Signing keys and Play credentials exist only as GitHub Actions secrets (concept 16.6); never commit keystores or `*.jks`.
