@@ -2,16 +2,12 @@ package com.stacknoise.haac.feature.notifications.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
-import com.stacknoise.haac.core.common.ui.theme.HaacColors
+import com.stacknoise.haac.core.common.ui.theme.HaacEmptyState
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.core.database.notification.NotificationType
@@ -167,28 +163,7 @@ private fun DayLabel(date: LocalDate, today: LocalDate) {
 /** Shown while the list is empty: a bell in an accent square above the message. */
 @Composable
 private fun EmptyHint() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth().padding(top = 72.dp),
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.size(80.dp).background(HaacColors.AccentTintStrong, RoundedCornerShape(28.dp)),
-        ) {
-            Icon(
-                painterResource(R.drawable.ic_notifications_bell),
-                contentDescription = null,
-                tint = HaacColors.Accent,
-                modifier = Modifier.size(36.dp),
-            )
-        }
-        Text(
-            stringResource(R.string.notifications_empty),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 20.dp),
-        )
-    }
+    HaacEmptyState(painterResource(R.drawable.ic_notifications_bell), stringResource(R.string.notifications_empty))
 }
 
 /** Preview with an added entity, a removed one and an error. */

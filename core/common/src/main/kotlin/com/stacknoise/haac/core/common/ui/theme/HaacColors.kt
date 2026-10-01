@@ -24,6 +24,7 @@ object HaacColors {
     val DisabledBackground = Color(0xFFE4E9DF)
     val DisabledText = Color(0xFF6B7A70)
     val Danger = Color(0xFF9B2C2C)
+    val DangerContainer = Color(0xFFF8E7E4)
     val Scrim = Color(0x801D2620)
     val OnAccent = Color(0xFFFFFFFF)
     val OutlinedText = Color(0xFF2B3A31)
@@ -53,6 +54,8 @@ internal val HaacColorScheme = lightColorScheme(
     surfaceBright = HaacColors.Surface,
     error = HaacColors.Danger,
     onError = HaacColors.OnAccent,
+    errorContainer = HaacColors.DangerContainer,
+    onErrorContainer = HaacColors.Danger,
     outline = HaacColors.OutlineStrong,
     outlineVariant = HaacColors.Outline,
     scrim = HaacColors.Scrim,

@@ -44,6 +44,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.PlaceIcon
+import com.stacknoise.haac.core.common.ui.theme.HaacEmptyState
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.core.common.ui.theme.haacFilterChipBorder
@@ -318,27 +319,19 @@ private fun WithdrawnBanner(count: Int, onReview: () -> Unit) {
 /** Shown while the instance has no room: points to Places. */
 @Composable
 private fun NoRooms(onOpenPlaces: () -> Unit) {
-    Text(
-        stringResource(R.string.rooms_no_rooms),
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(vertical = 24.dp),
-    )
-    OutlinedButton(onClick = onOpenPlaces, shape = HaacShapes.Button, colors = haacOutlinedButtonColors()) {
-        Text(stringResource(R.string.rooms_open_places))
+    HaacEmptyState(painterResource(PlaceIcon.HOME.drawable), stringResource(R.string.rooms_no_rooms)) {
+        OutlinedButton(onClick = onOpenPlaces, shape = HaacShapes.Button, colors = haacOutlinedButtonColors()) {
+            Text(stringResource(R.string.rooms_open_places))
+        }
     }
 }
 
 /** Shown for a room without tiles: *Add entities*. */
 @Composable
 private fun EmptyRoom(onAdd: () -> Unit) {
-    Text(
-        stringResource(R.string.rooms_empty_room),
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 24.dp, bottom = 16.dp),
-    )
-    OutlinedButton(onClick = onAdd, shape = HaacShapes.Button, colors = haacOutlinedButtonColors()) {
-        Text(stringResource(R.string.rooms_add_entities))
+    HaacEmptyState(painterResource(R.drawable.ic_entities_add), stringResource(R.string.rooms_empty_room)) {
+        OutlinedButton(onClick = onAdd, shape = HaacShapes.Button, colors = haacOutlinedButtonColors()) {
+            Text(stringResource(R.string.rooms_add_entities))
+        }
     }
 }

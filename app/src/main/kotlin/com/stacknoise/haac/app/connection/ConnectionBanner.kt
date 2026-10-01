@@ -31,7 +31,7 @@ fun ConnectionBanner(state: ConnectionState, onRetry: () -> Unit, onOpenSettings
     }
     // While reconnecting, "Try again" skips the back-off; a failed connection offers its error's action.
     val action = if (state is ConnectionState.Reconnecting) ErrorAction.RETRY else error.code.action
-    Surface(color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.fillMaxWidth()) {
+    Surface(color = MaterialTheme.colorScheme.errorContainer, modifier = Modifier.fillMaxWidth()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.statusBarsPadding().padding(start = 16.dp, end = 8.dp, bottom = 12.dp),
