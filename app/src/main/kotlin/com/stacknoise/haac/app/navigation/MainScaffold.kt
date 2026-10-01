@@ -43,9 +43,11 @@ import com.stacknoise.haac.app.access.RequestLocalNetworkAccess
 import com.stacknoise.haac.app.connection.ConnectionBanner
 import com.stacknoise.haac.app.connection.ConnectionViewModel
 import com.stacknoise.haac.app.licenses.LicensesScreen
+import com.stacknoise.haac.app.shortcut.PendingSwitchViewModel
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.error.ErrorAction
 import com.stacknoise.haac.feature.instance.ui.InstanceBar
+import com.stacknoise.haac.feature.instance.ui.InstanceSwitcherViewModel
 import com.stacknoise.haac.feature.instance.ui.InstancesSection
 import com.stacknoise.haac.feature.notifications.ui.NotificationsScreen
 import com.stacknoise.haac.feature.settings.ui.SettingsScreen
@@ -66,7 +68,23 @@ fun MainScaffold(actions: MainActions, connection: ConnectionViewModel = hiltVie
     LaunchedEffect(signInRequired) { signInRequired?.let(actions.onSignedOut) }
     val hasInternalAddress by connection.hasInternalAddress.collectAsStateWithLifecycle()
     RequestLocalNetworkAccess(enabled = hasInternalAddress, onResult = { if (it) connection.retry() })
+    SwitchRequestedByShortcut(actions)
     key(activeId) { MainContent(actions, connection) }
+}
+
+/** Switches to the instance an app shortcut asked for as soon as the main area is visible (concept 4.4). */
+@Composable
+private fun SwitchRequestedByShortcut(
+    actions: MainActions,
+    pending: PendingSwitchViewModel = hiltViewModel(),
+    switcher: InstanceSwitcherViewModel = hiltViewModel(),
+) {
+    val requested by pending.serverId.collectAsStateWithLifecycle()
+    LaunchedEffect(requested) {
+        val id = requested ?: return@LaunchedEffect
+        pending.onHandled()
+        switcher.onSelect(id) { step -> actions.instances.onSwitched(id, step) }
+    }
 }
 
 /** The screens of one instance: top bar with switcher and connection banner, tabs and their destinations. */

@@ -7,13 +7,17 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.stacknoise.haac.app.crash.CrashMarker
 import com.stacknoise.haac.app.lock.AppLock
+import com.stacknoise.haac.app.shortcut.InstanceShortcuts
 import com.stacknoise.haac.core.error.ErrorReporter
 import com.stacknoise.haac.core.network.tls.PinSync
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
-/** Application entry point; sets up Hilt, crash reporting (17.4), the app lock (5.5) and the certificate pins (4.3). */
+/**
+ * Application entry point; sets up Hilt, crash reporting (17.4), the app lock (5.5), the certificate pins (4.3)
+ * and the instance shortcuts (4.4).
+ */
 @HiltAndroidApp
 class HaacApplication : Application() {
     @Inject
@@ -28,12 +32,16 @@ class HaacApplication : Application() {
     @Inject
     lateinit var errorReporter: ErrorReporter
 
+    @Inject
+    lateinit var instanceShortcuts: InstanceShortcuts
+
     /** Reports foreground and background of the whole app to [AppLock]. */
     override fun onCreate() {
         super.onCreate()
         crashMarker.install()
         crashMarker.replayTo(errorReporter)
         pinSync.start()
+        instanceShortcuts.start(ProcessLifecycleOwner.get().lifecycleScope)
         ProcessLifecycleOwner.get().lifecycle.addObserver(
             object : DefaultLifecycleObserver {
                 /** All activities stopped. */
