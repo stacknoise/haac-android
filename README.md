@@ -16,6 +16,21 @@ This limits what the app shows and controls. It is not a Home Assistant permissi
 - Android 9 (API 28) or newer.
 - Requires Home Assistant 2026.9.0 or newer with HAAC Bridge installed.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/sign-in.jpg" width="220" alt="Sign in"><br>Sign in</td>
+    <td align="center"><img src="docs/screenshots/rooms.jpg" width="220" alt="Rooms"><br>Rooms</td>
+    <td align="center"><img src="docs/screenshots/edit-layout.jpg" width="220" alt="Edit layout"><br>Edit layout</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/add-entities.jpg" width="220" alt="Add entities"><br>Add entities</td>
+    <td align="center"><img src="docs/screenshots/places.jpg" width="220" alt="Places"><br>Places</td>
+    <td align="center"><img src="docs/screenshots/places-speed-dial.jpg" width="220" alt="Places create menu"><br>Create menu</td>
+  </tr>
+</table>
+
 ## Features
 
 **Sign-in and instances**
