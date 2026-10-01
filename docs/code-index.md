@@ -8,12 +8,14 @@ Lists every class and function of the app with signature, file and a one-line KD
 
 | Symbol | Signature | File | Description |
 | --- | --- | --- | --- |
-| `HaacApplication` | `class HaacApplication : Application()` | `app/src/main/kotlin/com/stacknoise/haac/app/HaacApplication.kt` | Application entry point; sets up Hilt, crash reporting (17.4), the app lock (5.5) and the certificate pins (4.3). |
+| `HaacApplication` | `class HaacApplication : Application()` | `app/src/main/kotlin/com/stacknoise/haac/app/HaacApplication.kt` | Application entry point; sets up Hilt, crash reporting (17.4), the app lock (5.5), the certificate pins (4.3) |
 | `HaacApplication.onCreate` | `override fun onCreate()` | `app/src/main/kotlin/com/stacknoise/haac/app/HaacApplication.kt` | Reports foreground and background of the whole app to [AppLock]. |
 | `HaacApplication.onStop` | `override fun onStop(owner: LifecycleOwner)` | `app/src/main/kotlin/com/stacknoise/haac/app/HaacApplication.kt` | All activities stopped. |
 | `HaacApplication.onStart` | `override fun onStart(owner: LifecycleOwner)` | `app/src/main/kotlin/com/stacknoise/haac/app/HaacApplication.kt` | An activity is visible again. |
 | `MainActivity` | `class MainActivity : FragmentActivity()` | `app/src/main/kotlin/com/stacknoise/haac/app/MainActivity.kt` | The single activity of the app; hosts the Compose navigation graph (concept 3). A [FragmentActivity], |
 | `MainActivity.onCreate` | `override fun onCreate(savedInstanceState: Bundle?)` | `app/src/main/kotlin/com/stacknoise/haac/app/MainActivity.kt` | Enables edge-to-edge drawing and sets the themed Compose content. |
+| `MainActivity.onNewIntent` | `override fun onNewIntent(intent: Intent)` | `app/src/main/kotlin/com/stacknoise/haac/app/MainActivity.kt` | An app shortcut that reaches the running app asks for its instance. |
+| `MainActivity.requestSwitchOf` | `private fun requestSwitchOf(intent: Intent?)` | `app/src/main/kotlin/com/stacknoise/haac/app/MainActivity.kt` | Passes the instance of a shortcut [intent] on to the main area. |
 
 ## com.stacknoise.haac.app.access
 
@@ -86,6 +88,7 @@ Lists every class and function of the app with signature, file and a one-line KD
 | `NavController.replaceAll` | `private fun NavController.replaceAll(route: String)` | `app/src/main/kotlin/com/stacknoise/haac/app/navigation/HaacNavHost.kt` | Navigates to [route] and clears the back stack, so Back does not return to sign-in or signed-out screens. |
 | `MainActions` | `class MainActions(val onSignedOut: (String) -> Unit, val instances: InstanceListActions)` | `app/src/main/kotlin/com/stacknoise/haac/app/navigation/MainActions.kt` | What the main area asks the root navigation to do: [onSignedOut] after logout or when HA no longer accepts the |
 | `MainScaffold` | `fun MainScaffold(actions: MainActions, connection: ConnectionViewModel = hiltViewModel())` | `app/src/main/kotlin/com/stacknoise/haac/app/navigation/MainScaffold.kt` | Main area after sign-in: instance switcher (concept 4.4), bottom bar with Rooms, Places, Settings (15.2) and the |
+| `SwitchRequestedByShortcut` | `private fun SwitchRequestedByShortcut(actions: MainActions, pending: PendingSwitchViewModel = hiltViewModel(), switcher: InstanceSwitcherViewModel = hiltViewModel())` | `app/src/main/kotlin/com/stacknoise/haac/app/navigation/MainScaffold.kt` | Switches to the instance an app shortcut asked for as soon as the main area is visible (concept 4.4). |
 | `MainContent` | `private fun MainContent(actions: MainActions, connection: ConnectionViewModel)` | `app/src/main/kotlin/com/stacknoise/haac/app/navigation/MainScaffold.kt` | The screens of one instance: top bar with switcher and connection banner, tabs and their destinations. |
 | `BottomBar` | `private fun BottomBar(currentRoute: String?, onOpen: (TopLevelDestination) -> Unit)` | `app/src/main/kotlin/com/stacknoise/haac/app/navigation/MainScaffold.kt` | Bottom bar with Rooms, Places and Settings; [currentRoute] is selected. Draws an accent bar, not M3's pill. |
 | `RowScope.BottomBarItem` | `private fun RowScope.BottomBarItem(destination: TopLevelDestination, selected: Boolean, onClick: () -> Unit)` | `app/src/main/kotlin/com/stacknoise/haac/app/navigation/MainScaffold.kt` | One item of the bottom bar: icon over label, with a 24×3 dp accent bar at the top edge when [selected]. |
@@ -97,6 +100,21 @@ Lists every class and function of the app with signature, file and a one-line KD
 | `Routes.unlock` | `fun unlock(serverId: String): String` | `app/src/main/kotlin/com/stacknoise/haac/app/navigation/Routes.kt` | Unlock screen of [serverId]. |
 | `Routes.of` | `fun of(start: StartRoute): String` | `app/src/main/kotlin/com/stacknoise/haac/app/navigation/Routes.kt` | The route that opens [start]. |
 | `TopLevelDestination` | `enum class TopLevelDestination(val route: String, @param:StringRes val label: Int, @param:DrawableRes val icon: Int)` | `app/src/main/kotlin/com/stacknoise/haac/app/navigation/TopLevelDestination.kt` | Top-level destinations of the bottom bar (concept 15.2). |
+
+## com.stacknoise.haac.app.shortcut
+
+| Symbol | Signature | File | Description |
+| --- | --- | --- | --- |
+| `InstanceShortcuts` | `class InstanceShortcuts @Inject constructor(@ApplicationContext private val context: Context, private val servers: ServerDao)` | `app/src/main/kotlin/com/stacknoise/haac/app/shortcut/InstanceShortcuts.kt` | Publishes one app shortcut per instance (long press on the app icon) from two instances on, as the instance |
+| `InstanceShortcuts.start` | `fun start(scope: CoroutineScope)` | `app/src/main/kotlin/com/stacknoise/haac/app/shortcut/InstanceShortcuts.kt` | Keeps the shortcuts in step with the stored instances while [scope] lives. |
+| `InstanceShortcuts.publish` | `private fun publish(rows: List<ServerEntity>)` | `app/src/main/kotlin/com/stacknoise/haac/app/shortcut/InstanceShortcuts.kt` | Replaces the dynamic shortcuts with the first instances that fit; none for a single instance. |
+| `PendingInstanceSwitch` | `class PendingInstanceSwitch @Inject constructor()` | `app/src/main/kotlin/com/stacknoise/haac/app/shortcut/PendingInstanceSwitch.kt` | The instance an app shortcut asked for (concept 4.4). The request waits here until the main area is visible, |
+| `PendingInstanceSwitch.request` | `fun request(serverId: String)` | `app/src/main/kotlin/com/stacknoise/haac/app/shortcut/PendingInstanceSwitch.kt` | Asks for a switch to instance [serverId]. |
+| `PendingInstanceSwitch.clear` | `fun clear()` | `app/src/main/kotlin/com/stacknoise/haac/app/shortcut/PendingInstanceSwitch.kt` | The pending switch was taken over. |
+| `PendingInstanceSwitch.intent` | `fun intent(context: Context, serverId: String): Intent` | `app/src/main/kotlin/com/stacknoise/haac/app/shortcut/PendingInstanceSwitch.kt` | The intent of the shortcut for instance [serverId]. |
+| `PendingInstanceSwitch.serverIdOf` | `fun serverIdOf(intent: Intent?): String?` | `app/src/main/kotlin/com/stacknoise/haac/app/shortcut/PendingInstanceSwitch.kt` | The instance a launch [intent] asks for, or null for a normal start. |
+| `PendingSwitchViewModel` | `class PendingSwitchViewModel @Inject constructor(private val pending: PendingInstanceSwitch) : ViewModel()` | `app/src/main/kotlin/com/stacknoise/haac/app/shortcut/PendingSwitchViewModel.kt` | Hands the instance an app shortcut asked for to the main area (concept 4.4). |
+| `PendingSwitchViewModel.onHandled` | `fun onHandled()` | `app/src/main/kotlin/com/stacknoise/haac/app/shortcut/PendingSwitchViewModel.kt` | The main area took the request over. |
 
 ## com.stacknoise.haac.app.start
 
