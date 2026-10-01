@@ -172,3 +172,23 @@ fun HaacCard(
     }
     Column(modifier = modifier.fillMaxWidth().then(frame).padding(contentPadding), content = content)
 }
+
+/** Colours of chips that stay outlined when selected: the accent green marks the choice, the fill stays clear. */
+@Composable
+fun haacOutlinedChipColors(): SelectableChipColors = FilterChipDefaults.filterChipColors(
+    containerColor = Color.Transparent,
+    labelColor = HaacColors.OnSurfaceVariantStrong,
+    selectedContainerColor = Color.Transparent,
+    selectedLabelColor = HaacColors.Accent,
+)
+
+/** Border for [haacOutlinedChipColors]: 1.5 dp accent green when [selected], the strong outline otherwise. */
+@Composable
+fun haacOutlinedChipBorder(enabled: Boolean, selected: Boolean): BorderStroke =
+    FilterChipDefaults.filterChipBorder(
+        enabled = enabled,
+        selected = selected,
+        borderColor = HaacColors.OutlineStrong,
+        selectedBorderColor = HaacColors.Accent,
+        selectedBorderWidth = 1.5.dp,
+    )

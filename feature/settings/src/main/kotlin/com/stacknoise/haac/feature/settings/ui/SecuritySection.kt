@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.common.ui.theme.HaacCard
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
-import com.stacknoise.haac.core.common.ui.theme.haacFilterChipBorder
-import com.stacknoise.haac.core.common.ui.theme.haacFilterChipColors
+import com.stacknoise.haac.core.common.ui.theme.haacOutlinedChipBorder
+import com.stacknoise.haac.core.common.ui.theme.haacOutlinedChipColors
 import com.stacknoise.haac.core.common.ui.theme.haacSwitchColors
 import com.stacknoise.haac.core.database.settings.SecuritySettings
 import com.stacknoise.haac.feature.settings.R
@@ -99,8 +99,8 @@ private fun Choices(
                 onClick = { if (minutes != selected) onSelected(minutes) },
                 enabled = enabled,
                 shape = HaacShapes.Small,
-                colors = haacFilterChipColors(),
-                border = haacFilterChipBorder(enabled, minutes == selected),
+                colors = haacOutlinedChipColors(),
+                border = haacOutlinedChipBorder(enabled, minutes == selected),
                 label = { Text(if (minutes == 0) zeroLabel else stringResource(R.string.settings_minutes, minutes)) },
             )
         }
