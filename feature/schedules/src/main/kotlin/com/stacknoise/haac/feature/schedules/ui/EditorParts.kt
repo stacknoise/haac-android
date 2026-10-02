@@ -191,15 +191,15 @@ internal fun TimeCard(time: String, subtitle: String?, onChange: () -> Unit) {
  */
 @Composable
 internal fun EntityRow(name: String, locked: Boolean, onRemove: () -> Unit) {
-    val background = if (locked) MutedCard else HaacColors.Surface
-    val iconBox = if (locked) MutedIconBox else HaacColors.Accent
+    val background = if (locked) HaacColors.SurfaceMuted else HaacColors.Surface
+    val iconBox = if (locked) HaacColors.OutlineStrong else HaacColors.Accent
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 68.dp)
             .background(background, HaacShapes.Card)
-            .border(1.dp, if (locked) MutedCardBorder else HaacColors.Outline, HaacShapes.Card)
+            .border(1.dp, if (locked) HaacColors.NavBorder else HaacColors.Outline, HaacShapes.Card)
             .padding(horizontal = 14.dp),
     ) {
         Box(
@@ -228,11 +228,6 @@ internal fun EntityRow(name: String, locked: Boolean, onRemove: () -> Unit) {
         }
     }
 }
-
-/** Grey card colours of a locked entity and of the banner (design 3b A3). */
-private val MutedCard = Color(0xFFEAEEE6)
-private val MutedCardBorder = Color(0xFFDDE3D8)
-private val MutedIconBox = Color(0xFFCBD3C6)
 
 /** The dashed *Add entities* tile that opens the picker. */
 @Composable
@@ -272,7 +267,7 @@ private const val CardRadius = 22
 internal fun OwnerBanner(owner: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().background(MutedCard, HaacShapes.Small).padding(14.dp),
+        modifier = Modifier.fillMaxWidth().background(HaacColors.SurfaceMuted, HaacShapes.Small).padding(14.dp),
     ) {
         Box(
             contentAlignment = Alignment.Center,

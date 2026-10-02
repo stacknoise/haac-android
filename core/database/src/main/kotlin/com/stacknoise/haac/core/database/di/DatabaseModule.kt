@@ -21,7 +21,9 @@ import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.database.settings.AppSettings
 import com.stacknoise.haac.core.database.settings.AppSettingsSerializer
+import com.stacknoise.haac.core.database.settings.AppearanceSettings
 import com.stacknoise.haac.core.database.settings.DataStoreActiveInstanceStore
+import com.stacknoise.haac.core.database.settings.DataStoreAppearanceSettings
 import com.stacknoise.haac.core.database.settings.DataStoreSecuritySettings
 import com.stacknoise.haac.core.database.settings.SecuritySettings
 import dagger.Binds
@@ -43,6 +45,10 @@ abstract class DatabaseModule {
     /** Security settings in the settings DataStore. */
     @Binds
     abstract fun bindSecuritySettings(settings: DataStoreSecuritySettings): SecuritySettings
+
+    /** Appearance settings in the settings DataStore. */
+    @Binds
+    abstract fun bindAppearanceSettings(settings: DataStoreAppearanceSettings): AppearanceSettings
 
     /** Transactions of the app database. */
     @Binds
