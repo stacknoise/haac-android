@@ -42,10 +42,6 @@ import com.stacknoise.haac.feature.schedules.data.ScheduleView
 import com.stacknoise.haac.feature.schedules.domain.WeekDays
 import java.time.format.TextStyle
 
-/** Colour of muted cards (off or paused schedules) and their border (design 3b). */
-private val MutedBackground = Color(0xFFEAEEE6)
-private val MutedBorder = Color(0xFFDDE3D8)
-
 /**
  * The card of one schedule (design 3b): time and weekdays on the left, which open the detail screen, name, target
  * and, for admins, the owner in the middle, and the *enabled* switch. Off or paused schedules are muted; the switch
@@ -67,8 +63,8 @@ internal fun ScheduleCard(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .fillMaxWidth()
-            .background(if (muted) MutedBackground else HaacColors.Surface, HaacShapes.Card)
-            .border(1.dp, if (muted) MutedBorder else HaacColors.Outline, HaacShapes.Card)
+            .background(if (muted) HaacColors.SurfaceMuted else HaacColors.Surface, HaacShapes.Card)
+            .border(1.dp, if (muted) HaacColors.NavBorder else HaacColors.Outline, HaacShapes.Card)
             .padding(end = 16.dp),
     ) {
         Row(

@@ -23,10 +23,12 @@ import com.stacknoise.haac.feature.entities.domain.HistoryChart
 /** Legend of a line chart: every line, the min/max band and the phases; none for a single plain line. */
 @Composable
 internal fun LineLegend(chart: HistoryChart.Line) {
-    val lines = chart.series.filter { it.points.isNotEmpty() }.map { seriesLabel(it.kind) to seriesColor(it.kind) }
+    val palette = chartPalette()
+    val lines = chart.series.filter { it.points.isNotEmpty() }
+        .map { seriesLabel(it.kind) to seriesColor(it.kind, palette) }
     val range = stringResource(R.string.history_range)
-    val band = if (chart.band.isEmpty()) emptyList() else listOf(range to area(ChartColors.Green))
-    val phases = chart.phases.map { it.kind }.distinct().map { phaseLabel(it) to area(phaseColor(it)) }
+    val band = if (chart.band.isEmpty()) emptyList() else listOf(range to area(palette.green))
+    val phases = chart.phases.map { it.kind }.distinct().map { phaseLabel(it) to area(phaseColor(it, palette)) }
     val entries = lines + band + phases
     if (entries.size > 1) ChartLegend(entries)
 }

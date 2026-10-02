@@ -17,6 +17,7 @@ data class AppSettings(
     val activeServerId: String? = null,
     val unlockWindowMinutes: Int = 0,
     val lockTimeoutMinutes: Int = SecuritySettings.DEFAULT_LOCK_TIMEOUT_MINUTES,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
 )
 
 /** Reads and writes [AppSettings] as JSON. */

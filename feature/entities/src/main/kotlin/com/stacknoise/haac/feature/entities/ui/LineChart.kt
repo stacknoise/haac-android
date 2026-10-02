@@ -45,11 +45,12 @@ internal fun LineChart(chart: HistoryChart.Line) {
             maxLines = 1,
         )
         val ring = HaacColors.Background
+        val palette = chartPalette()
         ChartCanvas(chart.start, chart.end, axis, selected, onSelect = { selected = it }) { area ->
-            drawPhases(chart, area)
-            drawBand(chart, area)
-            chart.series.forEach { drawSeries(it, area) }
-            selected?.let { at -> drawSelectedPoints(chart.series, at, area, ring) }
+            drawPhases(chart, area, palette)
+            drawBand(chart, area, palette.green)
+            chart.series.forEach { drawSeries(it, area, palette) }
+            selected?.let { at -> drawSelectedPoints(chart.series, at, area, ring, palette) }
         }
         LineLegend(chart)
     }
@@ -79,10 +80,10 @@ private fun trimmed(value: Double): String =
     BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
 
 /** Heating and cooling phases as tinted columns behind the lines. */
-private fun DrawScope.drawPhases(chart: HistoryChart.Line, area: PlotArea) {
+private fun DrawScope.drawPhases(chart: HistoryChart.Line, area: PlotArea, palette: ChartPalette) {
     chart.phases.forEach { phase ->
         drawRect(
-            phaseColor(phase.kind).copy(alpha = ChartColors.AREA_ALPHA),
+            phaseColor(phase.kind, palette).copy(alpha = ChartColors.AREA_ALPHA),
             topLeft = Offset(area.x(phase.start), area.top),
             size = Size(area.x(phase.end) - area.x(phase.start), area.bottom - area.top),
         )
@@ -90,7 +91,7 @@ private fun DrawScope.drawPhases(chart: HistoryChart.Line, area: PlotArea) {
 }
 
 /** The min/max band of statistics as a tinted area. */
-private fun DrawScope.drawBand(chart: HistoryChart.Line, area: PlotArea) {
+private fun DrawScope.drawBand(chart: HistoryChart.Line, area: PlotArea, color: Color) {
     if (chart.band.size < 2) return
     val path = Path().apply {
         chart.band.forEachIndexed { index, point ->
@@ -101,11 +102,11 @@ private fun DrawScope.drawBand(chart: HistoryChart.Line, area: PlotArea) {
         chart.band.asReversed().forEach { lineTo(area.x(it.at), area.y(it.low)) }
         close()
     }
-    drawPath(path, ChartColors.Green.copy(alpha = ChartColors.AREA_ALPHA))
+    drawPath(path, color.copy(alpha = ChartColors.AREA_ALPHA))
 }
 
 /** One line, segment by segment, so gaps stay open. */
-private fun DrawScope.drawSeries(series: LineSeries, area: PlotArea) {
+private fun DrawScope.drawSeries(series: LineSeries, area: PlotArea, palette: ChartPalette) {
     val stroke = Stroke(width = LineWidth.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
     series.segments.forEach { points ->
         val path = Path()
@@ -114,16 +115,22 @@ private fun DrawScope.drawSeries(series: LineSeries, area: PlotArea) {
             val y = area.y(point.value)
             if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
         }
-        drawPath(path, seriesColor(series.kind), style = stroke)
+        drawPath(path, seriesColor(series.kind, palette), style = stroke)
     }
 }
 
 /** A dot (8 dp, with a ring in the background colour) on every line at the selected time. */
-private fun DrawScope.drawSelectedPoints(series: List<LineSeries>, at: Long, area: PlotArea, ring: Color) {
+private fun DrawScope.drawSelectedPoints(
+    series: List<LineSeries>,
+    at: Long,
+    area: PlotArea,
+    ring: Color,
+    palette: ChartPalette,
+) {
     series.forEach { line ->
         val value = line.valueAt(at) ?: return@forEach
         val center = Offset(area.x(at), area.y(value))
         drawCircle(ring, radius = 5.dp.toPx(), center = center)
-        drawCircle(seriesColor(line.kind), radius = 4.dp.toPx(), center = center)
+        drawCircle(seriesColor(line.kind, palette), radius = 4.dp.toPx(), center = center)
     }
 }

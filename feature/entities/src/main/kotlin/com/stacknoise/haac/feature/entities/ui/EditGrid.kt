@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -40,6 +39,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.database.assignment.TileSize
 import com.stacknoise.haac.feature.entities.R
@@ -153,7 +153,7 @@ private fun AddTile(onAdd: () -> Unit, modifier: Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .clip(HaacShapes.Tile)
-            .dashedBorder(AddTileDash, width = 1.5.dp)
+            .dashedBorder(HaacColors.OnSurfaceVariant.copy(alpha = AddTileDashAlpha), width = 1.5.dp)
             .clickable(onClick = onAdd)
             .padding(12.dp),
     ) {
@@ -172,5 +172,5 @@ private fun AddTile(onAdd: () -> Unit, modifier: Modifier) {
     }
 }
 
-/** Colour of the dashed border of the *Add entities* tile. */
-private val AddTileDash = Color(0xFF9AA89E)
+/** Opacity of the muted text colour that draws the dashed border of the *Add entities* tile. */
+private const val AddTileDashAlpha = 0.6f

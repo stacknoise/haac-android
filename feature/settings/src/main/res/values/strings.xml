@@ -28,6 +28,12 @@
     <string name="settings_use_ha_addresses">Use addresses from Home Assistant</string>
     <string name="settings_save">Save</string>
     <string name="settings_cancel">Cancel</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Design</string>
+    <string name="settings_theme_hint">Follow the dark mode of the phone, or always use the light or the dark design.</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
     <string name="settings_about">About</string>
     <string name="about_version">Version %1$s</string>
     <string name="about_license">HAAC is open source under the Apache License 2.0.</string>

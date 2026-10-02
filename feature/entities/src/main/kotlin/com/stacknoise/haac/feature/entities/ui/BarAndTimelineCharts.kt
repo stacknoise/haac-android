@@ -31,6 +31,7 @@ internal fun BarChart(chart: HistoryChart.Bars) {
     val values = chart.bars.map { it.value }
     val axis = valueAxis(values.min(), values.max(), fromZero = true)
     val length = chart.end - chart.start
+    val green = chartPalette().green
     Column {
         val bar = selected?.let { chart.bars.barAt(it) }
         Text(
@@ -46,7 +47,7 @@ internal fun BarChart(chart: HistoryChart.Bars) {
                 val width = (area.x(item.end) - area.x(item.start) - gap).coerceAtLeast(1f)
                 val top = minOf(area.y(item.value), area.y(0.0))
                 val height = abs(area.y(0.0) - area.y(item.value))
-                val color = if (item == bar) ChartColors.Green else ChartColors.Green.copy(alpha = UnselectedAlpha)
+                val color = if (item == bar) green else green.copy(alpha = UnselectedAlpha)
                 drawRoundRect(color, Offset(left, top), Size(width, height), corner)
             }
         }
@@ -60,7 +61,8 @@ internal fun BarChart(chart: HistoryChart.Bars) {
 @Composable
 internal fun TimelineChart(chart: HistoryChart.Timeline) {
     var selected by remember(chart) { mutableStateOf<Long?>(null) }
-    val colors = stateColors(chart.segments.map { it.state }, MaterialTheme.colorScheme.surfaceVariant)
+    val palette = chartPalette()
+    val colors = stateColors(chart.segments.map { it.state }, MaterialTheme.colorScheme.surfaceVariant, palette)
     val length = chart.end - chart.start
     Column {
         val segment = selected?.let { chart.segments.segmentAt(it) }

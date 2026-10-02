@@ -22,7 +22,7 @@ fun haacSwitchColors(): SwitchColors = SwitchDefaults.colors(
     checkedThumbColor = HaacColors.OnAccent,
     checkedTrackColor = HaacColors.Accent,
     checkedBorderColor = Color.Transparent,
-    uncheckedThumbColor = HaacColors.OnAccent,
+    uncheckedThumbColor = HaacColors.SwitchThumbOff,
     uncheckedTrackColor = HaacColors.SwitchTrackOff,
     uncheckedBorderColor = Color.Transparent,
 )

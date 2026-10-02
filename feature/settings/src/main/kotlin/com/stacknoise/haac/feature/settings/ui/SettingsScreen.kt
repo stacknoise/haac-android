@@ -58,6 +58,7 @@ fun SettingsScreen(
         onSignOut = viewModel::onSignOut,
         instances = instances,
         addresses = { AddressesSection() },
+        appearance = { AppearanceSection() },
         diagnostics = { DiagnosticsSection() },
         about = { AboutSection(onOpenLicenses) },
         security = SecurityActions(
@@ -70,7 +71,7 @@ fun SettingsScreen(
 
 /**
  * Stateless layout of the settings; [instances] is the instance list (4.4), [addresses] the address section (4.5),
- * [diagnostics] the diagnostics (9.3) and [about] the About section (16.2).
+ * [appearance] the design mode (15.2), [diagnostics] the diagnostics (9.3) and [about] the About section (16.2).
  */
 @Composable
 fun SettingsContent(
@@ -79,6 +80,7 @@ fun SettingsContent(
     security: SecurityActions,
     instances: @Composable () -> Unit = {},
     addresses: @Composable () -> Unit = {},
+    appearance: @Composable () -> Unit = {},
     diagnostics: @Composable () -> Unit = {},
     about: @Composable () -> Unit = {},
 ) {
@@ -106,6 +108,8 @@ fun SettingsContent(
         instances()
         Spacer(Modifier.height(32.dp))
         addresses()
+        Spacer(Modifier.height(32.dp))
+        appearance()
         Spacer(Modifier.height(32.dp))
         SecuritySection(state.security, state.busy, security)
         state.error?.let { ErrorMessage(it) }

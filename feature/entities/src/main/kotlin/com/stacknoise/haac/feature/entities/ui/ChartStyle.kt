@@ -19,26 +19,27 @@ internal val ChartHeight = 180.dp
 /** Width of a line (2 dp, concept of thin marks). */
 internal val LineWidth = 2.dp
 
-/** Colour of a line kind: the measured value green, the target blue. */
-internal fun seriesColor(kind: SeriesKind): Color =
-    if (kind == SeriesKind.TARGET) ChartColors.Blue else ChartColors.Green
+/** Colour of a line kind in [palette]: the measured value green, the target blue. */
+internal fun seriesColor(kind: SeriesKind, palette: ChartPalette): Color =
+    if (kind == SeriesKind.TARGET) palette.blue else palette.green
 
-/** Colour of a climate phase: heating yellow, cooling magenta. */
-internal fun phaseColor(kind: PhaseKind): Color =
-    if (kind == PhaseKind.HEATING) ChartColors.Yellow else ChartColors.Magenta
+/** Colour of a climate phase in [palette]: heating yellow, cooling magenta. */
+internal fun phaseColor(kind: PhaseKind, palette: ChartPalette): Color =
+    if (kind == PhaseKind.HEATING) palette.yellow else palette.magenta
 
 /**
  * Colours of timeline [states] in order of first appearance: `on` green, `off` [neutral], `unavailable` and
- * `unknown` transparent (a gap), others in categorical order; beyond four they share [neutral].
+ * `unknown` transparent (a gap), others in categorical order; beyond four they share [neutral]. The colours are
+ * those of [palette].
  */
-internal fun stateColors(states: List<String>, neutral: Color): Map<String, Color> {
+internal fun stateColors(states: List<String>, neutral: Color, palette: ChartPalette): Map<String, Color> {
     val fixed = setOf(EntityDomains.ON, EntityDomains.OFF) + EntityDomains.UNAVAILABLE
     val others = states.distinct().filter { it !in fixed }
     return buildMap {
-        put(EntityDomains.ON, ChartColors.Green)
+        put(EntityDomains.ON, palette.green)
         put(EntityDomains.OFF, neutral)
         EntityDomains.UNAVAILABLE.forEach { put(it, Color.Transparent) }
-        others.forEachIndexed { index, state -> put(state, ChartColors.Categorical.getOrElse(index) { neutral }) }
+        others.forEachIndexed { index, state -> put(state, palette.categorical.getOrElse(index) { neutral }) }
     }
 }
 
