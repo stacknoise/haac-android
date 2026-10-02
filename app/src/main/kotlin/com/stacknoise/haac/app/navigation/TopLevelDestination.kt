@@ -12,5 +12,6 @@ enum class TopLevelDestination(
 ) {
     ROOMS("rooms", R.string.nav_rooms, R.drawable.ic_nav_rooms),
     PLACES("places", R.string.nav_places, R.drawable.ic_nav_places),
+    SCHEDULES("schedules", R.string.nav_schedules, R.drawable.ic_nav_schedules),
     SETTINGS("settings", R.string.nav_settings, R.drawable.ic_nav_settings),
 }
