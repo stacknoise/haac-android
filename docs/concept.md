@@ -800,7 +800,7 @@ HAAC is distributed via Google Play and as a sideload APK. Both channels use the
 ### 14.5 Open points
 
 - [x] Privacy policy page online at `https://stacknoise.com/haac/privacy/` (16.8).
-- [ ] Demo mode (chapter 20) built before the first Google Play production release (14.4).
+- [x] Demo mode (chapter 20) built before the first Google Play production release (14.4); in version 0.3.0.
 
 ## 15. UI mockups
 

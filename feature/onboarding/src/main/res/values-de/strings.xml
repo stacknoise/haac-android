@@ -7,6 +7,7 @@
     <string name="onboarding_scan_again">Erneut suchen</string>
     <string name="onboarding_nothing_found">Noch kein Server gefunden. Du kannst stattdessen seine Adresse eingeben.</string>
     <string name="onboarding_other_address">Andere Adresse …</string>
+    <string name="onboarding_try_demo">Demo ausprobieren</string>
     <string name="onboarding_address_label">Serveradresse</string>
     <string name="onboarding_address_hint">https://ha.example.com</string>
     <string name="onboarding_sign_in_again">Erneut anmelden</string>

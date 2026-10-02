@@ -8,6 +8,7 @@ import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.error.database
 import com.stacknoise.haac.core.network.bridge.BridgeInfo
+import com.stacknoise.haac.core.network.demo.DemoInstance
 import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.core.network.endpoint.InstanceAddresses
 import com.stacknoise.haac.core.network.endpoint.addresses
@@ -69,6 +70,26 @@ class InstanceRegistry @Inject constructor(
     }
 
     /**
+     * Stores the demo instance (concept 20.4): the row with the fixed instance ID and the demo address, and the
+     * placeholder token, which only makes the instance count as signed in. An existing demo is just made active.
+     * Like [save], a row that cannot be written loses its token again.
+     */
+    suspend fun saveDemo(): String {
+        val id = DemoInstance.SERVER_ID
+        if (find(id) == null) {
+            tokens.save(id, DemoInstance.PLACEHOLDER_TOKEN)
+            try {
+                errors.database { servers.insert(demoServer()) }
+            } catch (e: HaacException) {
+                tokens.delete(id)
+                throw e
+            }
+        }
+        active.setActive(id)
+        return id
+    }
+
+    /**
      * Puts [url] into its slot of instance [id] and makes it active (concept 4.5). Saves [refreshToken]
      * only if the instance has none; returns true if it was saved.
      */
@@ -82,6 +103,19 @@ class InstanceRegistry @Inject constructor(
         active.setActive(id)
         return saveToken
     }
+
+    /** The row of the demo: its name and user "Demo", the fixed instance ID and the demo address as external one. */
+    private suspend fun demoServer() = ServerEntity(
+        id = DemoInstance.SERVER_ID,
+        instanceUuid = DemoInstance.INSTANCE_ID,
+        externalUrl = DemoInstance.ADDRESS,
+        displayName = DemoInstance.DISPLAY_NAME,
+        accentColor = InstanceAccents.forIndex(servers.count()),
+        haUserName = DemoInstance.DISPLAY_NAME,
+        haVersion = DemoInstance.info.haVersion,
+        bridgeApiVersion = DemoInstance.info.apiVersion,
+        lastActiveAt = System.currentTimeMillis(),
+    )
 
     /** Row of a new instance with the next accent colour and the addresses of concept 4.5. */
     private suspend fun newServer(

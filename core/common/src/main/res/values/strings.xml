@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="demo_banner">Demo – sample data, no server connected</string>
     <string name="certificate_title_new">Trust this certificate?</string>
     <string name="certificate_title_changed">The certificate has changed</string>
     <string name="certificate_title_pinned">Pinned certificate</string>

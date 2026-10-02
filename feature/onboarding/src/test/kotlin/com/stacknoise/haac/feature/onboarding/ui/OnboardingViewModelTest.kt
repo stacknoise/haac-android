@@ -13,6 +13,7 @@ import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.core.network.tls.CertificateProbe
 import com.stacknoise.haac.core.network.tls.PeerCertificate
 import com.stacknoise.haac.core.network.tls.PinRegistry
+import com.stacknoise.haac.feature.onboarding.domain.DemoEntry
 import com.stacknoise.haac.feature.onboarding.domain.FingerprintStep
 import com.stacknoise.haac.feature.onboarding.domain.KnownServer
 import com.stacknoise.haac.feature.onboarding.domain.ServerValidator
@@ -117,6 +118,18 @@ class OnboardingViewModelTest {
         }
     }
 
+    private val demo = object : DemoEntry {
+        var present = false
+        var started = 0
+
+        override suspend fun available() = !present
+
+        override suspend fun start(): String {
+            started++
+            return "demo"
+        }
+    }
+
     private val home = DiscoveredServer("1", "Home", "192.168.1.10:8123", "http://192.168.1.10:8123", "2026.9.0")
 
     @BeforeEach
@@ -132,6 +145,7 @@ class OnboardingViewModelTest {
         probe,
         pins,
         fingerprint,
+        demo,
         SavedStateHandle(if (serverId == null) emptyMap() else mapOf(OnboardingViewModel.SERVER_ID_ARG to serverId)),
     )
 
@@ -331,5 +345,29 @@ class OnboardingViewModelTest {
         assertTrue(viewModel.state.value.scanning)
         // The fake replays its last list to every new collector, like a fresh discovery finding the server again.
         assertEquals(listOf(home), viewModel.state.value.servers)
+    }
+
+    @Test
+    fun `Try the demo is offered while no demo instance exists`() {
+        assertTrue(viewModel().state.value.demoAvailable)
+        demo.present = true
+        assertFalse(viewModel().state.value.demoAvailable)
+    }
+
+    @Test
+    fun `Try the demo opens the demo instance without a login, a bridge check or a fingerprint offer`() {
+        fingerprint.available = true
+        val viewModel = viewModel()
+        viewModel.onTryDemo()
+        assertEquals("demo", viewModel.state.value.signedInServerId)
+        assertNull(viewModel.state.value.fingerprintOffer)
+        assertFalse(viewModel.state.value.busy)
+        assertEquals(1, demo.started)
+        assertEquals(emptyList<SignInTarget>(), repository.finished)
+    }
+
+    @Test
+    fun `the demo is not offered when signing in again to a stored instance`() {
+        assertFalse(viewModel("s1").state.value.demoAvailable)
     }
 }

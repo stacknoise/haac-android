@@ -99,4 +99,12 @@ class StartRouterTest {
         activeId = "gone"
         assertEquals(StartRoute.SignIn("b"), router.route())
     }
+
+    @Test
+    fun `the demo with its placeholder token opens the main area like any instance`() = runTest {
+        instances += instance("demo", lastActiveAt = 1)
+        protections["demo"] = TokenProtection.DeviceKey
+        activeId = "demo"
+        assertEquals(StartRoute.Main("demo"), router.route())
+    }
 }

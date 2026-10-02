@@ -15,6 +15,7 @@ import com.stacknoise.haac.core.network.bridge.BridgeInfo
 import com.stacknoise.haac.core.network.bridge.BridgeInfoClient
 import com.stacknoise.haac.core.network.bridge.BridgeUrls
 import com.stacknoise.haac.core.network.bridge.DefaultBridgeMessageFactory
+import com.stacknoise.haac.core.network.demo.DemoInstance
 import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.core.network.endpoint.EndpointSelector
 import com.stacknoise.haac.core.network.endpoint.addresses
@@ -40,6 +41,7 @@ import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -266,5 +268,29 @@ class HaSignInRepositoryTest {
         }
         assertEquals(ErrorCode.NET_WRONG_SERVER, error.code)
         assertEquals("ref", saved[id])
+    }
+
+    @Test
+    fun `the demo is stored with the fixed instance, the demo address and the placeholder token`() = runTest {
+        assertEquals("demo", registry.saveDemo())
+        val row = rows.getValue("demo")
+        assertEquals(DemoInstance.INSTANCE_ID, row.instanceUuid)
+        assertEquals("Demo", row.displayName)
+        assertEquals("Demo", row.haUserName)
+        assertEquals(DemoInstance.ADDRESS, row.externalUrl)
+        assertNull(row.internalUrl)
+        assertEquals(DemoInstance.PLACEHOLDER_TOKEN, saved["demo"])
+        assertEquals(TokenProtection.DeviceKey, tokenStore.protection("demo"))
+        assertEquals("demo", active.activeServerId.value)
+    }
+
+    @Test
+    fun `an existing demo is only made active again`() = runTest {
+        registry.saveDemo()
+        val other = registry.save(SignInTarget("https://ha.example.com/".toHttpUrl(), "Home"), "anna", info, "ref")
+        assertEquals(other, active.activeServerId.value)
+        registry.saveDemo()
+        assertEquals(setOf("demo", other), rows.keys)
+        assertEquals("demo", active.activeServerId.value)
     }
 }

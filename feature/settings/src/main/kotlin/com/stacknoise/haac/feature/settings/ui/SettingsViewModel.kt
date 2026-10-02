@@ -8,6 +8,7 @@ import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.database.settings.SecuritySettings
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
+import com.stacknoise.haac.core.network.demo.DemoInstance
 import com.stacknoise.haac.core.network.session.InstanceSignOut
 import com.stacknoise.haac.core.security.biometric.FingerprintOutcome
 import com.stacknoise.haac.core.security.biometric.FingerprintTarget
@@ -33,6 +34,7 @@ data class ActiveInstance(val id: String, val name: String, val userName: String
 
 /** Settings → Security (concept 5.4, 5.5). */
 data class SecurityUiState(
+    val fingerprintShown: Boolean = true,
     val fingerprintAvailable: Boolean = false,
     val fingerprintEnabled: Boolean = false,
     val unlockWindowSelectable: Boolean = false,
@@ -74,6 +76,8 @@ class SettingsViewModel @Inject constructor(
         current.copy(
             instance = server?.let { ActiveInstance(it.id, it.displayName, it.haUserName) },
             security = SecurityUiState(
+                // The demo has no token worth protecting (concept 20.4).
+                fingerprintShown = server?.id != DemoInstance.SERVER_ID,
                 fingerprintAvailable = fingerprint.isAvailable(),
                 fingerprintEnabled = enabled,
                 unlockWindowSelectable = fingerprint.supportsUnlockWindow,

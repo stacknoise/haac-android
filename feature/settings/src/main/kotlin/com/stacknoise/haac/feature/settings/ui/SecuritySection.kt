@@ -31,25 +31,8 @@ import com.stacknoise.haac.feature.settings.R
 fun SecuritySection(state: SecurityUiState, busy: Boolean, actions: SecurityActions) {
     Text(stringResource(R.string.settings_security).uppercase(), style = SectionLabelStyle)
     Spacer(Modifier.height(8.dp))
-    HaacCard {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
-                Text(stringResource(R.string.settings_fingerprint), style = MaterialTheme.typography.titleMedium)
-                val hint = when {
-                    state.fingerprintAvailable -> R.string.settings_fingerprint_hint
-                    else -> R.string.settings_fingerprint_unavailable
-                }
-                Hint(stringResource(hint))
-            }
-            Switch(
-                checked = state.fingerprintEnabled,
-                onCheckedChange = actions.onFingerprintChanged,
-                enabled = !busy && state.fingerprintAvailable,
-                colors = haacSwitchColors(),
-            )
-        }
-    }
-    if (state.fingerprintAvailable && state.unlockWindowSelectable) {
+    if (state.fingerprintShown) FingerprintCard(state, busy, actions)
+    if (state.fingerprintShown && state.fingerprintAvailable && state.unlockWindowSelectable) {
         Spacer(Modifier.height(10.dp))
         HaacCard {
             Text(stringResource(R.string.settings_unlock_window), style = MaterialTheme.typography.titleMedium)
@@ -102,6 +85,29 @@ private fun Choices(
                 colors = haacOutlinedChipColors(),
                 border = haacOutlinedChipBorder(enabled, minutes == selected),
                 label = { Text(if (minutes == 0) zeroLabel else stringResource(R.string.settings_minutes, minutes)) },
+            )
+        }
+    }
+}
+
+/** The fingerprint switch with its hint (concept 5.4). */
+@Composable
+private fun FingerprintCard(state: SecurityUiState, busy: Boolean, actions: SecurityActions) {
+    HaacCard {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                Text(stringResource(R.string.settings_fingerprint), style = MaterialTheme.typography.titleMedium)
+                val hint = when {
+                    state.fingerprintAvailable -> R.string.settings_fingerprint_hint
+                    else -> R.string.settings_fingerprint_unavailable
+                }
+                Hint(stringResource(hint))
+            }
+            Switch(
+                checked = state.fingerprintEnabled,
+                onCheckedChange = actions.onFingerprintChanged,
+                enabled = !busy && state.fingerprintAvailable,
+                colors = haacSwitchColors(),
             )
         }
     }

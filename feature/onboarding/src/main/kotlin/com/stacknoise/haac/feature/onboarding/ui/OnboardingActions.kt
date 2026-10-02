@@ -6,6 +6,7 @@ import com.stacknoise.haac.core.network.discovery.DiscoveredServer
 data class OnboardingActions(
     val onServerSelected: (DiscoveredServer) -> Unit = {},
     val onOtherAddress: () -> Unit = {},
+    val onTryDemo: () -> Unit = {},
     val onRescan: () -> Unit = {},
     val onManualUrlChanged: (String) -> Unit = {},
     val onUsernameChanged: (String) -> Unit = {},

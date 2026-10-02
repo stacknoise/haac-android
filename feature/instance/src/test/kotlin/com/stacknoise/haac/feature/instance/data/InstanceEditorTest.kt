@@ -67,4 +67,16 @@ class InstanceEditorTest {
         assertEquals(RemoveOutcome.NoneLeft, editor.remove("a"))
         coVerify { active.setActive(null) }
     }
+
+    @Test
+    fun `the demo is removed like any instance and the last one leads back to the server screen`() = runTest {
+        coEvery { active.activeServerId } returns flowOf("demo")
+        coEvery { servers.mostRecent() } returns null
+        assertEquals(RemoveOutcome.NoneLeft, editor.remove("demo"))
+        coVerifyOrder {
+            signOut.signOut("demo")
+            servers.delete("demo")
+            active.setActive(null)
+        }
+    }
 }

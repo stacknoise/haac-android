@@ -3,6 +3,8 @@ package com.stacknoise.haac.feature.onboarding.di
 import com.stacknoise.haac.feature.onboarding.data.BiometricFingerprintStep
 import com.stacknoise.haac.feature.onboarding.data.HaServerValidator
 import com.stacknoise.haac.feature.onboarding.data.HaSignInRepository
+import com.stacknoise.haac.feature.onboarding.data.RegistryDemoEntry
+import com.stacknoise.haac.feature.onboarding.domain.DemoEntry
 import com.stacknoise.haac.feature.onboarding.domain.FingerprintStep
 import com.stacknoise.haac.feature.onboarding.domain.ServerValidator
 import com.stacknoise.haac.feature.onboarding.domain.SignInRepository
@@ -26,4 +28,8 @@ abstract class OnboardingModule {
     /** The fingerprint offer after sign-in (concept 4.4). */
     @Binds
     abstract fun bindFingerprintStep(step: BiometricFingerprintStep): FingerprintStep
+
+    /** The way into the demo instance (concept 20.4). */
+    @Binds
+    abstract fun bindDemoEntry(entry: RegistryDemoEntry): DemoEntry
 }

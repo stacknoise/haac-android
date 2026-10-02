@@ -40,4 +40,13 @@ class InstanceItemTest {
         assertEquals(listOf("anna", "guest"), items.take(2).map { it.userName })
         assertNull(items[2].userName)
     }
+
+    @Test
+    fun `the demo shows no address`() {
+        val items = listOf(
+            server("demo", "d3a0d3a0d3a0d3a0d3a0d3a0d3a0d3a0", "Demo", external = "https://demo.haac.invalid/"),
+            server("a", "u1", "anna", external = "https://ha.example.com/"),
+        ).toItems(activeId = "demo")
+        assertEquals(listOf("", "ha.example.com"), items.map { it.address })
+    }
 }
