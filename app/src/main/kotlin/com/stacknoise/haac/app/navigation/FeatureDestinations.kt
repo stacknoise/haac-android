@@ -20,6 +20,9 @@ import com.stacknoise.haac.feature.layout.ui.PlaceEditorScreen
 import com.stacknoise.haac.feature.layout.ui.PlaceEditorViewModel
 import com.stacknoise.haac.feature.layout.ui.PlacesScreen
 import com.stacknoise.haac.feature.notifications.ui.NotificationBell
+import com.stacknoise.haac.feature.schedules.ui.ScheduleDetailScreen
+import com.stacknoise.haac.feature.schedules.ui.ScheduleDetailViewModel
+import com.stacknoise.haac.feature.schedules.ui.SchedulesScreen
 
 /** The Rooms tab (M-05) with the notification bell in its header (M-08). */
 internal fun NavGraphBuilder.roomsDestination(navController: NavController) {
@@ -93,5 +96,18 @@ internal fun NavGraphBuilder.entityDestinations(navController: NavController) {
         ),
     ) {
         AssignScreen(onClose = { navController.popBackStack() })
+    }
+}
+
+/** The Schedules tab (M-10, M-11, M-16) and the detail screen of a schedule (M-15, M-17). */
+internal fun NavGraphBuilder.scheduleDestinations(navController: NavController) {
+    composable(TopLevelDestination.SCHEDULES.route) {
+        SchedulesScreen(onOpen = { scheduleId -> navController.navigate(ScheduleRoutes.detail(scheduleId)) })
+    }
+    composable(
+        ScheduleRoutes.DETAIL,
+        arguments = listOf(navArgument(ScheduleDetailViewModel.ID_ARG) { type = NavType.StringType }),
+    ) {
+        ScheduleDetailScreen(onClose = { navController.popBackStack() })
     }
 }

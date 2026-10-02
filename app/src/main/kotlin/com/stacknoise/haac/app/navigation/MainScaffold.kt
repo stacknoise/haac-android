@@ -94,6 +94,8 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
     val connectionState by connection.state.collectAsStateWithLifecycle()
+    val schedulesShown by connection.schedulesShown.collectAsStateWithLifecycle()
+    val tabs = TopLevelDestination.entries.filter { it != TopLevelDestination.SCHEDULES || schedulesShown }
     Scaffold(
         topBar = {
             // The bar draws under the status bar; the banner inside it then adds no second inset.
@@ -109,7 +111,7 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
         bottomBar = {
             // Forms and the notification list use the whole screen (M-03, M-09).
             if (TopLevelDestination.entries.any { it.route == currentRoute }) {
-                BottomBar(currentRoute, onOpen = navController::openTopLevel)
+                BottomBar(tabs, currentRoute, onOpen = navController::openTopLevel)
             }
         },
     ) { padding ->
@@ -121,6 +123,7 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
             roomsDestination(navController)
             placeDestinations(navController)
             entityDestinations(navController)
+            scheduleDestinations(navController)
             composable(TopLevelDestination.SETTINGS.route) {
                 SettingsScreen(
                     onSignedOut = actions.onSignedOut,
@@ -147,13 +150,13 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
     }
 }
 
-/** Bottom bar with Rooms, Places and Settings; [currentRoute] is selected. Draws an accent bar, not M3's pill. */
+/** Bottom bar with the [tabs]; [currentRoute] is selected. Draws an accent bar, not the M3 pill. */
 @Composable
-private fun BottomBar(currentRoute: String?, onOpen: (TopLevelDestination) -> Unit) {
+private fun BottomBar(tabs: List<TopLevelDestination>, currentRoute: String?, onOpen: (TopLevelDestination) -> Unit) {
     Column(Modifier.fillMaxWidth().background(HaacColors.NavBackground)) {
         HorizontalDivider(color = HaacColors.NavBorder)
         Row(Modifier.navigationBarsPadding().selectableGroup()) {
-            TopLevelDestination.entries.forEach { destination ->
+            tabs.forEach { destination ->
                 BottomBarItem(destination, selected = currentRoute == destination.route) { onOpen(destination) }
             }
         }

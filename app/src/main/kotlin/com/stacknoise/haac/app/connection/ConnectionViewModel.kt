@@ -8,6 +8,7 @@ import com.stacknoise.haac.core.error.ErrorAction
 import com.stacknoise.haac.core.network.connection.ConnectionState
 import com.stacknoise.haac.core.network.connection.ConnectionSupervisor
 import com.stacknoise.haac.feature.entities.data.EntitySync
+import com.stacknoise.haac.feature.schedules.data.ScheduleAvailability
 import com.stacknoise.haac.feature.schedules.data.ScheduleSync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -36,6 +37,7 @@ class ConnectionViewModel @Inject constructor(
     private val active: ActiveInstanceStore,
     private val sync: EntitySync,
     private val scheduleSync: ScheduleSync,
+    availability: ScheduleAvailability,
     private val servers: ServerDao,
 ) : ViewModel() {
     private val serverId = MutableStateFlow<String?>(null)
@@ -43,6 +45,11 @@ class ConnectionViewModel @Inject constructor(
 
     /** The active instance while the main area is followed; a change resets the screens (concept 4.4). */
     val activeId: StateFlow<String?> = serverId
+
+    /** True while the Schedules tab is shown: the bridge reports the feature or schedules are cached (concept 19.7). */
+    val schedulesShown: StateFlow<Boolean> = serverId.flatMapLatest { id ->
+        id?.let { availability.shown(it) } ?: flowOf(false)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     /** The connection state for the banner. */
     val state: StateFlow<ConnectionState> = supervisor.state

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="schedules_title">Schedules</string>
+    <string name="schedules_next_up">NEXT UP</string>
+    <string name="schedules_next_up_text">%1$s · %2$s</string>
+    <string name="schedules_empty_title">No schedules yet</string>
+    <string name="schedules_empty_text">Switch lights and sockets automatically at fixed times, for example every weekday morning.</string>
+    <string name="schedules_filter_all">All</string>
+    <string name="schedules_filter_mine">Mine</string>
+    <string name="schedules_paused">Paused</string>
+    <string name="schedules_stale">Offline. Schedules are shown as last known and cannot be changed.</string>
+    <string name="schedules_owner">OWNER</string>
+    <string name="schedules_owner_hint">Entities can only be changed by the owner.</string>
+    <string name="schedules_back">Back</string>
+    <string name="schedules_delete">Delete schedule</string>
+    <string name="schedules_delete_title">Delete this schedule?</string>
+    <string name="schedules_delete_text">%1$s will no longer run. This cannot be undone.</string>
+    <string name="schedules_cancel">Cancel</string>
+    <string name="schedules_enabled">Enabled</string>
+    <string name="schedules_enabled_off">Off. It will not run until you turn it on.</string>
+    <string name="schedules_next_runs">NEXT RUNS</string>
+    <string name="schedules_no_next_runs">No upcoming runs.</string>
+    <string name="schedules_last_run">LAST RUN</string>
+    <string name="schedules_never_run">Has not run yet.</string>
+    <string name="schedules_last_run_done">Done</string>
+    <string name="schedules_last_run_text">%1$s · %2$s</string>
+    <string name="schedules_not_found">This schedule no longer exists.</string>
+    <string name="schedules_sunrise">Sunrise</string>
+    <string name="schedules_sunset">Sunset</string>
+    <string name="schedules_sun_at">At %1$s</string>
+    <string name="schedules_sun_before">%1$d min before %2$s</string>
+    <string name="schedules_sun_after">%1$d min after %2$s</string>
+    <string name="schedules_repeat_every_day">Every day</string>
+    <string name="schedules_repeat_weekdays">Every weekday</string>
+    <string name="schedules_repeat_weekend">Every weekend</string>
+    <string name="schedules_repeat_none">No day selected</string>
+    <string name="schedules_short_every_day">Every day</string>
+    <string name="schedules_short_weekdays">%1$s – %2$s</string>
+    <string name="schedules_short_none">No day</string>
+    <string name="schedules_turns_on">turns on</string>
+    <string name="schedules_turns_off">turns off</string>
+    <string name="schedules_toggles">toggles</string>
+    <string name="schedules_target_single">%1$s · %2$s</string>
+    <plurals name="schedules_targets_on">
+        <item quantity="one">%1$d entity turns on</item>
+        <item quantity="other">%1$d entities turn on</item>
+    </plurals>
+    <plurals name="schedules_targets_off">
+        <item quantity="one">%1$d entity turns off</item>
+        <item quantity="other">%1$d entities turn off</item>
+    </plurals>
+    <plurals name="schedules_targets_toggle">
+        <item quantity="one">%1$d entity toggles</item>
+        <item quantity="other">%1$d entities toggle</item>
+    </plurals>
+</resources>

@@ -86,8 +86,7 @@ internal class ScheduleDescriptor(
         nextRun = isoEpochMillis(nextRun),
         syncedAt = syncedAt,
     )
-
-    private companion object {
-        val ENTITY_IDS = ListSerializer(String.serializer())
-    }
 }
+
+/** The JSON list of entity ids of column `entity_ids`. */
+private val ENTITY_IDS = ListSerializer(String.serializer())

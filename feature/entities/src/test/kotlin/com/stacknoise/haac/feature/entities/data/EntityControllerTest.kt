@@ -7,6 +7,7 @@ import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.network.connection.BridgeChannel
+import com.stacknoise.haac.core.network.connection.StaleDelayMs
 import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.feature.entities.domain.ControlRequest
 import com.stacknoise.haac.feature.entities.domain.DefaultServiceCallFactory
@@ -161,7 +162,7 @@ class EntityControllerTest {
         val seen = mutableListOf<Boolean>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { controller().stale.toList(seen) }
         live.connection.value = null
-        advanceTimeBy(EntityController.STALE_DELAY_MS - 1)
+        advanceTimeBy(StaleDelayMs - 1)
         assertEquals(listOf(false), seen)
         advanceTimeBy(2)
         assertEquals(listOf(false, true), seen)

@@ -12,6 +12,11 @@ import com.stacknoise.haac.feature.schedules.domain.ScheduleDiff
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.serialization.json.Json
 
 /**
@@ -43,6 +48,16 @@ class ScheduleSync internal constructor(
     /** The revision of the last written list per instance; it is not kept across app starts, the first sync lists. */
     private val revisions = ConcurrentHashMap<String, String>()
 
+    private val rechecks = Channel<Unit>(Channel.CONFLATED)
+
+    /**
+     * Runs the revision check again on the running connection, e.g. after the bridge rejected an edit as changed
+     * somewhere else (HAAC-SCH-004); without a connection the next one syncs anyway.
+     */
+    fun recheck() {
+        rechecks.trySend(Unit)
+    }
+
     /**
      * Syncs instance [serverId] over [channel] and follows `schedules_changed` until the connection ends or the
      * caller is cancelled. Returns at once if the bridge has no schedules. An ended connection is not an error
@@ -52,9 +67,9 @@ class ScheduleSync internal constructor(
         if (FEATURE !in channel.features) return
         try {
             sync(serverId, channel)
-            channel.subscribe(SUBSCRIBE).collect { event ->
-                if (CHANGED in event) sync(serverId, channel)
-            }
+            rechecks.tryReceive() // A request from before this sync is answered by it.
+            val events = channel.subscribe(SUBSCRIBE).filter { CHANGED in it }
+            merge(events.map { }, rechecks.receiveAsFlow()).collect { sync(serverId, channel) }
         } catch (e: HaacException) {
             if (channel.isOpen) reporter.report(e, serverId)
         }
