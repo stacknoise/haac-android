@@ -61,13 +61,20 @@ This limits what the app shows and controls. It is not a Home Assistant permissi
 - Climate: target temperature dial with − and +, and on the detail screen HVAC mode, presets, fan, swing, humidity and target range as far as the device supports them.
 - Optimistic display with rollback when Home Assistant does not confirm, and clear messages when an action is not available.
 
+**Schedules**
+- Time-controlled actions for switches, for example "every weekday at 06:45 turn the light on": turn on, turn off or toggle, at a fixed time on chosen weekdays or at sunrise or sunset with an offset of up to 3 hours.
+- Schedules run **on the Home Assistant server** (in HAAC Bridge), so they work with the app closed or the phone off. The app is only the editor and keeps a read-only copy; creating and editing need a connection.
+- A *Schedules* tab (shown only if the bridge supports schedules) with a *Next up* banner, an on/off switch per schedule, a detail screen with the next runs and the last run, and an editor with weekday presets and a *Run at* sheet.
+- Home Assistant administrators also see all schedules (filter *All* / *Mine*) and can change or delete a foreign schedule, but only its owner changes its entities.
+- Needs HAAC Bridge 0.2.1 or newer.
+
 **History and detail**
 - Detail screen with state, readings, names, times and attributes.
 - Charts for 24 hours, 7 days or a custom period: lines, statistics bands, bars for counters, timelines for switches and heating and cooling phases for climate devices.
 
 **Live data and notifications**
 - Live states over a persistent connection with automatic reconnect, address re-selection when the network changes, and a "stale" indication when the connection is down.
-- A notification list for new or removed shared entities (with *Add to room*, *Review*, *Remove tile*, *Dismiss*, *Keep*) and for errors, grouped by day and instance. Mark read, swipe to delete, delete all.
+- A notification list for new or removed shared entities (with *Add to room*, *Review*, *Remove tile*, *Dismiss*, *Keep*), for your schedules that were removed or paused on the server, and for errors, grouped by day and instance. Mark read, swipe to delete, delete all.
 - Every error has a code (`HAAC-…`) and a plain-language message; Settings shows diagnostics (connection, last sync, versions).
 
 **App**
