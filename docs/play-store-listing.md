@@ -175,11 +175,11 @@ Option 2 is the more cautious one and is the usual choice for apps that connect 
 | Asset | Requirement | State |
 | --- | --- | --- |
 | App icon | 512 × 512 PNG, up to 1 MB | Ready: `docs/icons/playstore-icon-512.png` |
-| Feature graphic | 1024 × 500 JPEG or 24-bit PNG | **Missing** |
-| Phone screenshots | 2 to 8; JPEG or 24-bit PNG; each side 320 to 3840 px; the longer side at most twice the shorter | The seven files in `docs/screenshots` are 945 × 2000 px (ratio 2.12): **too tall**, and `schedule-detail.webp` is not a supported format and shows real names |
+| Feature graphic | 1024 × 500 JPEG or 24-bit PNG | Ready: `docs/play/feature-graphic.png` (1024 × 500) |
+| Phone screenshots | 2 to 8; JPEG or 24-bit PNG; each side 320 to 3840 px; the longer side at most twice the shorter | Ready: five files in `docs/play/screenshots` (1100 × 2150, ratio 1.95, 24-bit PNG): rooms, places, add entities, edit layout, sign in. A **schedules** screenshot with neutral names is still missing (the file in `docs/screenshots` is `.webp` and shows real names) |
 | 7-inch / 10-inch tablet screenshots | Optional | Tablet and landscape are not designed (concept 15.4) |
 
-Screenshots to submit, in this order: Rooms, Places, Add entities, Edit layout, Schedules (new, with neutral names), Sign in. Do not show real names or addresses.
+Screenshots to submit, in this order: Rooms, Places, Add entities, Edit layout, Schedules (new, with neutral names, to be taken on the phone), Sign in. Do not show real names or addresses. The files are generated from the screenshots in `docs/screenshots` (headline above the unchanged screen, 2:1 limit respected); the generated PNGs are the ones to upload.
 
 ## 7. Release steps in the Play Console
 
