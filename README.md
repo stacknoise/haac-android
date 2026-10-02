@@ -30,6 +30,9 @@ This limits what the app shows and controls. It is not a Home Assistant permissi
     <td align="center"><img src="docs/screenshots/places.jpg" width="220" alt="Places"><br>Places</td>
     <td align="center"><img src="docs/screenshots/places-speed-dial.jpg" width="220" alt="Places create menu"><br>Create menu</td>
   </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/schedule-detail.webp" width="220" alt="Schedule detail"><br>Schedule</td>
+  </tr>
 </table>
 
 ## Features
