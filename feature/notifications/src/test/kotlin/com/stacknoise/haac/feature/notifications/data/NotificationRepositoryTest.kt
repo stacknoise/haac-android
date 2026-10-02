@@ -1,5 +1,7 @@
 package com.stacknoise.haac.feature.notifications.data
 
+import com.stacknoise.haac.core.database.assignment.EntityAlias
+import com.stacknoise.haac.core.database.assignment.EntityAliasDao
 import com.stacknoise.haac.core.database.assignment.RoomAssignment
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
 import com.stacknoise.haac.core.database.assignment.TileSize
@@ -126,8 +128,34 @@ class NotificationRepositoryTest {
         }
     }
 
+    private val localNames = MutableStateFlow<List<EntityAlias>>(emptyList())
+    private val aliases = object : EntityAliasDao {
+        override fun observe(serverId: String): Flow<List<EntityAlias>> = localNames
+
+        override suspend fun set(alias: EntityAlias) = error("not used")
+
+        override suspend fun clear(serverId: String, entityId: String) = error("not used")
+    }
+
     private var now = 1_000_000L
-    private val repository = NotificationRepository(dao, entities, assignments, DefaultErrorFactory()) { now }
+    private val repository = NotificationRepository(dao, entities, aliases, assignments, DefaultErrorFactory()) { now }
+
+    @Test
+    fun `a local entity name replaces the HA name in the entries`() = runTest {
+        localNames.value = listOf(EntityAlias("s1", "switch.hall", "Hall lamp"))
+        repository.addEntityChanges("s1", added = listOf("switch.hall"), removed = listOf("sensor.h"))
+
+        val items = repository.items("s1").first()
+        assertEquals(
+            listOf(EntityLabel("switch.hall", "Hall lamp")),
+            items.single { it.type == NotificationType.ADDED }.entities,
+        )
+        assertEquals(
+            listOf(EntityLabel("sensor.h", "Humidity")),
+            items.single { it.type == NotificationType.REMOVED }.entities,
+        )
+    }
+
     @Test
     fun `a sync adds one entry per kind with the entity names`() = runTest {
         repository.addEntityChanges("s1", added = listOf("switch.hall", "switch.unknown"), removed = listOf("sensor.h"))

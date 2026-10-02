@@ -1,7 +1,10 @@
 package com.stacknoise.haac.feature.notifications.data
 
+import com.stacknoise.haac.core.database.assignment.EntityAlias
+import com.stacknoise.haac.core.database.assignment.EntityAliasDao
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
+import com.stacknoise.haac.core.database.entity.byEntityId
 import com.stacknoise.haac.core.database.entity.displayName
 import com.stacknoise.haac.core.database.notification.NotificationDao
 import com.stacknoise.haac.core.database.notification.NotificationEntity
@@ -15,7 +18,8 @@ import com.stacknoise.haac.feature.notifications.domain.NotificationItem
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.builtins.ListSerializer
@@ -39,6 +43,7 @@ class DeletedNotifications internal constructor(internal val rows: List<Notifica
 class NotificationRepository internal constructor(
     private val notifications: NotificationDao,
     private val entities: ExposedEntityDao,
+    private val aliases: EntityAliasDao,
     private val assignments: RoomAssignmentDao,
     private val errors: ErrorFactory,
     private val clock: () -> Long,
@@ -48,9 +53,10 @@ class NotificationRepository internal constructor(
     constructor(
         notifications: NotificationDao,
         entities: ExposedEntityDao,
+        aliases: EntityAliasDao,
         assignments: RoomAssignmentDao,
         errors: ErrorFactory,
-    ) : this(notifications, entities, assignments, errors, System::currentTimeMillis)
+    ) : this(notifications, entities, aliases, assignments, errors, System::currentTimeMillis)
 
     private val writes = Mutex()
 
@@ -114,12 +120,25 @@ class NotificationRepository internal constructor(
         }
     }
 
-    /** Entries of instance [serverId] and global ones, newest first, with the names of their entities. */
-    fun items(serverId: String?): Flow<List<NotificationItem>> = notifications.observe(serverId).map { rows ->
-        val names = serverId?.let { id ->
-            errors.database { entities.all(id) }.associate { it.entityId to it.displayName(null) }
-        }.orEmpty()
-        rows.map { it.toItem(names) }
+    /**
+     * Entries of instance [serverId] and global ones, newest first, with the names of their entities: the local
+     * name if the user gave one, else the name from the bridge or HA (concept 7.3).
+     */
+    fun items(serverId: String?): Flow<List<NotificationItem>> =
+        combine(notifications.observe(serverId), localNames(serverId)) { rows, local ->
+            val names = entityNames(serverId, local)
+            rows.map { it.toItem(names) }
+        }
+
+    /** The local names of instance [serverId]; none for the global entries. */
+    private fun localNames(serverId: String?): Flow<List<EntityAlias>> =
+        serverId?.let(aliases::observe) ?: flowOf(emptyList())
+
+    /** The display names of the entities of [serverId] by `entity_id`, with the [local] names (concept 7.3). */
+    private suspend fun entityNames(serverId: String?, local: List<EntityAlias>): Map<String, String> {
+        val id = serverId ?: return emptyMap()
+        val byId = local.byEntityId()
+        return errors.database { entities.all(id) }.associate { it.entityId to it.displayName(byId[it.entityId]) }
     }
 
     /** Number of unread entries of [serverId] and global ones; drives the unread dot of the bell. */
