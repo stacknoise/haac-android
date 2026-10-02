@@ -1,4 +1,4 @@
-# Google Play listing – HAAC (HA Android Client)
+﻿# Google Play listing – HAAC (HA Android Client)
 
 Texts and answers for the Play Console (concept 14.4). Nothing in this file is a promise to Google that the maintainer has not checked: the answers in sections 4 and 5 describe what the app does today and must be re-checked against the Play Console wording before they are submitted. Review them again whenever the app starts to collect or send new data.
 
@@ -8,7 +8,7 @@ Texts and answers for the Play Console (concept 14.4). Nothing in this file is a
 | --- | --- |
 | App name (max. 30 characters) | `HAAC – HA Android Client` |
 | Package name | `com.stacknoise.haac` |
-| Default language | English (United States); add German (Germany) |
+| Default language | German (Germany), because the graphics exist only in German; add English (United States) with the English texts below, it then shows the German graphics until English ones are uploaded |
 | App or game | App |
 | Free or paid | Free |
 | Category | House & Home (alternative: Tools) |
@@ -175,12 +175,11 @@ Option 2 is the more cautious one and is the usual choice for apps that connect 
 | Asset | Requirement | State |
 | --- | --- | --- |
 | App icon | 512 × 512 PNG, up to 1 MB | Ready: `docs/icons/playstore-icon-512.png` |
-| Feature graphic | 1024 × 500 JPEG or 24-bit PNG | Ready: `docs/play/feature-graphic.png` (1024 × 500) |
-| Phone screenshots | 2 to 8; JPEG or 24-bit PNG; each side 320 to 3840 px; the longer side at most twice the shorter | English: five files in `docs/play/screenshots` (1100 × 2150, 24-bit PNG): rooms, places, add entities, edit layout, sign in; a schedules screenshot is missing there. German: six files in `docs/play/de/screenshots` (rooms, places, add entities, edit layout, schedules, sign in) |
-| Feature graphic (German) | 1024 × 500 | Ready: `docs/play/de/feature-graphic.png` |
+| Phone screenshots | 2 to 8; JPEG or 24-bit PNG; each side 320 to 3840 px; the longer side at most twice the shorter | Ready, German: six files in `docs/play/de/screenshots` (1100 × 2150, 24-bit PNG): rooms, places, add entities, edit layout, schedules, sign in. There is no English set yet |
+| Feature graphic | 1024 × 500 JPEG or 24-bit PNG | Ready, German: `docs/play/de/feature-graphic.png` |
 | 7-inch / 10-inch tablet screenshots | Optional | Tablet and landscape are not designed (concept 15.4) |
 
-Screenshots to submit, in this order: Rooms, Places, Add entities, Edit layout, Schedules, Sign in (the German set has all six). Do not show real names or addresses. The English files are generated from the screenshots in `docs/screenshots`, the German ones from phone screenshots taken in the German app (the IP address on the sign-in screen is pixelated) (headline above the unchanged screen, 2:1 limit respected); the generated PNGs are the ones to upload.
+Screenshots to submit, in this order: Rooms, Places, Add entities, Edit layout, Schedules, Sign in. Do not show real names or addresses. The files are generated from phone screenshots taken in the German app (the IP address on the sign-in screen is pixelated) (headline above the unchanged screen, 2:1 limit respected); the generated PNGs are the ones to upload.
 
 ## 7. Release steps in the Play Console
 
