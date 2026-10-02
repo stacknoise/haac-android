@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.theme.HaacCheckbox
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
+import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
@@ -66,7 +67,7 @@ fun AddEntitiesScreen(onClose: () -> Unit, viewModel: AddEntitiesViewModel = hil
             }
             Text(state.roomName.uppercase(), style = SectionLabelStyle)
         }
-        Text(stringResource(R.string.add_title), style = MaterialTheme.typography.headlineLarge)
+        HaacScreenTitle(stringResource(R.string.add_title))
         DomainTabs(state, viewModel::onDomain)
         OutlinedTextField(
             value = state.input.filter,

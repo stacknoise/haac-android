@@ -37,6 +37,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.theme.HaacEmptyState
+import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.core.database.notification.NotificationType
@@ -168,9 +169,8 @@ private fun Header(actions: NotificationActions, canDeleteAll: Boolean) {
             },
         )
     }
-    Text(
+    HaacScreenTitle(
         stringResource(R.string.notifications_title),
-        style = MaterialTheme.typography.headlineLarge,
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
     )
 }
