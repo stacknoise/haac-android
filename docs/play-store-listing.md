@@ -176,10 +176,11 @@ Option 2 is the more cautious one and is the usual choice for apps that connect 
 | --- | --- | --- |
 | App icon | 512 × 512 PNG, up to 1 MB | Ready: `docs/icons/playstore-icon-512.png` |
 | Feature graphic | 1024 × 500 JPEG or 24-bit PNG | Ready: `docs/play/feature-graphic.png` (1024 × 500) |
-| Phone screenshots | 2 to 8; JPEG or 24-bit PNG; each side 320 to 3840 px; the longer side at most twice the shorter | Ready: five files in `docs/play/screenshots` (1100 × 2150, ratio 1.95, 24-bit PNG): rooms, places, add entities, edit layout, sign in. A **schedules** screenshot with neutral names is still missing (the file in `docs/screenshots` is `.webp` and shows real names) |
+| Phone screenshots | 2 to 8; JPEG or 24-bit PNG; each side 320 to 3840 px; the longer side at most twice the shorter | English: five files in `docs/play/screenshots` (1100 × 2150, 24-bit PNG): rooms, places, add entities, edit layout, sign in; a schedules screenshot is missing there. German: six files in `docs/play/de/screenshots` (rooms, places, add entities, edit layout, schedules, sign in) |
+| Feature graphic (German) | 1024 × 500 | Ready: `docs/play/de/feature-graphic.png` |
 | 7-inch / 10-inch tablet screenshots | Optional | Tablet and landscape are not designed (concept 15.4) |
 
-Screenshots to submit, in this order: Rooms, Places, Add entities, Edit layout, Schedules (new, with neutral names, to be taken on the phone), Sign in. Do not show real names or addresses. The files are generated from the screenshots in `docs/screenshots` (headline above the unchanged screen, 2:1 limit respected); the generated PNGs are the ones to upload.
+Screenshots to submit, in this order: Rooms, Places, Add entities, Edit layout, Schedules, Sign in (the German set has all six). Do not show real names or addresses. The English files are generated from the screenshots in `docs/screenshots`, the German ones from phone screenshots taken in the German app (the IP address on the sign-in screen is pixelated) (headline above the unchanged screen, 2:1 limit respected); the generated PNGs are the ones to upload.
 
 ## 7. Release steps in the Play Console
 
