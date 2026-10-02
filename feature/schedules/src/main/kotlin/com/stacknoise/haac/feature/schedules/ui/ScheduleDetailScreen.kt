@@ -3,6 +3,7 @@ package com.stacknoise.haac.feature.schedules.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
@@ -49,7 +51,11 @@ import com.stacknoise.haac.feature.schedules.domain.nextRuns
  * switch, the next runs and the last run, and *Delete schedule* after a confirmation. [onClose] returns to the list.
  */
 @Composable
-fun ScheduleDetailScreen(onClose: () -> Unit, viewModel: ScheduleDetailViewModel = hiltViewModel()) {
+fun ScheduleDetailScreen(
+    onClose: () -> Unit,
+    onEdit: (String) -> Unit,
+    viewModel: ScheduleDetailViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val deleted by viewModel.deleted.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -67,7 +73,7 @@ fun ScheduleDetailScreen(onClose: () -> Unit, viewModel: ScheduleDetailViewModel
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             val view = state.view
-            TopRow(onClose)
+            TopRow(onClose, onEdit = view?.let { { onEdit(it.item.id) } })
             when {
                 view != null -> DetailContent(view, state, viewModel::onEnabled, viewModel::onDelete)
                 state.loaded -> HaacEmptyState(
@@ -79,12 +85,21 @@ fun ScheduleDetailScreen(onClose: () -> Unit, viewModel: ScheduleDetailViewModel
     }
 }
 
+/** The padding of the top row. */
+private val TopRowPadding = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+
 /** Back arrow row at the top. */
 @Composable
-private fun TopRow(onClose: () -> Unit) {
-    Row(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+private fun TopRow(onClose: () -> Unit, onEdit: (() -> Unit)?) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = TopRowPadding) {
         IconButton(onClick = onClose) {
             Icon(painterResource(R.drawable.ic_schedules_back), stringResource(R.string.schedules_back))
+        }
+        Spacer(Modifier.weight(1f))
+        if (onEdit != null) {
+            IconButton(onClick = onEdit) {
+                Icon(painterResource(R.drawable.ic_schedules_edit), stringResource(R.string.schedules_edit))
+            }
         }
     }
 }

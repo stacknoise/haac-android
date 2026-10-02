@@ -92,15 +92,18 @@ internal fun actionVerb(action: ScheduleAction): String = stringResource(
 
 /** The target line of a card: "Lamp · turns on" for one entity, "2 entities turn off" for several. */
 @Composable
-internal fun targetText(view: ScheduleView): String {
-    val count = view.entityNames.size
-    if (count == 1) {
-        return stringResource(R.string.schedules_target_single, view.entityNames.single(), actionVerb(view.item.action))
+internal fun targetText(view: ScheduleView): String = targetText(view.entityNames, view.item.action)
+
+/** The same for the entity [names] and [action] of a draft. */
+@Composable
+internal fun targetText(names: List<String>, action: ScheduleAction): String {
+    if (names.size == 1) {
+        return stringResource(R.string.schedules_target_single, names.single(), actionVerb(action))
     }
-    val plural = when (view.item.action) {
+    val plural = when (action) {
         ScheduleAction.TURN_ON -> R.plurals.schedules_targets_on
         ScheduleAction.TURN_OFF -> R.plurals.schedules_targets_off
         ScheduleAction.TOGGLE -> R.plurals.schedules_targets_toggle
     }
-    return pluralStringResource(plural, count, count)
+    return pluralStringResource(plural, names.size, names.size)
 }
