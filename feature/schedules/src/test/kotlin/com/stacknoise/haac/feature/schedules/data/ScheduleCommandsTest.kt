@@ -26,7 +26,7 @@ class ScheduleCommandsTest {
     private val sent = mutableListOf<Pair<String, JsonObject>>()
     private val cache = linkedMapOf<String, ScheduleEntity>()
 
-    private val reply = """
+    private var reply = """
         {"id":"a","owner":"u1","owner_name":"Anton","own":true,"name":"Morning light","enabled":true,
          "when":{"type":"time","time":"06:45","days":[0,1,2,3,4]},"action":"turn_on","entities":["switch.a"],
          "created_at":"2026-10-01T05:12:00+00:00","updated_at":"2026-10-02T05:12:00+00:00","next_run":null}
@@ -88,6 +88,24 @@ class ScheduleCommandsTest {
         val failure = runCatching { commands.save("s1", null, draft) }.exceptionOrNull()
         assertEquals(ErrorCode.NET_CONNECTION_LOST, (failure as HaacException).code)
         assertEquals(emptyMap<String, ScheduleEntity>(), cache)
+    }
+
+    @Test
+    fun `an admin changing a foreign schedule never sends the entities and keeps it foreign`() = runTest {
+        reply = reply.replace(""""own":true,""", "")
+        val foreign = cached().copy(own = false, ownerName = "Lena")
+        val draft = ScheduleDraft.of(foreign).copy(entityIds = listOf("switch.z"), action = ScheduleAction.TURN_OFF)
+        commands.save("s1", foreign, draft)
+        assertEquals(setOf("schedule_id", "updated_at", "action"), sent.single().second.keys)
+        assertEquals(false, cache.getValue("a").own)
+    }
+
+    @Test
+    fun `switching a foreign schedule off keeps it foreign in the cache`() = runTest {
+        reply = reply.replace(""""own":true,""", "")
+        commands.setEnabled("s1", cached().copy(own = false), enabled = false)
+        assertEquals(false, cache.getValue("a").own)
+        assertEquals("false", sent.single().second.getValue("enabled").jsonPrimitive.content)
     }
 
     @Test
