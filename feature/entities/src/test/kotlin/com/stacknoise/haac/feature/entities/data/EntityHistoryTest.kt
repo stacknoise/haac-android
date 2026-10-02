@@ -6,6 +6,7 @@ import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.network.connection.BridgeChannel
+import com.stacknoise.haac.core.network.connection.BridgeConnection
 import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.feature.entities.domain.DefaultHistoryChartFactory
 import com.stacknoise.haac.feature.entities.domain.HistoryChart
@@ -19,11 +20,15 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /** [EntityHistory]: the request it sends and the chart it returns (concept 8.1, 11.2). */
 class EntityHistoryTest {
-    private val rows = listOf(
+    private val dayMs = 86_400_000L
+    private val lenient = Json { ignoreUnknownKeys = true }
+
+    private var rows = listOf(
         ExposedEntity("s1", "switch.lamp", "switch", "Lamp"),
         ExposedEntity("s1", "sensor.e", "sensor", "Energy", unit = "kWh", stateClass = "total"),
     )
@@ -97,5 +102,48 @@ class EntityHistoryTest {
         live.connection.value = null
         val error = runCatching { history.load("s1", "switch.lamp", window) }.exceptionOrNull() as? HaacException
         assertEquals(ErrorCode.NET_CONNECTION_LOST, error?.code)
+    }
+
+    /** Uses the demo bridge: its entities become the cached rows (decoded as the sync does) and its connection live. */
+    private suspend fun useDemo(connection: BridgeConnection) {
+        val reply = connection.request("haac_bridge/entities/list")
+        val list = lenient.decodeFromJsonElement(EntityList.serializer(), reply)
+        rows = list.entities.map { it.toRow("s1", "{}") }
+        live.connection.value = connection
+    }
+
+    private fun lastDays(days: Int, preset: HistoryPreset): HistoryWindow {
+        val now = System.currentTimeMillis()
+        return HistoryWindow(now - days * dayMs, now, preset)
+    }
+
+    @Test
+    fun `the demo temperature is a line of numbers over a day and a band of statistics over a week`() = runTest {
+        useDemo(demoConnection())
+        val day = history.load("s1", "sensor.demo_temperature", lastDays(1, HistoryPreset.DAY)) as HistoryChart.Line
+        assertEquals("\u00b0C", day.unit)
+        assertTrue(day.series.single().points.size > 40)
+        val week = history.load("s1", "sensor.demo_temperature", lastDays(7, HistoryPreset.WEEK)) as HistoryChart.Line
+        assertTrue(week.band.size > 100)
+        assertTrue(week.band.all { it.low < it.high })
+    }
+
+    @Test
+    fun `the demo energy meter is a chart of bars with a positive value per hour`() = runTest {
+        useDemo(demoConnection())
+        val chart = history.load("s1", "sensor.demo_energy", lastDays(1, HistoryPreset.DAY)) as HistoryChart.Bars
+        assertTrue(chart.bars.size >= 20)
+        assertTrue(chart.bars.all { it.value > 0 })
+        assertEquals("kWh", chart.unit)
+    }
+
+    @Test
+    fun `a demo switch is a timeline of on and off and the thermostat shows current, target and heating`() = runTest {
+        useDemo(demoConnection())
+        val switch = history.load("s1", "switch.demo_kitchen_light", lastDays(2, HistoryPreset.CUSTOM))
+        assertEquals(setOf("on", "off"), (switch as HistoryChart.Timeline).segments.map { it.state }.toSet())
+        val climate = history.load("s1", "climate.demo_thermostat", lastDays(1, HistoryPreset.DAY)) as HistoryChart.Line
+        assertEquals(2, climate.series.size)
+        assertTrue(climate.phases.isNotEmpty())
     }
 }

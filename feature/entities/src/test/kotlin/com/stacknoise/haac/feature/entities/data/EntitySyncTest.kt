@@ -8,6 +8,10 @@ import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.network.connection.BridgeChannel
+import com.stacknoise.haac.core.network.connection.BridgeConnection
+import com.stacknoise.haac.core.network.demo.DemoWorld
+import com.stacknoise.haac.feature.entities.domain.ControlRequest
+import com.stacknoise.haac.feature.entities.domain.DefaultServiceCallFactory
 import com.stacknoise.haac.feature.entities.domain.EntityState
 import com.stacknoise.haac.feature.entities.domain.SyncResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,6 +25,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -178,5 +183,55 @@ class EntitySyncTest {
         follow()
         assertEquals(ErrorCode.APP_UNEXPECTED, sync.status.value.error?.code)
         assertEquals(listOf(ErrorCode.APP_UNEXPECTED), reportedErrors)
+    }
+
+    private fun TestScope.followDemo(world: DemoWorld = demoWorld()): BridgeConnection {
+        val connection = demoConnection(world)
+        backgroundScope.launch { sync.follow("s1", connection) }
+        runCurrent()
+        return connection
+    }
+
+    @Test
+    fun `the first sync of the demo bridge caches the seven entities with names, areas and states`() = runTest {
+        followDemo()
+        assertEquals(7, cache.size)
+        assertEquals("Living room light", cache.getValue("switch.demo_living_room_light").haName)
+        assertEquals("Living room", cache.getValue("switch.demo_socket").area)
+        assertEquals("\u00b0C", cache.getValue("sensor.demo_temperature").unit)
+        assertEquals("total_increasing", cache.getValue("sensor.demo_energy").stateClass)
+        assertEquals(1, cache.getValue("climate.demo_thermostat").supportedFeatures)
+        assertEquals("heat", stateOf("climate.demo_thermostat")?.state)
+        assertEquals("on", stateOf("switch.demo_socket")?.state)
+        assertNull(sync.status.value.error)
+        assertEquals(emptyList<Pair<List<String>, List<String>>>(), reportedChanges)
+    }
+
+    @Test
+    fun `service calls built by the app change the cached state through the demo subscription`() = runTest {
+        val connection = followDemo()
+        val calls = DefaultServiceCallFactory()
+        val socket = calls.create(cache.getValue("switch.demo_socket"), ControlRequest.SwitchTo(false))
+        connection.request("haac_bridge/call_service", socket.fields())
+        runCurrent()
+        assertEquals("off", stateOf("switch.demo_socket")?.state)
+        val thermostat = calls.create(cache.getValue("climate.demo_thermostat"), ControlRequest.SetTemperature(22.5))
+        connection.request("haac_bridge/call_service", thermostat.fields())
+        runCurrent()
+        val state = stateOf("climate.demo_thermostat")
+        assertEquals("heat", state?.state)
+        assertEquals(22.5, state?.attributes?.get("temperature")?.jsonPrimitive?.doubleOrNull)
+        assertEquals("heating", state?.attributes?.get("hvac_action")?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun `a second connection to the same demo finds the same revision and reports nothing`() = runTest {
+        val world = demoWorld()
+        followDemo(world)
+        val revision = storedRevision
+        followDemo(world)
+        assertEquals(revision, storedRevision)
+        assertEquals(SyncResult(), sync.status.value.result)
+        assertEquals(emptyList<Pair<List<String>, List<String>>>(), reportedChanges)
     }
 }

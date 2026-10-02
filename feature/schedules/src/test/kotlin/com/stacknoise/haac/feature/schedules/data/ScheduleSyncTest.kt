@@ -7,6 +7,8 @@ import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.network.connection.BridgeChannel
+import com.stacknoise.haac.core.network.demo.DemoWorld
+import com.stacknoise.haac.feature.schedules.domain.ScheduleDraft
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -18,8 +20,11 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -160,5 +165,39 @@ class ScheduleSyncTest {
         runCurrent()
         assertEquals(listOf("a", "b"), cache.keys.toList())
         assertEquals(listOf(ErrorCode.NET_CONNECTION_LOST), reportedErrors)
+    }
+
+    private fun TestScope.followDemo(world: DemoWorld = demoWorld()) {
+        val connection = demoConnection(world)
+        backgroundScope.launch { sync.follow("s1", connection) }
+        runCurrent()
+    }
+
+    @Test
+    fun `the first sync of the demo bridge stores Morning light silently`() = runTest {
+        followDemo()
+        val row = cache.values.single()
+        assertEquals("Morning light", row.name)
+        assertEquals("time", row.whenType)
+        assertEquals("07:00", row.time)
+        assertEquals(31, row.days)
+        assertEquals(true, row.own)
+        assertNotNull(row.nextRun)
+        assertEquals(emptyList<List<String>>(), removed)
+    }
+
+    @Test
+    fun `a schedule created on the demo reaches the cache and one deleted there is reported as removed`() = runTest {
+        val world = demoWorld()
+        followDemo(world)
+        val other = demoConnection(world)
+        val draft = ScheduleDraft(name = "Evening", entityIds = listOf("switch.demo_socket"))
+        other.request("haac_bridge/schedules/create", ScheduleFields.create(draft))
+        runCurrent()
+        assertEquals(setOf("Morning light", "Evening"), cache.values.map { it.name }.toSet())
+        other.request("haac_bridge/schedules/delete", buildJsonObject { put("schedule_id", "demo-morning-light") })
+        runCurrent()
+        assertEquals(listOf("Evening"), cache.values.map { it.name })
+        assertEquals(listOf(listOf("Morning light")), removed)
     }
 }
