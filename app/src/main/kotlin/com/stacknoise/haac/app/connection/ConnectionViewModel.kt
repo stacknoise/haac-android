@@ -8,10 +8,12 @@ import com.stacknoise.haac.core.error.ErrorAction
 import com.stacknoise.haac.core.network.connection.ConnectionState
 import com.stacknoise.haac.core.network.connection.ConnectionSupervisor
 import com.stacknoise.haac.feature.entities.data.EntitySync
+import com.stacknoise.haac.feature.schedules.data.ScheduleSync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +35,7 @@ class ConnectionViewModel @Inject constructor(
     private val supervisor: ConnectionSupervisor,
     private val active: ActiveInstanceStore,
     private val sync: EntitySync,
+    private val scheduleSync: ScheduleSync,
     private val servers: ServerDao,
 ) : ViewModel() {
     private val serverId = MutableStateFlow<String?>(null)
@@ -61,7 +64,12 @@ class ConnectionViewModel @Inject constructor(
             launch {
                 supervisor.connection.collectLatest { connection ->
                     val id = serverId.value
-                    if (connection != null && id != null) sync.follow(id, connection)
+                    if (connection != null && id != null) {
+                        coroutineScope {
+                            launch { sync.follow(id, connection) }
+                            launch { scheduleSync.follow(id, connection) }
+                        }
+                    }
                 }
             }
             active.activeServerId.collect { id ->

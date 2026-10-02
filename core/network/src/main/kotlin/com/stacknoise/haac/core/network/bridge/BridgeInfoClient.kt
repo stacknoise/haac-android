@@ -18,7 +18,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl
 
-/** Answer of `haac_bridge/info` (concept 11.2, 11.4); older bridges send no [instanceId] and [urls]. */
+/** Answer of `haac_bridge/info` (concept 11.2, 11.4); older bridges send no [instanceId], [urls] and [features]. */
 @Serializable
 data class BridgeInfo(
     @SerialName("bridge_version") val bridgeVersion: String,
@@ -27,6 +27,7 @@ data class BridgeInfo(
     @SerialName("ha_version") val haVersion: String,
     @SerialName("instance_id") val instanceId: String? = null,
     val urls: BridgeUrls = BridgeUrls(),
+    val features: List<String> = emptyList(),
 )
 
 /** Addresses configured in HA (concept 4.5); each is null if not set. */

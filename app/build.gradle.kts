@@ -27,6 +27,7 @@ dependencies {
     implementation(project(":feature:layout"))
     implementation(project(":feature:entities"))
     implementation(project(":feature:notifications"))
+    implementation(project(":feature:schedules"))
     implementation(project(":feature:settings"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

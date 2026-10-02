@@ -19,6 +19,20 @@
         <item quantity="one">%1$s is no longer shared. Its tiles stay inactive until you remove them.</item>
         <item quantity="other">%1$s are no longer shared. Their tiles stay inactive until you remove them.</item>
     </plurals>
+    <plurals name="notifications_schedule_removed">
+        <item quantity="one">Schedule removed on the server</item>
+        <item quantity="other">%1$d schedules removed on the server</item>
+    </plurals>
+    <plurals name="notifications_schedule_removed_text">
+        <item quantity="one">%1$s no longer exists on the server.</item>
+        <item quantity="other">%1$s no longer exist on the server.</item>
+    </plurals>
+    <string name="notifications_schedule_paused">Schedule paused</string>
+    <string name="notifications_schedule_paused_text">%1$s was paused: %2$s.</string>
+    <string name="notifications_pause_owner_inactive">your account is inactive</string>
+    <string name="notifications_pause_no_entities">none of its devices is shared with you any more</string>
+    <string name="notifications_pause_sun_unavailable">the sun position is not available</string>
+    <string name="notifications_pause_other">the server paused it</string>
     <string name="notifications_times">×%1$d</string>
     <string name="notifications_delete">Delete</string>
     <string name="notifications_cancel">Cancel</string>

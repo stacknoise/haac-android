@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 
 /** Checks the rules of concept 17.3 for every ErrorCode. */
 class ErrorCodeTest {
-    private val format = Regex("^HAAC-(NET|AUTH|SEC|BRG|SYNC|DB|LAY|ENT|INST|DISC|APP)-\\d{3}$")
+    private val format = Regex("^HAAC-(NET|AUTH|SEC|BRG|SYNC|DB|LAY|ENT|SCH|INST|DISC|APP)-\\d{3}$")
 
     @Test
     fun `codes are unique`() {

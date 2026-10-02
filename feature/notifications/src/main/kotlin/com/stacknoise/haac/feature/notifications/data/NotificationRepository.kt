@@ -70,6 +70,33 @@ class NotificationRepository internal constructor(
             }
     }
 
+    /** One entry for the schedules [names] that no longer exist on the server (HAAC-SCH-001, concept 19.7). */
+    suspend fun addScheduleRemoved(serverId: String, names: List<String>) = write { now ->
+        if (names.isEmpty()) return@write
+        val entry = NotificationEntity(
+            serverId = serverId,
+            type = NotificationType.SCHEDULE_REMOVED,
+            errorCode = ErrorCode.SCH_REMOVED.code,
+            count = names.size,
+            entityIds = encode(names),
+            createdAt = now,
+        )
+        notifications.insert(entry)
+    }
+
+    /** An entry for schedule [name], which the server paused for [reason] (HAAC-SCH-002, concept 19.7). */
+    suspend fun addSchedulePaused(serverId: String, name: String, reason: String) = write { now ->
+        val entry = NotificationEntity(
+            serverId = serverId,
+            type = NotificationType.SCHEDULE_PAUSED,
+            errorCode = ErrorCode.SCH_PAUSED.code,
+            entityIds = encode(listOf(name)),
+            detail = reason,
+            createdAt = now,
+        )
+        notifications.insert(entry)
+    }
+
     /** An error entry, or one more occurrence of the same code of [serverId] within 10 minutes (concept 17.4). */
     suspend fun addError(error: HaacException, serverId: String?) = write { now ->
         val recent = notifications.recentError(serverId, error.code.code, now - GROUP_MS)
@@ -150,6 +177,7 @@ class NotificationRepository internal constructor(
         count = count,
         entities = decode(entityIds).map { EntityLabel(it, names[it] ?: it) },
         error = errorCode?.let { ErrorCode.of(it) ?: ErrorCode.APP_UNEXPECTED },
+        detail = detail,
         bridgeCode = bridgeCode,
         serverId = serverId,
     )

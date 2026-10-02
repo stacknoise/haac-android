@@ -30,6 +30,13 @@
     <string name="error_db_save_failed">Your changes could not be saved. Please try again.</string>
     <string name="error_lay_place_missing">This home, level or room no longer exists. Please check your places.</string>
     <string name="error_lay_name_missing">Please enter a name.</string>
+    <string name="error_sch_removed">This schedule no longer exists on the server.</string>
+    <string name="error_sch_paused">This schedule was paused by the server.</string>
+    <string name="error_sch_invalid">This schedule is not valid. Check the name, time, days and devices.</string>
+    <string name="error_sch_conflict">This schedule was changed somewhere else. Reload it and try again.</string>
+    <string name="error_sch_limit">You have reached the limit of schedules. Delete one first.</string>
+    <string name="error_sch_not_allowed">You are not allowed to change this schedule.</string>
+    <string name="error_sch_run_incomplete">The last run could not switch every device.</string>
     <string name="error_app_unexpected">Something went wrong.</string>
     <!-- Action buttons of ErrorAction (concept 17.4). -->
     <string name="error_action_retry">Try again</string>
