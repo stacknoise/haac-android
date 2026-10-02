@@ -6,7 +6,7 @@ import com.stacknoise.haac.core.network.connection.Backoff
 import com.stacknoise.haac.core.network.connection.BridgeConnector
 import com.stacknoise.haac.core.network.connection.ConnectionSupervisor
 import com.stacknoise.haac.core.network.connection.ConnectivityNetworkMonitor
-import com.stacknoise.haac.core.network.connection.DefaultBridgeConnector
+import com.stacknoise.haac.core.network.connection.DemoBridgeConnector
 import com.stacknoise.haac.core.network.connection.ExponentialBackoff
 import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.core.network.connection.NetworkMonitor
@@ -55,14 +55,13 @@ abstract class NetworkBindings {
     @Binds
     abstract fun bindEndpointSelector(selector: DefaultEndpointSelector): EndpointSelector
 
-
     /** WebSockets to HA via OkHttp. */
     @Binds
     abstract fun bindHaWebSocketFactory(factory: OkHttpWebSocketFactory): HaWebSocketFactory
 
-    /** Handshake of the live connection (concept 9.1). */
+    /** Handshake of the live connection (concept 9.1); the demo instance goes to the built-in bridge (20.2). */
     @Binds
-    abstract fun bindBridgeConnector(connector: DefaultBridgeConnector): BridgeConnector
+    abstract fun bindBridgeConnector(connector: DemoBridgeConnector): BridgeConnector
 
     /** Default network changes (concept 4.5). */
     @Binds

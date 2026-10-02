@@ -5,13 +5,16 @@ import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.network.connection.BridgeChannel
+import com.stacknoise.haac.core.network.connection.BridgeConnection
 import com.stacknoise.haac.core.network.connection.LiveConnection
+import com.stacknoise.haac.core.network.demo.DemoWorld
 import com.stacknoise.haac.feature.schedules.domain.ScheduleAction
 import com.stacknoise.haac.feature.schedules.domain.ScheduleDraft
 import com.stacknoise.haac.feature.schedules.domain.toItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -19,6 +22,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class ScheduleCommandsTest {
@@ -114,6 +118,54 @@ class ScheduleCommandsTest {
         commands.delete("s1", "a")
         assertEquals("haac_bridge/schedules/delete", sent.last().first)
         assertEquals("a", sent.last().second.getValue("schedule_id").jsonPrimitive.content)
+        assertEquals(emptyMap<String, ScheduleEntity>(), cache)
+    }
+
+    private fun TestScope.useDemo(world: DemoWorld = demoWorld()): BridgeConnection =
+        demoConnection(world).also { connection.value = it }
+
+    private val evening = ScheduleDraft(
+        name = "Evening",
+        action = ScheduleAction.TURN_OFF,
+        entityIds = listOf("switch.demo_socket"),
+    )
+
+    @Test
+    fun `against the demo bridge a schedule is created, edited, switched off and deleted`() = runTest {
+        useDemo()
+        commands.save("s1", null, evening)
+        val created = cache.values.single()
+        assertEquals("Evening", created.name)
+        assertEquals(true, created.own)
+        assertEquals("turn_off", created.action)
+        commands.save("s1", created.toItem(), ScheduleDraft.of(created.toItem()).copy(name = "Late"))
+        assertEquals("Late", cache.getValue(created.scheduleId).name)
+        commands.setEnabled("s1", cache.getValue(created.scheduleId).toItem(), false)
+        assertEquals(false, cache.getValue(created.scheduleId).enabled)
+        assertNull(cache.getValue(created.scheduleId).nextRun)
+        commands.delete("s1", created.scheduleId)
+        assertEquals(emptyMap<String, ScheduleEntity>(), cache)
+    }
+
+    @Test
+    fun `an edit of an old version fails with the conflict of the demo bridge`() = runTest {
+        useDemo()
+        commands.save("s1", null, evening)
+        val old = cache.values.single().toItem()
+        commands.save("s1", old, ScheduleDraft.of(old).copy(name = "One"))
+        val failure = runCatching { commands.save("s1", old, ScheduleDraft.of(old).copy(name = "Two")) }
+            .exceptionOrNull() as HaacException
+        assertEquals(ErrorCode.SCH_CONFLICT, failure.code)
+        assertEquals("HAB-SCH-004", failure.bridgeCode)
+        assertEquals("One", cache.values.single().name)
+    }
+
+    @Test
+    fun `an invalid schedule is rejected by the demo bridge as HAAC-SCH-003`() = runTest {
+        useDemo()
+        val failure = runCatching { commands.save("s1", null, evening.copy(entityIds = listOf("sensor.demo_energy"))) }
+            .exceptionOrNull() as HaacException
+        assertEquals(ErrorCode.SCH_INVALID, failure.code)
         assertEquals(emptyMap<String, ScheduleEntity>(), cache)
     }
 }
