@@ -1,5 +1,6 @@
 package com.stacknoise.haac.feature.schedules.ui
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -28,6 +29,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -212,3 +214,9 @@ internal fun WeekdayDots(days: List<Int>, modifier: Modifier = Modifier) {
     }
 }
 
+
+/** A decorative icon of [size] in [tint]; it has no description because its text is next to it. */
+@Composable
+internal fun GlyphIcon(@DrawableRes icon: Int, tint: Color, size: Dp) {
+    Icon(painterResource(icon), contentDescription = null, tint = tint, modifier = Modifier.size(size))
+}
