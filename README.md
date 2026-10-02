@@ -94,7 +94,7 @@ Requirements: JDK 21 (e.g. the one bundled with Android Studio) and the Android 
 ./gradlew codeIndex            # regenerate docs/code-index.md and docs/error-codes.md
 ```
 
-Read [CLAUDE.md](CLAUDE.md) and [docs/concept.md](docs/concept.md) before contributing.
+Read the [developer guide](docs/development.md), [CLAUDE.md](CLAUDE.md) and [docs/concept.md](docs/concept.md) before contributing.
 
 ## Security
 

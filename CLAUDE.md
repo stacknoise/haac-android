@@ -43,6 +43,7 @@ Native Android client for Home Assistant (HA). This repository contains the Andr
 CLAUDE.md
 docs/
   concept.md           # full specification (leading copy, exported from the concept document)
+  development.md       # developer guide: setup, checks, factories, error codes, code index, releases
   mockups/             # haac-mockups-1c.html, png/M-0x-*.png
   icons/               # playstore-icon-512.png, launcher previews (concept 15.6)
   code-index.md        # GENERATED: every class and function with a one-line description (concept 17.5)
@@ -59,7 +60,7 @@ LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 
 ## Build and checks
 
-- JDK 21, Gradle via the wrapper. `compileSdk` 37, `targetSdk` 36, `minSdk` 28 are set only in `build-logic` (`AndroidSdk`).
+- JDK 21, Gradle via the wrapper. `compileSdk` 37, `targetSdk` 37, `minSdk` 28 are set only in `build-logic` (`AndroidSdk`).
 - A module's `build.gradle.kts` applies convention plugins (`haac.android.library`, `haac.android.feature`, …) and lists its dependencies; no Android/Kotlin settings there.
 - `./gradlew assembleDebug lint detekt test codeIndexCheck` must pass before a PR; CI also runs PMD CPD and `./gradlew -p build-logic test`.
 - `HaacTheme` (colors, Figtree, shapes of the Salbei redesign) lives in `:core:common`, package `com.stacknoise.haac.core.common.ui.theme`.
@@ -108,7 +109,7 @@ LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 
 - Kotlin, Jetpack Compose, Material 3, Hilt, Room, OkHttp, kotlinx.serialization (concept 3.3). minSdk 28.
 - Manifest: `android:icon="@mipmap/ic_launcher"`, `android:roundIcon="@mipmap/ic_launcher_round"` (concept 15.6).
-- UI: light "Salbei" theme `HaacTheme` (tokens in `HaacColors`, font Figtree; handoff "HAAC UI Redesign: Salbei"); concept 15.2 still describes the former dark theme. UI says "Level", code says `Floor`.
+- UI: "Salbei" theme `HaacTheme` in a light and a dark palette (tokens in `HaacPalette`, read through `HaacColors`; font Figtree; concept 15.2). UI says "Level", code says `Floor`.
 - UI strings in `strings.xml` (English); mockup texts are sample data.
 - Tests as in concept 14.2 (JUnit 5, Turbine, MockK, MockWebServer, Compose UI tests).
 - Signing keys and Play credentials exist only as GitHub Actions secrets (concept 16.6); never commit keystores or `*.jks`.
