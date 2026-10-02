@@ -1,6 +1,8 @@
 package com.stacknoise.haac.core.common.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -41,14 +43,17 @@ internal val HaacTypography: Typography = Typography(
     labelSmall = brand(12, FontWeight.Medium),
 )
 
-/** Eyebrow / section label: 12 sp semibold, uppercase by the caller, 12 % tracking. */
-val SectionLabelStyle = TextStyle(
+/** Eyebrow / section label without a colour: 12 sp semibold, 12 % tracking. */
+private val SectionLabelBase = TextStyle(
     fontFamily = BrandFontFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 12.sp,
     letterSpacing = 0.12.em,
-    color = HaacColors.OnSurfaceVariant,
 )
+
+/** Eyebrow / section label: 12 sp semibold, uppercase by the caller, 12 % tracking, muted text colour. */
+val SectionLabelStyle: TextStyle
+    @Composable @ReadOnlyComposable get() = SectionLabelBase.copy(color = HaacColors.OnSurfaceVariant)
 
 /** A Figtree style: [size] in sp, [tracking] in em, [lineHeight] as a multiple of the size (0 keeps the default). */
 private fun brand(size: Int, weight: FontWeight, tracking: Double = 0.0, lineHeight: Double = 0.0): TextStyle =

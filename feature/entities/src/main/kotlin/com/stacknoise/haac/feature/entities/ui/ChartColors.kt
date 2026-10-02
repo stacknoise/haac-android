@@ -1,7 +1,6 @@
 package com.stacknoise.haac.feature.entities.ui
 
 import androidx.compose.ui.graphics.Color
-import com.stacknoise.haac.core.common.ui.theme.HaacColors
 
 /**
  * Colours of the history charts. The set was validated with the dataviz validator on the former dark background;
@@ -17,9 +16,6 @@ internal object ChartColors {
 
     /** Categorical order of timeline states other than on/off. */
     val Categorical = listOf(Green, Blue, Magenta, Yellow)
-
-    /** The 2 dp ring around selected points, in the background colour. */
-    val Ring = HaacColors.Background
 
     /** Opacity of bands and phases behind the lines. */
     const val AREA_ALPHA = 0.22f
