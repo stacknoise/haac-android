@@ -11,7 +11,9 @@ data class EntityLabel(val entityId: String, val name: String)
 
 /**
  * One entry of the notification list as the screen shows it (concept 9.1, 17.4). [entities] are set for
- * [NotificationType.ADDED] and [NotificationType.REMOVED], [error] for [NotificationType.ERROR].
+ * [NotificationType.ADDED] and [NotificationType.REMOVED] (for the schedule types they hold the schedule names),
+ * [error] for [NotificationType.ERROR] and the schedule types, [detail] is the pause reason of
+ * [NotificationType.SCHEDULE_PAUSED] (concept 19.7).
  */
 data class NotificationItem(
     val id: Long,
@@ -24,6 +26,7 @@ data class NotificationItem(
     val error: ErrorCode? = null,
     val bridgeCode: String? = null,
     val serverId: String? = null,
+    val detail: String? = null,
 )
 
 /** The entries of one day, newest first. */

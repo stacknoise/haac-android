@@ -12,6 +12,8 @@ enum class NotificationType {
     ADDED,
     REMOVED,
     ERROR,
+    SCHEDULE_REMOVED,
+    SCHEDULE_PAUSED,
 }
 
 @Entity(
@@ -30,6 +32,7 @@ enum class NotificationType {
  * One entry of the notification list (table `notification`, concept 9.1, 12, 17.4): the entities one sync
  * added or withdrew ([entityIds] as a JSON list), or an error with its code; [serverId] is null for errors
  * without an instance. [count] counts the entities, or how often the same error occurred within 10 minutes.
+ * The schedule types list schedule names in [entityIds]; [detail] holds the pause reason of *schedule paused*.
  */
 data class NotificationEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -42,4 +45,5 @@ data class NotificationEntity(
     @ColumnInfo(name = "created_at") val createdAt: Long,
     @ColumnInfo(name = "read_at") val readAt: Long? = null,
     @ColumnInfo(name = "resolved_at") val resolvedAt: Long? = null,
+    val detail: String? = null,
 )

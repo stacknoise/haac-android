@@ -15,6 +15,7 @@ import com.stacknoise.haac.core.database.migration.Migration2To3
 import com.stacknoise.haac.core.database.migration.Migration3To4
 import com.stacknoise.haac.core.database.migration.Migration4To5
 import com.stacknoise.haac.core.database.migration.Migration5To6
+import com.stacknoise.haac.core.database.migration.Migration6To7
 import com.stacknoise.haac.core.database.notification.NotificationDao
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
@@ -54,7 +55,7 @@ abstract class DatabaseModule {
         @Singleton
         fun provideDatabase(@ApplicationContext context: Context): HaacDatabase =
             Room.databaseBuilder(context, HaacDatabase::class.java, "haac.db")
-                .addMigrations(Migration1To2, Migration2To3, Migration3To4, Migration4To5, Migration5To6)
+                .addMigrations(Migration1To2, Migration2To3, Migration3To4, Migration4To5, Migration5To6, Migration6To7)
                 .addCallback(LayoutTriggerCallback)
                 .build()
 

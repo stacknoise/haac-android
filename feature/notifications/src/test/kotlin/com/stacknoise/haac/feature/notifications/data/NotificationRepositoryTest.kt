@@ -147,6 +147,24 @@ class NotificationRepositoryTest {
     }
 
     @Test
+    fun `removed schedules make one grouped entry with their names, paused ones one each with the reason`() = runTest {
+        repository.addScheduleRemoved("s1", listOf("Morning light", "Evening"))
+        repository.addScheduleRemoved("s1", emptyList())
+        repository.addSchedulePaused("s1", "Garage", "no_entities")
+
+        val items = repository.items("s1").first()
+        assertEquals(2, items.size)
+        val gone = items.single { it.type == NotificationType.SCHEDULE_REMOVED }
+        assertEquals(2, gone.count)
+        assertEquals(listOf("Morning light", "Evening"), gone.entities.map { it.name })
+        assertEquals(ErrorCode.SCH_REMOVED, gone.error)
+        val paused = items.single { it.type == NotificationType.SCHEDULE_PAUSED }
+        assertEquals(listOf("Garage"), paused.entities.map { it.name })
+        assertEquals("no_entities", paused.detail)
+        assertEquals(ErrorCode.SCH_PAUSED, paused.error)
+    }
+
+    @Test
     fun `the same error within 10 minutes is counted, later or elsewhere it is new`() = runTest {
         val lost = NetworkException(ErrorCode.NET_UNREACHABLE)
         repository.addError(lost, "s1")

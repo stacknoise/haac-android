@@ -127,6 +127,7 @@ private fun EntryActions(item: NotificationItem, actions: NotificationActions) {
                 val label = item.error?.action?.takeIf { it != ErrorAction.NONE }?.label
                 if (label != null) ActionButton(stringResource(label), primary = true) { actions.onErrorAction(item) }
             }
+            NotificationType.SCHEDULE_REMOVED, NotificationType.SCHEDULE_PAUSED -> Unit
         }
         val resolve = when (item.type) {
             NotificationType.REMOVED -> R.string.notifications_keep
@@ -149,6 +150,9 @@ private fun title(item: NotificationItem): String = when (item.type) {
     NotificationType.ADDED -> pluralStringResource(R.plurals.notifications_added, item.count, item.count)
     NotificationType.REMOVED -> pluralStringResource(R.plurals.notifications_removed, item.count, item.count)
     NotificationType.ERROR -> stringResource(item.error?.message ?: R.string.notifications_title)
+    NotificationType.SCHEDULE_REMOVED ->
+        pluralStringResource(R.plurals.notifications_schedule_removed, item.count, item.count)
+    NotificationType.SCHEDULE_PAUSED -> stringResource(R.string.notifications_schedule_paused)
 }
 
 /** Text of an entry: name and `entity_id`, the names of several entities, or the error code (mono). */
@@ -165,8 +169,29 @@ private fun text(item: NotificationItem): AnnotatedString {
             val times = if (item.count > 1) " · " + stringResource(R.string.notifications_times, item.count) else ""
             mono("", item.error?.code.orEmpty(), times)
         }
+        NotificationType.SCHEDULE_REMOVED -> mono(
+            pluralStringResource(R.plurals.notifications_schedule_removed_text, item.count, names) + " · ",
+            item.error?.code.orEmpty(),
+            "",
+        )
+        NotificationType.SCHEDULE_PAUSED -> mono(
+            stringResource(R.string.notifications_schedule_paused_text, names, pauseReason(item.detail)) + " · ",
+            item.error?.code.orEmpty(),
+            "",
+        )
     }
 }
+
+/** The reason of a pause in words (concept 19.6); an unknown reason from a newer bridge reads generically. */
+@Composable
+private fun pauseReason(reason: String?): String = stringResource(
+    when (reason) {
+        "owner_inactive" -> R.string.notifications_pause_owner_inactive
+        "no_entities" -> R.string.notifications_pause_no_entities
+        "sun_unavailable" -> R.string.notifications_pause_sun_unavailable
+        else -> R.string.notifications_pause_other
+    },
+)
 
 /** [code] in the mono font between [before] and [after]. */
 private fun mono(before: String, code: String, after: String) = buildAnnotatedString {

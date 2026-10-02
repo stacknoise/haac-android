@@ -10,6 +10,9 @@ interface BridgeChannel {
     /** False once the connection has ended. */
     val isOpen: Boolean
 
+    /** The optional features the bridge reports in `haac_bridge/info`, e.g. `schedules` (concept 11.2, 19.4). */
+    val features: Set<String> get() = emptySet()
+
     /** Sends command [type] with [fields] and returns its `result`; a bridge error reply is thrown (18.3). */
     suspend fun request(type: String, fields: JsonObject = BridgeMessageFactory.NO_FIELDS): JsonElement
 

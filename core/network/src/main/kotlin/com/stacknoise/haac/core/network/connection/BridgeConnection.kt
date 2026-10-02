@@ -58,6 +58,9 @@ class BridgeConnection(
     /** True until the connection ends. */
     override val isOpen: Boolean get() = !ended.isCompleted
 
+    /** The features of the bridge. */
+    override val features: Set<String> get() = info.features.toSet()
+
     init {
         scope.launch { read() }
         scope.launch { heartbeat() }

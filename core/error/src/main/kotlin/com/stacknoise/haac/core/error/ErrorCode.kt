@@ -187,6 +187,48 @@ enum class ErrorCode(
         ErrorAction.NONE,
         "Home, floor or room saved with a blank name",
     ),
+    SCH_REMOVED(
+        "HAAC-SCH-001",
+        R.string.error_sch_removed,
+        ErrorAction.NONE,
+        "A schedule of the user is gone from the server (HAB-SCH-003 or found by the sync, concept 19.7)",
+    ),
+    SCH_PAUSED(
+        "HAAC-SCH-002",
+        R.string.error_sch_paused,
+        ErrorAction.NONE,
+        "The server paused a schedule of the user, reason in the entry (concept 19.6, 19.7)",
+    ),
+    SCH_INVALID(
+        "HAAC-SCH-003",
+        R.string.error_sch_invalid,
+        ErrorAction.NONE,
+        "The bridge rejected the schedule (HAB-SCH-001)",
+    ),
+    SCH_CONFLICT(
+        "HAAC-SCH-004",
+        R.string.error_sch_conflict,
+        ErrorAction.RETRY,
+        "The schedule changed since the app loaded it (HAB-SCH-004)",
+    ),
+    SCH_LIMIT(
+        "HAAC-SCH-005",
+        R.string.error_sch_limit,
+        ErrorAction.NONE,
+        "50 schedules per user reached (HAB-SCH-005)",
+    ),
+    SCH_NOT_ALLOWED(
+        "HAAC-SCH-006",
+        R.string.error_sch_not_allowed,
+        ErrorAction.NONE,
+        "Foreign entity list or schedule of another user (HAB-SCH-006)",
+    ),
+    SCH_RUN_INCOMPLETE(
+        "HAAC-SCH-007",
+        R.string.error_sch_run_incomplete,
+        ErrorAction.NONE,
+        "Last run result partial or failed (HAB-SCH-002 in last_run); shown in the detail screen only",
+    ),
     APP_UNEXPECTED(
         "HAAC-APP-000",
         R.string.error_app_unexpected,

@@ -7,6 +7,7 @@ import com.stacknoise.haac.core.database.layout.FloorDao
 import com.stacknoise.haac.core.database.layout.HomeDao
 import com.stacknoise.haac.core.database.layout.LayoutTrashDao
 import com.stacknoise.haac.core.database.layout.RoomDao
+import com.stacknoise.haac.core.database.schedule.ScheduleDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,4 +40,8 @@ object DaoModule {
     /** DAO of the `entity_alias` table. */
     @Provides
     fun provideEntityAliasDao(database: HaacDatabase): EntityAliasDao = database.entityAliasDao()
+
+    /** DAO of the `schedule` table. */
+    @Provides
+    fun provideScheduleDao(database: HaacDatabase): ScheduleDao = database.scheduleDao()
 }

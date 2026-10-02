@@ -17,6 +17,8 @@ import com.stacknoise.haac.core.database.layout.RoomDao
 import com.stacknoise.haac.core.database.layout.RoomEntity
 import com.stacknoise.haac.core.database.notification.NotificationDao
 import com.stacknoise.haac.core.database.notification.NotificationEntity
+import com.stacknoise.haac.core.database.schedule.ScheduleDao
+import com.stacknoise.haac.core.database.schedule.ScheduleEntity
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.server.ServerEntity
 
@@ -30,8 +32,9 @@ import com.stacknoise.haac.core.database.server.ServerEntity
         RoomEntity::class,
         RoomAssignment::class,
         EntityAlias::class,
+        ScheduleEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 /**
@@ -65,4 +68,7 @@ abstract class HaacDatabase : RoomDatabase() {
 
     /** The `entity_alias` table (concept 7.3). */
     abstract fun entityAliasDao(): EntityAliasDao
+
+    /** The `schedule` table (concept 19.7). */
+    abstract fun scheduleDao(): ScheduleDao
 }

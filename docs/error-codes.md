@@ -35,4 +35,11 @@ Every error of the app carries one of these codes (format `HAAC-<AREA>-<NNN>`) a
 | HAAC-DB-001 | Your changes could not be saved. Please try again. | RETRY | Room write failed (SQLiteException) |
 | HAAC-LAY-001 | This home, level or room no longer exists. Please check your places. | NONE | Home, floor or room to save into no longer exists, or the floor belongs to another home (concept 6.1) |
 | HAAC-LAY-002 | Please enter a name. | NONE | Home, floor or room saved with a blank name |
+| HAAC-SCH-001 | This schedule no longer exists on the server. | NONE | A schedule of the user is gone from the server (HAB-SCH-003 or found by the sync, concept 19.7) |
+| HAAC-SCH-002 | This schedule was paused by the server. | NONE | The server paused a schedule of the user, reason in the entry (concept 19.6, 19.7) |
+| HAAC-SCH-003 | This schedule is not valid. Check the name, time, days and devices. | NONE | The bridge rejected the schedule (HAB-SCH-001) |
+| HAAC-SCH-004 | This schedule was changed somewhere else. Reload it and try again. | RETRY | The schedule changed since the app loaded it (HAB-SCH-004) |
+| HAAC-SCH-005 | You have reached the limit of schedules. Delete one first. | NONE | 50 schedules per user reached (HAB-SCH-005) |
+| HAAC-SCH-006 | You are not allowed to change this schedule. | NONE | Foreign entity list or schedule of another user (HAB-SCH-006) |
+| HAAC-SCH-007 | The last run could not switch every device. | NONE | Last run result partial or failed (HAB-SCH-002 in last_run); shown in the detail screen only |
 | HAAC-APP-000 | Something went wrong. | NONE | Exception without an error code reached ErrorFactory |

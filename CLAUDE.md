@@ -49,7 +49,7 @@ docs/
   error-codes.md       # GENERATED: every error code (concept 17.3)
 app/src/main/res/      # launcher icons (adaptive + legacy mipmaps, Salbei design); only replace them on an explicit request for a new icon
 app/  core/common/  core/error/  core/security/  core/network/  core/database/
-feature/onboarding/  feature/instance/  feature/layout/  feature/entities/  feature/notifications/  feature/settings/
+feature/onboarding/  feature/instance/  feature/layout/  feature/entities/  feature/notifications/  feature/schedules/  feature/settings/
 gradle/libs.versions.toml   # all versions; modules never declare versions themselves
 build-logic/           # convention plugins (haac.android.application/library/compose/feature, haac.hilt) and the code index generator (haac.code-index)
 config/detekt/detekt.yml
