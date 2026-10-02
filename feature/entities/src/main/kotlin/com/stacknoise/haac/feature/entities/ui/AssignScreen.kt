@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
@@ -48,7 +49,7 @@ fun AssignScreen(onClose: () -> Unit, viewModel: AssignViewModel = hiltViewModel
         IconButton(onClick = onClose, modifier = Modifier.padding(top = 8.dp)) {
             Icon(painterResource(R.drawable.ic_entities_back), stringResource(R.string.add_back))
         }
-        Text(stringResource(R.string.assign_title), style = MaterialTheme.typography.headlineLarge)
+        HaacScreenTitle(stringResource(R.string.assign_title))
         Text(
             state.entries.joinToString(", ") { it.tile.name }.ifEmpty { stringResource(R.string.assign_gone) },
             style = MaterialTheme.typography.bodyMedium,

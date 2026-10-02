@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacEmptyState
+import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
@@ -113,7 +114,7 @@ private fun PickerHeader(editing: Boolean, onBack: () -> Unit) {
                 stringResource(if (editing) R.string.schedules_edit_eyebrow else R.string.schedules_new_eyebrow),
                 style = SectionLabelStyle,
             )
-            Text(stringResource(R.string.schedules_pick_title), style = MaterialTheme.typography.headlineLarge)
+            HaacScreenTitle(stringResource(R.string.schedules_pick_title))
         }
     }
 }

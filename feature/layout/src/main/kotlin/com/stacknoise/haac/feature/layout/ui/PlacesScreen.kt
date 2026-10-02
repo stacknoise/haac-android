@@ -53,6 +53,7 @@ import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.PlaceIcon
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacEmptyState
+import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
@@ -143,9 +144,8 @@ fun PlacesContent(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item {
-            Text(
+            HaacScreenTitle(
                 stringResource(R.string.places_title),
-                style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.padding(start = 20.dp, top = 24.dp),
             )
         }

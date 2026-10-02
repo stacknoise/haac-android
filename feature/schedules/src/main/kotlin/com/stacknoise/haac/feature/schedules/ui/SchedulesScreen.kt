@@ -33,6 +33,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacEmptyState
+import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.core.common.ui.theme.haacFilterChipBorder
@@ -85,9 +86,8 @@ fun SchedulesContent(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            Text(
+            HaacScreenTitle(
                 stringResource(R.string.schedules_title),
-                style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.padding(top = 24.dp),
             )
         }

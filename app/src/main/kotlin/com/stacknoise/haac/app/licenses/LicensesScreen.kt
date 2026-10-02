@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.stacknoise.haac.R
+import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
 
 /** *Settings → About → Open-source licenses*: the libraries bundled in the app with their licenses (concept 16.2). */
 @Composable
@@ -31,9 +32,8 @@ fun LicensesScreen(onBack: () -> Unit) {
         Row(modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)) {
             TextButton(onClick = onBack) { Text(stringResource(R.string.licenses_back)) }
         }
-        Text(
+        HaacScreenTitle(
             stringResource(R.string.licenses_title),
-            style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
         )
         LibrariesContainer(libraries, Modifier.fillMaxSize())
