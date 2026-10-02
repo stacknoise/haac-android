@@ -60,6 +60,7 @@ fun HaacCheckbox(
             .border(1.5.dp, border, HaacShapes.Checkbox),
     ) {
         if (checked) {
+            val tickColor = HaacColors.OnAccent
             Canvas(Modifier.size(14.dp)) {
                 val tick = Path().apply {
                     moveTo(size.width * 0.08f, size.height * 0.52f)
@@ -67,7 +68,7 @@ fun HaacCheckbox(
                     lineTo(size.width * 0.92f, size.height * 0.2f)
                 }
                 val stroke = Stroke(2.2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-                drawPath(tick, HaacColors.OnAccent, style = stroke)
+                drawPath(tick, tickColor, style = stroke)
             }
         }
     }

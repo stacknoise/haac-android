@@ -10,12 +10,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.feature.entities.domain.HistoryChart
 import com.stacknoise.haac.feature.entities.domain.LineSeries
 import com.stacknoise.haac.feature.entities.domain.degrees
@@ -42,11 +44,12 @@ internal fun LineChart(chart: HistoryChart.Line) {
             style = MaterialTheme.typography.bodyMedium,
             maxLines = 1,
         )
+        val ring = HaacColors.Background
         ChartCanvas(chart.start, chart.end, axis, selected, onSelect = { selected = it }) { area ->
             drawPhases(chart, area)
             drawBand(chart, area)
             chart.series.forEach { drawSeries(it, area) }
-            selected?.let { at -> drawSelectedPoints(chart.series, at, area) }
+            selected?.let { at -> drawSelectedPoints(chart.series, at, area, ring) }
         }
         LineLegend(chart)
     }
@@ -116,11 +119,11 @@ private fun DrawScope.drawSeries(series: LineSeries, area: PlotArea) {
 }
 
 /** A dot (8 dp, with a ring in the background colour) on every line at the selected time. */
-private fun DrawScope.drawSelectedPoints(series: List<LineSeries>, at: Long, area: PlotArea) {
+private fun DrawScope.drawSelectedPoints(series: List<LineSeries>, at: Long, area: PlotArea, ring: Color) {
     series.forEach { line ->
         val value = line.valueAt(at) ?: return@forEach
         val center = Offset(area.x(at), area.y(value))
-        drawCircle(ChartColors.Ring, radius = 5.dp.toPx(), center = center)
+        drawCircle(ring, radius = 5.dp.toPx(), center = center)
         drawCircle(seriesColor(line.kind), radius = 4.dp.toPx(), center = center)
     }
 }

@@ -6,18 +6,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 
 /**
- * The app theme: light "Salbei" colors, Figtree and the corner radii of the design handoff.
+ * The app theme: the colors of [palette] (light "Salbei" by default), Figtree and the corner radii of the design
+ * handoff.
  *
  * Text without an explicit colour uses `onBackground`, so screens not wrapped in a Surface still get the
- * dark-green text colour instead of Compose's default black.
+ * theme's text colour instead of Compose's default black.
  */
 @Composable
-fun HaacTheme(content: @Composable () -> Unit) {
+fun HaacTheme(palette: HaacPalette = LightHaacPalette, content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = HaacColorScheme,
+        colorScheme = haacColorScheme(palette),
         typography = HaacTypography,
         shapes = HaacMaterialShapes,
     ) {
-        CompositionLocalProvider(LocalContentColor provides HaacColors.OnSurface, content = content)
+        CompositionLocalProvider(
+            LocalHaacPalette provides palette,
+            LocalContentColor provides palette.onSurface,
+            content = content,
+        )
     }
 }

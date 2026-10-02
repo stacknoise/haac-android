@@ -245,7 +245,7 @@ internal fun AddEntitiesTile(onClick: () -> Unit) {
             .heightIn(min = 60.dp)
             .clip(HaacShapes.Card)
             .clickable(onClick = onClick)
-            .dashedBorder(),
+            .dashedBorder(HaacColors.AccentBorder),
     ) {
         GlyphIcon(R.drawable.ic_schedules_add, HaacColors.Accent, 22.dp)
         Text(
@@ -257,10 +257,10 @@ internal fun AddEntitiesTile(onClick: () -> Unit) {
     }
 }
 
-/** A 1.5 dp dashed accent outline with card corners. */
-private fun Modifier.dashedBorder(): Modifier = drawBehind {
+/** A 1.5 dp dashed outline in [color] with card corners. */
+private fun Modifier.dashedBorder(color: Color): Modifier = drawBehind {
     val stroke = Stroke(width = 1.5.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(Dash, Dash)))
-    drawRoundRect(HaacColors.AccentBorder, cornerRadius = CornerRadius(CardRadius.dp.toPx()), style = stroke)
+    drawRoundRect(color, cornerRadius = CornerRadius(CardRadius.dp.toPx()), style = stroke)
 }
 
 /** Length of a dash and of a gap, in pixels, and the card corner radius in dp. */
