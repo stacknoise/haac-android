@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fingerprint prompt (concept 5.4); the subtitle is the instance name. -->
+    <string name="fingerprint_prompt_unlock">HAAC entsperren</string>
+    <string name="fingerprint_prompt_enable">Entsperren per Fingerabdruck einschalten</string>
+    <string name="fingerprint_prompt_disable">Entsperren per Fingerabdruck ausschalten</string>
+    <string name="fingerprint_prompt_change_window">Entsperrzeitraum ändern</string>
+    <string name="fingerprint_use_password">Passwort verwenden</string>
+    <string name="fingerprint_cancel">Abbrechen</string>
+</resources>

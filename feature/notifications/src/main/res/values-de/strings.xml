@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notifications_title">Benachrichtigungen</string>
+    <string name="notifications_back">Zurück</string>
+    <string name="notifications_mark_all_read">Alle als gelesen markieren</string>
+    <string name="notifications_today">Heute</string>
+    <string name="notifications_yesterday">Gestern</string>
+    <string name="notifications_empty">Noch keine Benachrichtigungen.</string>
+    <string name="notifications_unread">Ungelesen</string>
+    <plurals name="notifications_added">
+        <item quantity="one">Neue Entität freigegeben</item>
+        <item quantity="other">%1$d neue Entitäten freigegeben</item>
+    </plurals>
+    <plurals name="notifications_removed">
+        <item quantity="one">Entität in HA entfernt</item>
+        <item quantity="other">%1$d Entitäten in HA entfernt</item>
+    </plurals>
+    <plurals name="notifications_removed_text">
+        <item quantity="one">%1$s ist nicht mehr freigegeben. Die Kachel bleibt inaktiv, bis du sie entfernst.</item>
+        <item quantity="other">%1$s sind nicht mehr freigegeben. Ihre Kacheln bleiben inaktiv, bis du sie entfernst.</item>
+    </plurals>
+    <plurals name="notifications_schedule_removed">
+        <item quantity="one">Zeitplan auf dem Server entfernt</item>
+        <item quantity="other">%1$d Zeitpläne auf dem Server entfernt</item>
+    </plurals>
+    <plurals name="notifications_schedule_removed_text">
+        <item quantity="one">%1$s gibt es auf dem Server nicht mehr.</item>
+        <item quantity="other">%1$s gibt es auf dem Server nicht mehr.</item>
+    </plurals>
+    <string name="notifications_schedule_paused">Zeitplan pausiert</string>
+    <string name="notifications_schedule_paused_text">%1$s wurde pausiert: %2$s.</string>
+    <string name="notifications_pause_owner_inactive">dein Konto ist inaktiv</string>
+    <string name="notifications_pause_no_entities">keines der Geräte ist mehr für dich freigegeben</string>
+    <string name="notifications_pause_sun_unavailable">die Sonnenposition ist nicht verfügbar</string>
+    <string name="notifications_pause_other">der Server hat ihn pausiert</string>
+    <string name="notifications_times">×%1$d</string>
+    <string name="notifications_delete">Löschen</string>
+    <string name="notifications_cancel">Abbrechen</string>
+    <plurals name="notifications_deleted">
+        <item quantity="one">Benachrichtigung gelöscht</item>
+        <item quantity="other">%1$d Benachrichtigungen gelöscht</item>
+    </plurals>
+    <string name="notifications_undo">Rückgängig</string>
+    <string name="notifications_delete_all">Alle Benachrichtigungen löschen</string>
+    <string name="notifications_delete_all_title">Alle Benachrichtigungen löschen?</string>
+    <string name="notifications_delete_all_text">Dadurch wird jeder Eintrag dieser Instanz aus der Liste entfernt. Räume und Kacheln bleiben unverändert.</string>
+    <string name="notifications_dismiss">Verwerfen</string>
+    <string name="notifications_keep">Behalten</string>
+    <string name="notifications_add_to_room">Zu Raum hinzufügen</string>
+    <plurals name="notifications_review">
+        <item quantity="one">%1$d Entität prüfen</item>
+        <item quantity="other">%1$d Entitäten prüfen</item>
+    </plurals>
+    <plurals name="notifications_remove_tiles">
+        <item quantity="one">Kachel entfernen</item>
+        <item quantity="other">Kacheln entfernen</item>
+    </plurals>
+    <string name="notifications_detail_code">Code</string>
+    <string name="notifications_detail_time">Zeit</string>
+    <string name="notifications_detail_instance">Instanz</string>
+    <string name="notifications_detail_description">Details</string>
+    <string name="notifications_detail_bridge_code">Bridge-Code</string>
+    <string name="notifications_detail_copy">Details kopieren</string>
+</resources>

@@ -27,6 +27,8 @@
     <string name="schedules_not_found">This schedule no longer exists.</string>
     <string name="schedules_sunrise">Sunrise</string>
     <string name="schedules_sunset">Sunset</string>
+    <string name="schedules_sunrise_inline">sunrise</string>
+    <string name="schedules_sunset_inline">sunset</string>
     <string name="schedules_sun_at">At %1$s</string>
     <string name="schedules_sun_before">%1$d min before %2$s</string>
     <string name="schedules_sun_after">%1$d min after %2$s</string>

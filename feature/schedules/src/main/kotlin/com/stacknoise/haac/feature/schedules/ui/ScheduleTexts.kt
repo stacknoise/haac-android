@@ -53,7 +53,9 @@ internal fun sunName(type: WhenType): String = stringResource(
 /** The offset of a sun event in words: "At sunrise", "30 min after sunset". */
 @Composable
 internal fun offsetText(type: WhenType, offsetMin: Int): String {
-    val sun = sunName(type).lowercase()
+    val sun = stringResource(
+        if (type == WhenType.SUNSET) R.string.schedules_sunset_inline else R.string.schedules_sunrise_inline,
+    )
     return when {
         offsetMin == 0 -> stringResource(R.string.schedules_sun_at, sun)
         offsetMin < 0 -> stringResource(R.string.schedules_sun_before, -offsetMin, sun)

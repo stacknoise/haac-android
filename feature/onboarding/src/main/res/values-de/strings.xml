@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="onboarding_hello">Hallo.</string>
+    <string name="onboarding_intro">Wähle deinen Home-Assistant-Server und melde dich mit deinem Benutzer an.</string>
+    <string name="onboarding_on_this_network">In diesem Netzwerk</string>
+    <string name="onboarding_scanning">Suche läuft</string>
+    <string name="onboarding_scan_again">Erneut suchen</string>
+    <string name="onboarding_nothing_found">Noch kein Server gefunden. Du kannst stattdessen seine Adresse eingeben.</string>
+    <string name="onboarding_other_address">Andere Adresse …</string>
+    <string name="onboarding_address_label">Serveradresse</string>
+    <string name="onboarding_address_hint">https://ha.example.com</string>
+    <string name="onboarding_sign_in_again">Erneut anmelden</string>
+    <string name="onboarding_username">Benutzername</string>
+    <string name="onboarding_password">Passwort</string>
+    <string name="onboarding_sign_in">Anmelden</string>
+    <string name="onboarding_code_title">Bestätigung</string>
+    <string name="onboarding_code_text">Gib den Code aus deiner Authenticator-App ein.</string>
+    <string name="onboarding_code_hint">Code</string>
+    <string name="onboarding_verify">Bestätigen</string>
+    <string name="onboarding_bridge_text">Deine Anmeldung hat funktioniert, aber die Integration HAAC Bridge fehlt auf diesem Server oder ist veraltet. Bitte den Home-Assistant-Administrator, sie über HACS zu installieren oder zu aktualisieren und Entitäten für deinen Benutzer freizugeben. Versuche es danach erneut.</string>
+    <string name="onboarding_try_again">Erneut versuchen</string>
+    <string name="onboarding_start_over">Neu beginnen</string>
+    <string name="onboarding_cleartext_title">Unverschlüsselte Verbindung</string>
+    <string name="onboarding_cleartext_text">%1$s verwendet kein https. Jeder in deinem Netzwerk könnte mitlesen, was die App sendet, auch dein Passwort. Fahre nur fort, wenn das dein eigenes Heimnetz ist.</string>
+    <string name="onboarding_cleartext_confirm">Trotzdem fortfahren</string>
+    <string name="onboarding_cleartext_cancel">Abbrechen</string>
+    <string name="onboarding_selected">Ausgewählt</string>
+    <string name="onboarding_address_offer_title">Server bereits hinzugefügt</string>
+    <string name="onboarding_address_offer_text">Dieser Server gehört zu %1$s, und du bist mit demselben Benutzer angemeldet. Diese Adresse als weitere Adresse (%2$s) hinzufügen?</string>
+    <string name="onboarding_address_offer_replaces">Sie ersetzt %1$s.</string>
+    <string name="onboarding_address_offer_confirm">Adresse hinzufügen</string>
+    <string name="onboarding_fingerprint_title">Mit Fingerabdruck entsperren?</string>
+    <string name="onboarding_fingerprint_text">HAAC fragt dann beim Öffnen nach deinem Fingerabdruck. Du kannst das später in den Einstellungen ändern.</string>
+    <string name="onboarding_fingerprint_enable">Fingerabdruck verwenden</string>
+    <string name="onboarding_fingerprint_skip">Jetzt nicht</string>
+    <string name="onboarding_slot_internal">Heimnetz</string>
+    <string name="onboarding_slot_external">extern</string>
+</resources>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_instance">Instanz</string>
+    <string name="settings_signed_in_as">Angemeldet als %1$s</string>
+    <string name="settings_sign_out">Abmelden</string>
+    <string name="settings_security">Sicherheit</string>
+    <string name="settings_fingerprint">Entsperren per Fingerabdruck</string>
+    <string name="settings_fingerprint_hint">Beim Öffnen der App nach dem Fingerabdruck fragen.</string>
+    <string name="settings_fingerprint_unavailable">Richte dafür in den Systemeinstellungen einen Fingerabdruck ein.</string>
+    <string name="settings_unlock_window">Entsperrzeitraum</string>
+    <string name="settings_unlock_window_hint">Nach einem Fingerabdruck öffnen sich andere Instanzen für diese Zeit ohne erneute Abfrage.</string>
+    <string name="settings_lock_timeout">Sperren nach</string>
+    <string name="settings_lock_timeout_hint">Zeit im Hintergrund, bevor die App erneut nach deinem Fingerabdruck fragt.</string>
+    <string name="settings_off">Aus</string>
+    <string name="settings_immediately">Sofort</string>
+    <string name="settings_minutes">%1$d Min.</string>
+    <string name="settings_addresses">Adressen</string>
+    <string name="settings_address_internal">Heimnetz</string>
+    <string name="settings_address_external">Extern</string>
+    <string name="settings_address_not_set">Nicht festgelegt</string>
+    <string name="settings_address_certificate">Zertifikat</string>
+    <string name="settings_address_edit">Bearbeiten</string>
+    <string name="settings_address_remove">Entfernen</string>
+    <string name="settings_address_placeholder">https://ha.example.com</string>
+    <string name="settings_always_internal">Immer die Heimnetz-Adresse verwenden</string>
+    <string name="settings_always_internal_hint">Eine unverschlüsselte Heimnetz-Adresse wird normalerweise nur verwendet, wenn die App diesen Server in deinem Netzwerk findet. Schalte das ein, wenn das nicht funktioniert. Die App sendet deine Anmeldung dann an jedes Gerät, das unter dieser Adresse antwortet, auch in anderen Netzwerken.</string>
+    <string name="settings_use_ha_addresses">Adressen aus Home Assistant verwenden</string>
+    <string name="settings_save">Speichern</string>
+    <string name="settings_cancel">Abbrechen</string>
+    <string name="settings_about">Über</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_license">HAAC ist Open Source unter der Apache License 2.0.</string>
+    <string name="about_open_licenses">Open-Source-Lizenzen</string>
+    <string name="settings_diagnostics">Diagnose</string>
+    <string name="diagnostics_connection">Verbindung</string>
+    <string name="diagnostics_last_sync">Letzte Synchronisierung</string>
+    <string name="diagnostics_ha_version">Home Assistant</string>
+    <string name="diagnostics_bridge_api">Bridge-API</string>
+    <string name="diagnostics_revision">Freigabe-Revision</string>
+    <string name="diagnostics_connected">Verbunden</string>
+    <string name="diagnostics_connecting">Verbinde …</string>
+    <string name="diagnostics_reconnecting">Verbinde erneut …</string>
+    <string name="diagnostics_failed">Nicht verbunden</string>
+    <string name="diagnostics_idle">Nicht verbunden</string>
+</resources>
