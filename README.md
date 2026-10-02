@@ -10,7 +10,7 @@ The official Home Assistant Companion App shows everything the signed-in user ca
 
 This limits what the app shows and controls. It is not a Home Assistant permission: someone holding a user's access token can still use Home Assistant's standard API directly. Use a dedicated non-admin user per person (see the [bridge README](https://github.com/stacknoise/haac-bridge#security-note)).
 
-**Status:** feature complete for v1, not released yet (no Google Play or release build so far).
+**Status:** version 0.2.0, available as a signed sideload APK on GitHub Releases (not on Google Play yet). Feature complete for v1, plus schedules.
 
 - Supported entity domains in v1: switch, sensor, climate.
 - Android 9 (API 28) or newer.
@@ -69,7 +69,7 @@ This limits what the app shows and controls. It is not a Home Assistant permissi
 - Schedules run **on the Home Assistant server** (in HAAC Bridge), so they work with the app closed or the phone off. The app is only the editor and keeps a read-only copy; creating and editing need a connection.
 - A *Schedules* tab (shown only if the bridge supports schedules) with a *Next up* banner, an on/off switch per schedule, a detail screen with the next runs and the last run, and an editor with weekday presets and a *Run at* sheet.
 - Home Assistant administrators also see all schedules (filter *All* / *Mine*) and can change or delete a foreign schedule, but only its owner changes its entities.
-- Needs HAAC Bridge 0.2.1 or newer.
+- Needs HAAC Bridge 0.2.1 or newer (0.2.2 or newer also puts the owner into the names of the schedule entities in Home Assistant).
 
 **History and detail**
 - Detail screen with state, readings, names, times and attributes.
