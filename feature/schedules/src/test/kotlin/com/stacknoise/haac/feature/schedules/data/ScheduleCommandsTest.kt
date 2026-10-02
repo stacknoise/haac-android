@@ -1,6 +1,5 @@
 package com.stacknoise.haac.feature.schedules.data
 
-import com.stacknoise.haac.core.database.schedule.ScheduleDao
 import com.stacknoise.haac.core.database.schedule.ScheduleEntity
 import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
@@ -49,21 +48,7 @@ class ScheduleCommandsTest {
         override val connection: StateFlow<BridgeChannel?> = this@ScheduleCommandsTest.connection
     }
 
-    private val dao = object : ScheduleDao {
-        override suspend fun all(serverId: String) = cache.values.toList()
-
-        override fun observe(serverId: String): Flow<List<ScheduleEntity>> = error("not used")
-
-        override fun observe(serverId: String, scheduleId: String): Flow<ScheduleEntity?> = error("not used")
-
-        override suspend fun upsert(rows: List<ScheduleEntity>) {
-            rows.forEach { cache[it.scheduleId] = it }
-        }
-
-        override suspend fun delete(serverId: String, scheduleIds: List<String>) {
-            scheduleIds.forEach(cache::remove)
-        }
-    }
+    private val dao = FakeScheduleDao(cache)
 
     private val commands = ScheduleCommands(live, dao, json, DefaultErrorFactory())
 
