@@ -234,7 +234,7 @@ NET_UNREACHABLE(
 - Releasing:
   1. Raise `appVersion` in its own pull request (`chore(release): bump the version to X.Y.Z`) and merge it. Update the status line of the README.
   2. Check `main` once more, then tag the merge commit: `git tag -a vX.Y.Z <sha> -m vX.Y.Z` and `git push origin vX.Y.Z`.
-  3. `release.yml` builds `assembleSideloadRelease`, verifies the signature with `apksigner` and attaches `haac-vX.Y.Z-sideload.apk` and its `.sha256` to the GitHub Release.
+  3. `release.yml` builds `assembleSideloadRelease`, verifies the signature with `apksigner` and attaches `haac-vX.Y.Z-sideload.apk` and its `.sha256` to the GitHub Release. It also builds the Play bundle (`bundlePlayRelease`), verifies its signature and keeps `haac-vX.Y.Z-play.aab` as a workflow artifact for 30 days (Actions run → Artifacts); the upload to Google Play is done by hand in the Play Console.
 - Tags `v*` are protected (no deleting, moving or overwriting). A wrong tag cannot be corrected, so check the version first.
 - Signing: the keystore and passwords exist only as secrets of the GitHub environment `release` (`HAAC_KEYSTORE_BASE64`, `HAAC_KEYSTORE_PASSWORD`, `HAAC_KEY_ALIAS`, `HAAC_KEY_PASSWORD`); the build reads them from environment variables. Never commit a keystore or `*.jks`.
 - A breaking change of a `haac_bridge/*` command raises the bridge `api_version`; the app declares the range it supports.
