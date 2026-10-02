@@ -76,6 +76,7 @@ fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hi
         actions = OnboardingActions(
             onServerSelected = viewModel::onServerSelected,
             onOtherAddress = viewModel::onOtherAddress,
+            onTryDemo = viewModel::onTryDemo,
             onRescan = viewModel::onRescan,
             onManualUrlChanged = viewModel::onManualUrlChanged,
             onUsernameChanged = viewModel::onUsernameChanged,

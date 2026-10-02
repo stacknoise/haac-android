@@ -43,6 +43,8 @@ HAAC lets you control the Home Assistant devices that your administrator shared 
 
 Home Assistant has no per-entity permissions for users, so the official Companion App shows everything a signed-in user can reach. HAAC works differently: the administrator decides, user by user, which switches, sensors and climate devices the app may show and control. A user who is not configured sees nothing. This needs the free integration HAAC Bridge on your Home Assistant server (installed through HACS, https://github.com/stacknoise/haac-bridge).
 
+No server at hand? Tap "Try the demo" on the first screen to look around with sample data.
+
 Your home, your way
 • Build your own homes, levels and rooms on the phone and place the shared devices in as many rooms as you like.
 • Tiles in three sizes, edit mode with drag and drop, local names that never change Home Assistant.
@@ -86,6 +88,8 @@ Mit HAAC steuerst du die Home-Assistant-Geräte, die dir dein Administrator frei
 
 Home Assistant kennt keine Rechte pro Entität für Benutzer, deshalb zeigt die offizielle Companion App alles, was ein angemeldeter Benutzer erreichen kann. HAAC arbeitet anders: Der Administrator legt Benutzer für Benutzer fest, welche Schalter, Sensoren und Klimageräte die App anzeigen und steuern darf. Ein nicht eingerichteter Benutzer sieht nichts. Dafür braucht dein Home-Assistant-Server die kostenlose Integration HAAC Bridge (Installation über HACS, https://github.com/stacknoise/haac-bridge).
 
+Gerade kein Server zur Hand? Tippe auf dem ersten Bildschirm auf „Demo ausprobieren“ und sieh dich mit Beispieldaten um.
+
 Dein Zuhause, auf deine Art
 • Baue deine eigenen Orte, Ebenen und Räume auf dem Telefon und platziere die freigegebenen Geräte in beliebig vielen Räumen.
 • Kacheln in drei Größen, Bearbeitungsmodus mit Drag-and-drop, lokale Namen, die Home Assistant nie verändern.
@@ -124,7 +128,7 @@ HAAC steht in keiner Verbindung zu Home Assistant, der Open Home Foundation oder
 
 ## 4. Declarations
 
-**App access (the app needs a sign-in).** Reviewers cannot use the app without a Home Assistant server that has HAAC Bridge installed and a configured user. Choose "All or some functionality is restricted" and give the reviewers working access: the address of a reachable demo Home Assistant instance with HAAC Bridge, a demo user name and password, and a short instruction (enter the address, sign in, open *Places*, import from Home Assistant). A demo instance must stay online while the review runs. A screen recording of the main flows can be added. Without access the app is likely to be rejected.
+**App access.** Reviewers need no account and no server: the app has a built-in demo (version 0.3.0 and newer). Choose "All or some functionality is restricted" and give this instruction: "No sign-in is needed. Open the app and tap *Try the demo* on the first screen. The demo works without a network and contains sample data: open *Places* and import the levels and rooms from Home Assistant, open a room and add entities to it, tap a tile to switch it, open a tile for its detail and history, and open *Schedules*. To leave the demo, open *Settings*, remove the instance *Demo* and the first screen returns." The production release must contain a build with the demo, so the internal test of 0.3.0 comes first.
 
 **Permissions** (merged manifest; none of them needs a special declaration form):
 

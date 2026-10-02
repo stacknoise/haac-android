@@ -14,8 +14,9 @@ import com.stacknoise.haac.core.network.server.CleartextPolicy
 import com.stacknoise.haac.core.network.server.ServerUrlNormalizer
 import com.stacknoise.haac.core.network.tls.CertificateProbe
 import com.stacknoise.haac.core.network.tls.PinRegistry
-import com.stacknoise.haac.feature.onboarding.domain.KnownServer
+import com.stacknoise.haac.feature.onboarding.domain.DemoEntry
 import com.stacknoise.haac.feature.onboarding.domain.FingerprintStep
+import com.stacknoise.haac.feature.onboarding.domain.KnownServer
 import com.stacknoise.haac.feature.onboarding.domain.ServerValidator
 import com.stacknoise.haac.feature.onboarding.domain.SignInRepository
 import com.stacknoise.haac.feature.onboarding.domain.SignInResult
@@ -62,6 +63,7 @@ data class OnboardingUiState(
     val certificateOffer: CertificateOffer? = null,
     val fingerprintOffer: FingerprintOffer? = null,
     val signedInServerId: String? = null,
+    val demoAvailable: Boolean = false,
 )
 
 /** The instance [serverId] (called [name]) is stored; the user may now turn on fingerprint unlock (concept 4.4). */
@@ -83,6 +85,7 @@ class OnboardingViewModel @Inject constructor(
     private val probe: CertificateProbe,
     private val pins: PinRegistry,
     private val fingerprint: FingerprintStep,
+    private val demo: DemoEntry,
     savedState: SavedStateHandle,
 ) : ViewModel() {
     private val _state = MutableStateFlow(OnboardingUiState())
@@ -98,7 +101,33 @@ class OnboardingViewModel @Inject constructor(
 
     init {
         val serverId = savedState.get<String>(SERVER_ID_ARG)
-        if (serverId == null) discover() else loadKnownServer(serverId)
+        if (serverId == null) {
+            discover()
+            offerDemo()
+        } else {
+            loadKnownServer(serverId)
+        }
+    }
+
+    /** *Try the demo* is shown while no demo instance exists (concept 20.4); an error here only hides it. */
+    private fun offerDemo() {
+        viewModelScope.launch {
+            val available = try {
+                demo.available()
+            } catch (_: HaacException) {
+                false
+            }
+            _state.update { it.copy(demoAvailable = available) }
+        }
+    }
+
+    /** *Try the demo*: creates the demo instance and opens it; there is no login and no fingerprint offer. */
+    fun onTryDemo() {
+        if (_state.value.busy) return
+        perform {
+            val id = demo.start()
+            _state.update { it.copy(busy = false, signedInServerId = id) }
+        }
     }
 
     /**

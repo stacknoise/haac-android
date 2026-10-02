@@ -7,6 +7,7 @@ import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.error.ErrorAction
 import com.stacknoise.haac.core.network.connection.ConnectionState
 import com.stacknoise.haac.core.network.connection.ConnectionSupervisor
+import com.stacknoise.haac.core.network.demo.DemoInstance
 import com.stacknoise.haac.feature.entities.data.EntitySync
 import com.stacknoise.haac.feature.schedules.data.ScheduleAvailability
 import com.stacknoise.haac.feature.schedules.data.ScheduleSync
@@ -50,6 +51,10 @@ class ConnectionViewModel @Inject constructor(
     val schedulesShown: StateFlow<Boolean> = serverId.flatMapLatest { id ->
         id?.let { availability.shown(it) } ?: flowOf(false)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    /** True while the active instance is the demo, which shows its banner on Rooms and Schedules (concept 20.4). */
+    val isDemo: StateFlow<Boolean> = serverId.map { it != null && DemoInstance.isDemo(it) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     /** The connection state for the banner. */
     val state: StateFlow<ConnectionState> = supervisor.state

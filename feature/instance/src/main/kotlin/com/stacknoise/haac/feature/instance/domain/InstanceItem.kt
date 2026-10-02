@@ -1,6 +1,7 @@
 package com.stacknoise.haac.feature.instance.domain
 
 import com.stacknoise.haac.core.database.server.ServerEntity
+import com.stacknoise.haac.core.network.demo.DemoInstance
 import java.net.URI
 
 /**
@@ -31,8 +32,8 @@ fun List<ServerEntity>.toItems(activeId: String?): List<InstanceItem> {
     }
 }
 
-/** The host of the external address, else of the internal one (empty if the stored text is no address). */
+/** The host of the external address, else of the internal one; empty for the demo or if the text is no address. */
 private fun ServerEntity.hostLabel(): String {
-    val url = externalUrl ?: internalUrl ?: return ""
-    return runCatching { URI(url).host }.getOrNull().orEmpty()
+    val url = externalUrl ?: internalUrl
+    return if (url == null || DemoInstance.isDemo(id)) "" else runCatching { URI(url).host }.getOrNull().orEmpty()
 }

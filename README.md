@@ -10,7 +10,7 @@ The official Home Assistant Companion App shows everything the signed-in user ca
 
 This limits what the app shows and controls. It is not a Home Assistant permission: someone holding a user's access token can still use Home Assistant's standard API directly. Use a dedicated non-admin user per person (see the [bridge README](https://github.com/stacknoise/haac-bridge#security-note)).
 
-**Status:** version 0.2.2, available as a signed sideload APK on GitHub Releases (not on Google Play yet). Feature complete for v1, plus schedules and a dark design.
+**Status:** version 0.3.0, available as a signed sideload APK on GitHub Releases (not on Google Play yet). Feature complete for v1, plus schedules, a dark design and a demo mode.
 
 - Supported entity domains in v1: switch, sensor, climate.
 - Android 9 (API 28) or newer.
@@ -37,6 +37,7 @@ The screenshots show the German interface; the app follows the system language.
 ## Features
 
 **Sign-in and instances**
+- *Try the demo* on the first screen opens a built-in demo instance with sample data (switches, sensors, a thermostat, rooms, a schedule and history), without a server, a network or a login. It is marked by a banner and removed like any instance.
 - Sign in with your Home Assistant account, including multi-factor codes.
 - Finds Home Assistant servers on your network (mDNS), or enter the address by hand; checks that HAAC Bridge is installed and recent enough.
 - An internal (home network) and an external address per instance, chosen automatically. The internal `http://` address is used only after the app has confirmed the home network.

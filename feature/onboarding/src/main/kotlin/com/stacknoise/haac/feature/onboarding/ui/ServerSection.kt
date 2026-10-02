@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,6 +34,7 @@ import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
+import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
 import com.stacknoise.haac.feature.onboarding.R
 
 /** The stored instance when signing in again, otherwise discovered servers and *Other address…* (M-01). */
@@ -47,6 +49,22 @@ internal fun ServerSection(state: OnboardingUiState, actions: OnboardingActions)
     SectionHeader(scanning = state.scanning, onRescan = actions.onRescan)
     ServerList(state, actions)
     ManualAddress(state, actions)
+    if (state.demoAvailable) TryDemoButton(busy = state.busy, onClick = actions.onTryDemo)
+}
+
+/** *Try the demo*: a secondary button under *Other address…* for people without a server (concept 20.4). */
+@Composable
+private fun TryDemoButton(busy: Boolean, onClick: () -> Unit) {
+    Spacer(Modifier.height(8.dp))
+    OutlinedButton(
+        onClick = onClick,
+        enabled = !busy,
+        shape = HaacShapes.Button,
+        colors = haacOutlinedButtonColors(),
+        modifier = Modifier.fillMaxWidth().height(52.dp),
+    ) {
+        Text(stringResource(R.string.onboarding_try_demo), style = MaterialTheme.typography.titleMedium)
+    }
 }
 
 /** "ON THIS NETWORK" label with the live scan indicator, or *Scan again* once the scan is over. */

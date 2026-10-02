@@ -17,6 +17,13 @@ object DemoInstance {
     /** Reserved top-level domain `.invalid` never resolves; the instance row only needs some address. */
     const val ADDRESS = "https://demo.haac.invalid/"
 
+    /**
+     * The placeholder token of the demo (concept 20.4): a constant, not a secret. It is stored through the normal
+     * `TokenStore` only so that start routing, the switcher and the settings treat the demo like any instance; it is
+     * never sent anywhere and gives access to nothing.
+     */
+    const val PLACEHOLDER_TOKEN = "demo-placeholder-token"
+
     /** The HA user id that owns the demo schedules. */
     const val USER_ID = "demo-user"
 

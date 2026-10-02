@@ -44,6 +44,7 @@ import com.stacknoise.haac.app.connection.ConnectionBanner
 import com.stacknoise.haac.app.connection.ConnectionViewModel
 import com.stacknoise.haac.app.licenses.LicensesScreen
 import com.stacknoise.haac.app.shortcut.PendingSwitchViewModel
+import com.stacknoise.haac.core.common.ui.DemoBanner
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.error.ErrorAction
 import com.stacknoise.haac.feature.instance.ui.InstanceBar
@@ -95,6 +96,7 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
     val currentRoute = backStack?.destination?.route
     val connectionState by connection.state.collectAsStateWithLifecycle()
     val schedulesShown by connection.schedulesShown.collectAsStateWithLifecycle()
+    val demo by connection.isDemo.collectAsStateWithLifecycle()
     val tabs = TopLevelDestination.entries.filter { it != TopLevelDestination.SCHEDULES || schedulesShown }
     Scaffold(
         topBar = {
@@ -106,6 +108,7 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
                     onRetry = connection::retry,
                     onOpenSettings = { navController.openTopLevel(TopLevelDestination.SETTINGS) },
                 )
+                if (demo && currentRoute in DemoBannerRoutes) DemoBanner()
             }
         },
         bottomBar = {
@@ -200,6 +203,9 @@ private fun RowScope.BottomBarItem(destination: TopLevelDestination, selected: B
         }
     }
 }
+
+/** The tabs that show the banner of the demo instance (concept 20.4). */
+private val DemoBannerRoutes = setOf(TopLevelDestination.ROOMS.route, TopLevelDestination.SCHEDULES.route)
 
 /** Minimum height of a bottom bar item, above the navigation bar inset. */
 private val BarItemHeight = 64.dp

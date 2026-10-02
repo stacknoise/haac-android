@@ -2,6 +2,8 @@ package com.stacknoise.haac.core.network.session
 
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.error.HaacException
+import com.stacknoise.haac.core.network.demo.DemoInstance
+import com.stacknoise.haac.core.network.demo.DemoWorld
 import com.stacknoise.haac.core.network.endpoint.EndpointSelector
 import com.stacknoise.haac.core.security.token.TokenStore
 import javax.inject.Inject
@@ -16,9 +18,18 @@ class InstanceSignOut @Inject constructor(
     private val endpoints: EndpointSelector,
     private val sessions: InstanceSessionFactory,
     private val tokens: TokenStore,
+    private val demo: DemoWorld,
 ) {
-    /** Revokes and deletes the token of [serverId]. */
+    /**
+     * Revokes and deletes the token of [serverId]. The demo (concept 20.4) calls no server: its placeholder token is
+     * deleted and its saved state with it.
+     */
     suspend fun signOut(serverId: String) {
+        if (DemoInstance.isDemo(serverId)) {
+            tokens.delete(serverId)
+            demo.discard()
+            return
+        }
         val url = address(serverId)
         if (url == null) tokens.delete(serverId) else sessions.create(serverId, url).signOut()
     }

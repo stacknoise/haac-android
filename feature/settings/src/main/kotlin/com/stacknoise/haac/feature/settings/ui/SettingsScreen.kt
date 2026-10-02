@@ -34,6 +34,7 @@ import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
+import com.stacknoise.haac.core.network.demo.DemoInstance
 import com.stacknoise.haac.feature.settings.R
 
 /**
@@ -108,8 +109,12 @@ fun SettingsContent(
         Spacer(Modifier.height(32.dp))
         instances()
         Spacer(Modifier.height(32.dp))
-        addresses()
-        Spacer(Modifier.height(32.dp))
+        // The demo has no address to edit and no certificate to trust (concept 20.4).
+        val demo = DemoInstance.isDemo(instance.id)
+        if (!demo) {
+            addresses()
+            Spacer(Modifier.height(32.dp))
+        }
         appearance()
         Spacer(Modifier.height(32.dp))
         SecuritySection(state.security, state.busy, security)
@@ -118,19 +123,26 @@ fun SettingsContent(
         diagnostics()
         Spacer(Modifier.height(32.dp))
         about()
-        Spacer(Modifier.height(32.dp))
-        OutlinedButton(
-            onClick = onSignOut,
-            enabled = !state.busy,
-            shape = HaacShapes.Button,
-            colors = haacOutlinedButtonColors(),
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-        ) {
-            if (state.busy) {
-                CircularProgressIndicator(modifier = Modifier.height(20.dp), strokeWidth = 2.dp)
-            } else {
-                Text(stringResource(R.string.settings_sign_out), style = MaterialTheme.typography.titleMedium)
-            }
+        // The demo is removed in the instance list; signing out would ask for a login it does not have.
+        if (!demo) SignOutButton(state.busy, onSignOut)
+    }
+}
+
+/** *Sign out* of the active instance. */
+@Composable
+private fun SignOutButton(busy: Boolean, onSignOut: () -> Unit) {
+    Spacer(Modifier.height(32.dp))
+    OutlinedButton(
+        onClick = onSignOut,
+        enabled = !busy,
+        shape = HaacShapes.Button,
+        colors = haacOutlinedButtonColors(),
+        modifier = Modifier.fillMaxWidth().height(56.dp),
+    ) {
+        if (busy) {
+            CircularProgressIndicator(modifier = Modifier.height(20.dp), strokeWidth = 2.dp)
+        } else {
+            Text(stringResource(R.string.settings_sign_out), style = MaterialTheme.typography.titleMedium)
         }
     }
 }
