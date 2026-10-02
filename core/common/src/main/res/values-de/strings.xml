@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="certificate_title_new">Diesem Zertifikat vertrauen?</string>
+    <string name="certificate_title_changed">Das Zertifikat hat sich geändert</string>
+    <string name="certificate_title_pinned">Angeheftetes Zertifikat</string>
+    <string name="certificate_text_new">Dein Gerät kennt das Zertifikat von %1$s nicht. Vergleiche den Fingerabdruck mit dem, den dein Server oder dein Browser anzeigt, und vertraue ihm nur, wenn beide übereinstimmen. Danach akzeptiert die App für %1$s nur noch diesen Server-Schlüssel.</string>
+    <string name="certificate_text_changed">Das Zertifikat von %1$s weicht von dem ab, dem du zuvor vertraut hast. Das passiert, wenn du es mit einem neuen Schlüssel erneuerst, aber auch, wenn jemand anderes unter dieser Adresse antwortet. Vertraue ihm nur, wenn du weißt, warum es sich geändert hat.</string>
+    <string name="certificate_text_pinned">Die App akzeptiert für %1$s nur diesen Server-Schlüssel.</string>
+    <string name="certificate_fingerprint">SHA-256-Fingerabdruck</string>
+    <string name="certificate_subject">Ausgestellt für</string>
+    <string name="certificate_expires">Gültig bis</string>
+    <string name="certificate_trust">Vertrauen</string>
+    <string name="certificate_trust_new">Neuem Zertifikat vertrauen</string>
+    <string name="certificate_remove_pin">Anheftung entfernen</string>
+    <string name="certificate_cancel">Abbrechen</string>
+    <string name="certificate_close">Schließen</string>
+    <string name="place_icon_home">Haus</string>
+    <string name="place_icon_building">Gebäude</string>
+    <string name="place_icon_cabin">Hütte</string>
+    <string name="place_icon_living">Wohnzimmer</string>
+    <string name="place_icon_bed">Schlafzimmer</string>
+    <string name="place_icon_kitchen">Küche</string>
+    <string name="place_icon_dining">Esszimmer</string>
+    <string name="place_icon_bath">Badezimmer</string>
+    <string name="place_icon_office">Büro</string>
+    <string name="place_icon_laundry">Waschküche</string>
+    <string name="place_icon_garage">Garage</string>
+    <string name="place_icon_garden">Garten</string>
+    <string name="place_icon_terrace">Terrasse</string>
+    <string name="place_icon_kids">Kinderzimmer</string>
+    <string name="place_icon_stairs">Treppe</string>
+    <string name="place_icon_layers">Ebene</string>
+</resources>

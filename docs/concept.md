@@ -809,7 +809,7 @@ The binding UI reference is mockup set **1c**, in its consolidated form **2a** (
 - **Precedence**: chapters 1–14 define behaviour and data; the mockups define layout, visual style and wording. Where they disagree, the concept text wins; 15.5 lists the known cases.
 - **Files in the repository**: `docs/mockups/haac-mockups-1c.html` (interactive source, open in a browser), `docs/mockups/png/M-0x-*.png` (one PNG per screen, 2× resolution); `docs/screenshots/*.jpg` (screenshots of the built app in the Salbei design, listed under the matching screens in 15.3).
 - **Scale**: the mockups are drawn on a 300 px wide phone frame. Implement with Material 3 components, `dp`/`sp` units and the M3 type scale; do not copy pixel values literally.
-- **Mockup texts** ("anna", "Main house", "Living room") are sample data, not UI strings. UI strings go into `strings.xml` in English (German translation later).
+- **Mockup texts** ("anna", "Main house", "Living room") are sample data, not UI strings. UI strings go into `strings.xml` in English; the German translation lives in `values-de/strings.xml` of every module (informal "du"; places, levels and rooms are *Orte*, *Ebenen* and *Räume*). Every new string needs both files, and lint's `MissingTranslation` check enforces it. Texts that are built from parts must not change case in code (no `lowercase()` on a word that is a noun in German): give the sentence form its own string, as with `schedules_sunrise_inline`. Names that Home Assistant delivers, such as HVAC, fan and preset modes, are shown as Home Assistant sends them.
 - **Terminology**: the UI says *Level*, the code and this concept say *Floor* (`floor` table, `Floor` class). Keep that mapping.
 
 ### 15.2 Design tokens

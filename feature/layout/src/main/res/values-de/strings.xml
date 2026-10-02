@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Places overview (M-02). -->
+    <string name="places_title">Orte</string>
+    <string name="places_filter_all">Alle</string>
+    <string name="places_filter_homes">Zuhause</string>
+    <string name="places_filter_levels">Ebenen</string>
+    <string name="places_filter_rooms">Räume</string>
+    <string name="places_type_home">Zuhause</string>
+    <string name="places_type_level">Ebene</string>
+    <string name="places_type_room">Raum</string>
+    <plurals name="places_levels">
+        <item quantity="one">%1$d Ebene</item>
+        <item quantity="other">%1$d Ebenen</item>
+    </plurals>
+    <plurals name="places_rooms">
+        <item quantity="one">%1$d Raum</item>
+        <item quantity="other">%1$d Räume</item>
+    </plurals>
+    <string name="places_empty">Noch keine Orte. Beginne mit einem Zuhause und füge dann seine Ebenen und Räume hinzu.</string>
+    <string name="places_create">Erstellen</string>
+    <string name="places_close_menu">Menü schließen</string>
+    <string name="places_new_home">Neues Zuhause</string>
+    <string name="places_new_level">Neue Ebene</string>
+    <string name="places_new_room">Neuer Raum</string>
+    <string name="places_deleted">%1$s gelöscht</string>
+    <string name="places_undo">Rückgängig</string>
+
+    <!-- Form for homes, levels and rooms (M-03). -->
+    <string name="editor_title_new_home">Neues Zuhause</string>
+    <string name="editor_title_new_level">Neue Ebene</string>
+    <string name="editor_title_new_room">Neuer Raum</string>
+    <string name="editor_title_edit_home">Zuhause bearbeiten</string>
+    <string name="editor_title_edit_level">Ebene bearbeiten</string>
+    <string name="editor_title_edit_room">Raum bearbeiten</string>
+    <string name="editor_name_hint">Name</string>
+    <string name="editor_icon_section">Symbol</string>
+    <string name="editor_close">Schließen</string>
+    <string name="editor_delete">Löschen</string>
+    <string name="editor_home_section">Gehört zum Zuhause</string>
+    <string name="editor_level_section">Ebene</string>
+    <string name="editor_no_level">Keine Ebene</string>
+    <string name="editor_level_number">Ebenennummer</string>
+    <string name="editor_level_number_hint">Sortiert die Ebenen, z. B. -1 für den Keller.</string>
+    <string name="editor_level_down">Niedrigere Ebenennummer</string>
+    <string name="editor_level_up">Höhere Ebenennummer</string>
+    <string name="editor_rooms_on_level">Räume auf dieser Ebene</string>
+    <string name="editor_rooms_in_home">Räume in diesem Zuhause</string>
+    <string name="editor_room_directly_in">direkt in %1$s</string>
+    <string name="editor_room_on">in %1$s</string>
+    <string name="editor_room_moves_from">wechselt aus %1$s</string>
+    <string name="editor_room_new">neu</string>
+    <string name="editor_new_room_on">Neuer Raum in %1$s</string>
+    <string name="editor_new_room_in">Neuer Raum in %1$s</string>
+    <string name="editor_this_level">dieser Ebene</string>
+    <string name="editor_this_home">diesem Zuhause</string>
+    <string name="editor_new_room_hint">Raumname</string>
+    <string name="editor_add">Hinzufügen</string>
+    <string name="editor_summary_home">Beim Speichern wird %1$s angelegt.</string>
+    <plurals name="editor_summary_home_rooms">
+        <item quantity="one">Beim Speichern wird %1$s mit %2$d Raum angelegt.</item>
+        <item quantity="other">Beim Speichern wird %1$s mit %2$d Räumen angelegt.</item>
+    </plurals>
+    <string name="editor_summary_level">Beim Speichern wird %1$s in %2$s angelegt.</string>
+    <plurals name="editor_summary_level_rooms">
+        <item quantity="one">Beim Speichern wird %1$s in %2$s mit %3$d Raum angelegt.</item>
+        <item quantity="other">Beim Speichern wird %1$s in %2$s mit %3$d Räumen angelegt.</item>
+    </plurals>
+    <string name="editor_summary_room">Beim Speichern wird %1$s in %2$s angelegt.</string>
+    <string name="editor_create_home">Zuhause erstellen</string>
+    <string name="editor_create_level">Ebene erstellen</string>
+    <string name="editor_create_room">Raum erstellen</string>
+    <string name="editor_save">Speichern</string>
+
+    <!-- Delete confirmations (concept 6.2). -->
+    <string name="delete_title">%1$s löschen?</string>
+    <string name="delete_home_text">Dadurch wird %1$s samt Ebenen und Räumen gelöscht (%2$s, %3$s) und die dort platzierten Entitäten werden entfernt. Du kannst es einige Sekunden lang rückgängig machen.</string>
+    <string name="delete_floor_keep_rooms">Räume behalten, direkt im Zuhause</string>
+    <string name="delete_floor_with_rooms">Räume ebenfalls löschen</string>
+    <string name="delete_confirm">Löschen</string>
+    <string name="delete_cancel">Abbrechen</string>
+    <string name="places_import">Aus Home Assistant importieren</string>
+    <string name="import_title">Aus Home Assistant importieren</string>
+    <string name="import_intro">Übernimmt Ebenen und Räume aus den Bereichen von Home Assistant, in denen deine Entitäten liegen. Danach sind es ganz normale Ebenen und Räume, die du ändern kannst; spätere Änderungen in Home Assistant werden nicht übernommen.</string>
+    <string name="import_empty">Home Assistant hat keine Bereiche mit Entitäten, die du nutzen kannst. Lege dort zuerst Bereiche an oder erstelle die Räume hier selbst.</string>
+    <string name="import_home_section">In Zuhause</string>
+    <string name="import_new_home">Neues Zuhause</string>
+    <string name="import_new_home_hint">Name des neuen Zuhauses</string>
+    <string name="import_areas_section">Bereiche</string>
+    <string name="import_toggle_all">Alle / keine auswählen</string>
+    <string name="import_no_level">Keine Ebene</string>
+    <plurals name="import_new_levels">
+        <item quantity="one">%d neue Ebene</item>
+        <item quantity="other">%d neue Ebenen</item>
+    </plurals>
+    <plurals name="import_new_rooms">
+        <item quantity="one">%d neuer Raum</item>
+        <item quantity="other">%d neue Räume</item>
+    </plurals>
+    <string name="import_action">Importieren</string>
+    <string name="import_try_again">Erneut versuchen</string>
+    <plurals name="import_entities">
+        <item quantity="one">%d Entität</item>
+        <item quantity="other">%d Entitäten</item>
+    </plurals>
+    <plurals name="import_skipped">
+        <item quantity="one">%d Raum mit diesem Namen gibt es schon, er wird übersprungen</item>
+        <item quantity="other">%d Räume mit diesen Namen gibt es schon, sie werden übersprungen</item>
+    </plurals>
+</resources>

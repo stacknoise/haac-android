@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- User texts of ErrorCode (concept 17.3): plain language, what happened and what to do. -->
+    <string name="error_net_unreachable">Der Server ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut.</string>
+    <string name="error_net_connection_lost">Die Verbindung zum Server wurde unterbrochen. Verbindung wird wiederhergestellt …</string>
+    <string name="error_net_certificate_changed">Das Zertifikat des Servers hat sich geändert. Zu deiner Sicherheit wurde die Verbindung blockiert.</string>
+    <string name="error_net_not_home_assistant">Diese Adresse gehört nicht zu einem Home-Assistant-Server. Prüfe die Adresse und versuche es erneut.</string>
+    <string name="error_net_invalid_address">Das ist keine gültige Adresse. Prüfe sie und versuche es erneut.</string>
+    <string name="error_net_cleartext_not_allowed">Unverschlüsselte Verbindungen sind nur in deinem Heimnetz erlaubt. Verwende eine https-Adresse.</string>
+    <string name="error_net_certificate_untrusted">Dem Zertifikat des Servers wird nicht vertraut, deshalb wurde die Verbindung blockiert.</string>
+    <string name="error_net_wrong_server">Unter dieser Adresse antwortet ein anderer Server. Die Verbindung wurde zu deiner Sicherheit geschlossen.</string>
+    <string name="error_auth_password_login_unavailable">Dieser Server erlaubt keine Anmeldung mit Benutzername und Passwort.</string>
+    <string name="error_auth_invalid_credentials">Benutzername oder Passwort ist falsch.</string>
+    <string name="error_auth_invalid_mfa_code">Der Bestätigungscode ist falsch.</string>
+    <string name="error_auth_session_expired">Deine Anmeldung ist abgelaufen. Bitte melde dich erneut an.</string>
+    <string name="error_auth_sign_in_aborted">Die Anmeldung hat zu lange gedauert oder es wurden zu viele falsche Codes eingegeben. Bitte beginne von vorn.</string>
+    <string name="error_auth_user_blocked">Home Assistant erlaubt diesem Benutzer hier keine Anmeldung. Frage deinen Administrator.</string>
+    <string name="error_sec_biometrics_changed">Deine Fingerabdrücke haben sich geändert. Bitte melde dich mit deinem Passwort an.</string>
+    <string name="error_sec_storage_unavailable">Der sichere Speicher auf diesem Gerät ist nicht verfügbar.</string>
+    <string name="error_sec_locked">Die App ist gesperrt. Entsperre sie mit deinem Fingerabdruck.</string>
+    <string name="error_sec_biometric_unavailable">Das Entsperren per Fingerabdruck ist gerade nicht verfügbar. Versuche es später erneut oder melde dich mit deinem Passwort an.</string>
+    <string name="error_brg_not_installed">HAAC Bridge ist auf diesem Server nicht installiert.</string>
+    <string name="error_brg_update_required">HAAC Bridge auf dem Server muss aktualisiert werden.</string>
+    <string name="error_brg_not_allowed">Du darfst dieses Gerät nicht steuern.</string>
+    <string name="error_brg_action_not_available">Diese Aktion ist für dieses Gerät nicht verfügbar.</string>
+    <string name="error_brg_action_failed">Home Assistant konnte die Aktion nicht ausführen. Bitte versuche es erneut.</string>
+    <string name="error_brg_history_unavailable">Der Verlauf ist auf diesem Server nicht verfügbar.</string>
+    <string name="error_ent_not_found">Dieses Gerät gibt es in Home Assistant nicht mehr.</string>
+    <string name="error_ent_action_not_supported">Dieses Gerät unterstützt diese Aktion nicht.</string>
+    <string name="error_db_save_failed">Deine Änderungen konnten nicht gespeichert werden. Bitte versuche es erneut.</string>
+    <string name="error_lay_place_missing">Dieses Zuhause, diese Ebene oder dieser Raum gibt es nicht mehr. Bitte prüfe deine Orte.</string>
+    <string name="error_lay_name_missing">Bitte gib einen Namen ein.</string>
+    <string name="error_sch_removed">Diesen Zeitplan gibt es auf dem Server nicht mehr.</string>
+    <string name="error_sch_paused">Dieser Zeitplan wurde vom Server pausiert.</string>
+    <string name="error_sch_invalid">Dieser Zeitplan ist ungültig. Prüfe Name, Uhrzeit, Tage und Geräte.</string>
+    <string name="error_sch_conflict">Dieser Zeitplan wurde an anderer Stelle geändert. Lade ihn neu und versuche es erneut.</string>
+    <string name="error_sch_limit">Du hast die Höchstzahl an Zeitplänen erreicht. Lösche zuerst einen.</string>
+    <string name="error_sch_not_allowed">Du darfst diesen Zeitplan nicht ändern.</string>
+    <string name="error_sch_run_incomplete">Beim letzten Lauf konnten nicht alle Geräte geschaltet werden.</string>
+    <string name="error_app_unexpected">Etwas ist schiefgelaufen.</string>
+    <!-- Action buttons of ErrorAction (concept 17.4). -->
+    <string name="error_action_retry">Erneut versuchen</string>
+    <string name="error_action_sign_in">Anmelden</string>
+    <string name="error_action_open_settings">Einstellungen öffnen</string>
+</resources>

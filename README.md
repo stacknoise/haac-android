@@ -81,6 +81,7 @@ This limits what the app shows and controls. It is not a Home Assistant permissi
 - Every error has a code (`HAAC-…`) and a plain-language message; Settings shows diagnostics (connection, last sync, versions).
 
 **App**
+- Available in English and German (follows the system language; Home Assistant's own names such as HVAC and fan modes are shown as Home Assistant sends them).
 - Light "Salbei" Material 3 theme with the Figtree font, flavors `play` and `sideload`, open-source licenses under *Settings → About*.
 
 ## Build

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Room grid (M-05, M-08). -->
+    <string name="rooms_choose_group">Zuhause und Ebene wählen</string>
+    <string name="rooms_add_entities">Entitäten hinzufügen</string>
+    <string name="rooms_no_rooms">Noch keine Räume. Lege unter „Orte“ ein Zuhause und seine Räume an.</string>
+    <string name="rooms_open_places">Orte öffnen</string>
+    <string name="rooms_empty_room">In diesem Raum sind noch keine Entitäten.</string>
+    <plurals name="rooms_withdrawn_banner">
+        <item quantity="one">%1$d Entität gibt es in Home Assistant nicht mehr</item>
+        <item quantity="other">%1$d Entitäten gibt es in Home Assistant nicht mehr</item>
+    </plurals>
+    <string name="rooms_review">Prüfen</string>
+    <string name="tile_on">An</string>
+    <string name="tile_off">Aus</string>
+    <string name="tile_unavailable">Nicht verfügbar</string>
+    <string name="tile_now">jetzt %1$s</string>
+    <string name="tile_heating">Heizt</string>
+    <string name="tile_colder">Zieltemperatur senken</string>
+    <string name="tile_warmer">Zieltemperatur erhöhen</string>
+    <string name="tile_failed">%1$s (%2$s)</string>
+    <string name="tile_removed">In HA entfernt · zum Entfernen tippen</string>
+
+    <!-- Entity detail (concept 8, 15.4). -->
+    <string name="detail_back">Zurück</string>
+    <string name="detail_rename">Umbenennen</string>
+    <string name="detail_missing">Diese Entität ist auf dieser Instanz nicht bekannt.</string>
+    <string name="detail_controls">Steuerung</string>
+    <string name="detail_offline">Die Steuerung funktioniert wieder, sobald die Verbindung zurück ist.</string>
+    <string name="detail_info">Informationen</string>
+    <string name="detail_attributes">Attribute</string>
+    <string name="detail_no_attributes">Home Assistant meldet keine Attribute.</string>
+    <string name="detail_ha_name">Name in Home Assistant</string>
+    <string name="detail_configured_name">Name aus HAAC Bridge</string>
+    <string name="detail_entity_id">Entitäts-ID</string>
+    <string name="detail_last_changed">Zuletzt geändert</string>
+    <string name="detail_last_updated">Zuletzt aktualisiert</string>
+    <string name="detail_time">%1$s · %2$s</string>
+    <string name="detail_current_temperature">Aktuelle Temperatur</string>
+    <string name="detail_current_humidity">Aktuelle Luftfeuchtigkeit</string>
+    <string name="detail_hvac_action">Aktuell</string>
+    <string name="detail_power">Betrieb</string>
+    <string name="detail_turn_on">Einschalten</string>
+    <string name="detail_turn_off">Ausschalten</string>
+    <string name="detail_mode">Modus</string>
+    <string name="detail_target">Zieltemperatur</string>
+    <string name="detail_range">Zielbereich</string>
+    <string name="detail_range_value">%1$s – %2$s</string>
+    <string name="detail_humidity">Ziel-Luftfeuchtigkeit</string>
+    <string name="detail_humidity_value">%1$s %%</string>
+    <string name="detail_fan_mode">Lüftermodus</string>
+    <string name="detail_preset">Voreinstellung</string>
+    <string name="detail_swing">Schwenken</string>
+    <string name="detail_swing_horizontal">Horizontales Schwenken</string>
+    <string name="tile_details">Details</string>
+
+    <!-- History of the detail screen (concept 8.1 – 8.4). -->
+    <string name="history_title">Verlauf</string>
+    <string name="history_day">24 Std.</string>
+    <string name="history_week">7 Tage</string>
+    <string name="history_custom">Eigener</string>
+    <string name="history_custom_range">%1$s – %2$s</string>
+    <string name="history_show">Anzeigen</string>
+    <string name="history_value">Wert</string>
+    <string name="history_mean">Mittelwert</string>
+    <string name="history_range">Min.–Max.</string>
+    <string name="history_heating">Heizen</string>
+    <string name="history_cooling">Kühlen</string>
+    <string name="history_empty">In diesem Zeitraum wurde nichts aufgezeichnet.</string>
+    <string name="history_offline">Der Verlauf wird geladen, sobald die Verbindung zurück ist.</string>
+    <string name="history_retry">Erneut versuchen</string>
+    <string name="history_hint">Tippe oder ziehe auf dem Diagramm, um die Werte zu sehen.</string>
+
+    <!-- Edit layout and arrange list (M-06, M-07). -->
+    <string name="rooms_edit_layout">Layout bearbeiten</string>
+    <string name="edit_title">%1$s bearbeiten</string>
+    <string name="edit_close">Schließen ohne Speichern</string>
+    <string name="edit_done">Fertig</string>
+    <string name="edit_grid">Raster</string>
+    <string name="edit_list">Liste</string>
+    <string name="edit_hint_grid">Kacheln gedrückt halten und ziehen, um sie neu zu ordnen. Tippe auf einen Namen, um ihn zu ändern.</string>
+    <string name="edit_hint_list">Ziehe am Griff, um neu zu ordnen. Tippe auf einen Namen, um ihn zu ändern.</string>
+    <string name="edit_empty">In diesem Raum sind noch keine Entitäten.</string>
+    <string name="edit_remove">%1$s aus diesem Raum entfernen</string>
+    <string name="edit_move_earlier">Weiter nach vorn</string>
+    <string name="edit_move_later">Weiter nach hinten</string>
+    <string name="edit_size_option">%1$s · %2$s</string>
+    <string name="edit_size_small">klein</string>
+    <string name="edit_size_wide">breit</string>
+    <string name="edit_size_large">hoch</string>
+    <string name="edit_discard_title">Änderungen verwerfen?</string>
+    <string name="edit_discard_text">Die neue Reihenfolge, die Größen und die entfernten Kacheln werden nicht gespeichert.</string>
+    <string name="edit_discard">Verwerfen</string>
+    <string name="edit_keep">Weiter bearbeiten</string>
+
+    <!-- Tile sheets and rename dialog (M-07, M-08). -->
+    <string name="tile_rename">Umbenennen</string>
+    <string name="tile_remove_here">Aus diesem Raum entfernen</string>
+    <string name="tile_remove_everywhere">Aus allen Räumen entfernen</string>
+    <string name="tile_removed_title">In Home Assistant nicht mehr verfügbar</string>
+    <string name="tile_removed_text">Sie wurde in Home Assistant gelöscht oder ist nicht mehr für dich freigegeben. Ihr letzter Zustand bleibt hier, bis du sie entfernst.</string>
+    <string name="review_title">Nicht mehr in Home Assistant</string>
+    <string name="review_remove_here">Alle aus diesem Raum entfernen</string>
+    <string name="review_remove_everywhere">Alle aus allen Räumen entfernen</string>
+    <string name="rename_title">Entität umbenennen</string>
+    <string name="rename_text">Ändert den Namen nur in dieser App. Home Assistant behält %1$s.</string>
+    <string name="rename_default">Standardnamen verwenden</string>
+    <string name="rename_cancel">Abbrechen</string>
+    <string name="rename_save">Speichern</string>
+
+    <!-- Add entities (M-04). -->
+    <string name="add_title">Entitäten hinzufügen</string>
+    <string name="add_back">Zurück</string>
+    <string name="add_domain_switch">Schalter</string>
+    <string name="add_domain_sensor">Sensor</string>
+    <string name="add_domain_climate">Klima</string>
+    <string name="add_filter">Nach Name oder ID filtern</string>
+    <string name="add_in_room">in %1$s</string>
+    <string name="add_here">in diesem Raum</string>
+    <string name="add_nothing">Hier gibt es nichts hinzuzufügen.</string>
+    <string name="add_select">Entitäten zum Hinzufügen auswählen</string>
+    <plurals name="add_button">
+        <item quantity="one">%1$d Entität hinzufügen</item>
+        <item quantity="other">%1$d Entitäten hinzufügen</item>
+    </plurals>
+    <plurals name="add_switches">
+        <item quantity="one">%1$d Schalter</item>
+        <item quantity="other">%1$d Schalter</item>
+    </plurals>
+    <plurals name="add_sensors">
+        <item quantity="one">%1$d Sensor</item>
+        <item quantity="other">%1$d Sensoren</item>
+    </plurals>
+    <plurals name="add_climates">
+        <item quantity="one">%1$d Klimagerät</item>
+        <item quantity="other">%1$d Klimageräte</item>
+    </plurals>
+
+    <!-- Add to room from the notification list (M-09). -->
+    <string name="assign_title">Zu Raum hinzufügen</string>
+    <string name="assign_no_rooms">Lege zuerst unter „Orte“ einen Raum an.</string>
+    <string name="assign_button">Zu %1$s hinzufügen</string>
+    <string name="assign_choose">Raum wählen</string>
+    <string name="assign_gone">Diese Entitäten sind nicht mehr freigegeben.</string>
+    <string name="rooms_stale">Offline: Es werden die zuletzt bekannten Zustände angezeigt. Die Steuerung funktioniert wieder, sobald die Verbindung zurück ist.</string>
+</resources>

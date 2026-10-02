@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="instance_switcher">Instanz wechseln</string>
+    <string name="instance_section_title">Instanzen</string>
+    <string name="instance_add">Instanz hinzufügen</string>
+    <string name="instance_user">%1$s (%2$s)</string>
+    <string name="instance_status_connected">Verbunden</string>
+    <string name="instance_status_connecting">Verbinde …</string>
+    <string name="instance_status_reconnecting">Verbinde erneut …</string>
+    <string name="instance_status_failed">Nicht verbunden</string>
+    <string name="instance_status_inactive">Nicht verbunden, solange inaktiv</string>
+    <string name="instance_more">Weitere Aktionen</string>
+    <string name="instance_edit">Instanz bearbeiten</string>
+    <string name="instance_name">Name</string>
+    <string name="instance_save">Speichern</string>
+    <string name="instance_cancel">Abbrechen</string>
+    <string name="instance_remove">Entfernen</string>
+    <string name="instance_remove_title">%1$s entfernen?</string>
+    <string name="instance_remove_text">Die Anmeldung wird in Home Assistant widerrufen, sofern der Server erreichbar ist. Aufbau, Zuordnungen und Namen dieser Instanz werden von diesem Gerät gelöscht.</string>
+</resources>
