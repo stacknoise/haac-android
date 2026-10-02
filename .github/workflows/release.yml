@@ -1,6 +1,7 @@
 name: Release
 
 # Builds the signed sideload APK for a version tag and attaches it, with its SHA-256, to the GitHub Release.
+# Also builds the signed Play bundle (AAB) of the same tag; it is kept as a workflow artifact for the upload to Google Play.
 # Run it by hand ("Run workflow") with the tag to build a release for a tag that already exists.
 on:
   push:
@@ -16,7 +17,7 @@ permissions:
 
 jobs:
   apk:
-    name: Signed APK
+    name: Signed APK and Play bundle
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -45,12 +46,12 @@ jobs:
         run: |
           echo "${KEYSTORE_BASE64}" | base64 -d > "${RUNNER_TEMP}/haac-release.jks"
           echo "HAAC_KEYSTORE_FILE=${RUNNER_TEMP}/haac-release.jks" >> "${GITHUB_ENV}"
-      - name: Build signed sideload APK
+      - name: Build signed sideload APK and Play bundle
         env:
           HAAC_KEYSTORE_PASSWORD: ${{ secrets.HAAC_KEYSTORE_PASSWORD }}
           HAAC_KEY_ALIAS: ${{ secrets.HAAC_KEY_ALIAS }}
           HAAC_KEY_PASSWORD: ${{ secrets.HAAC_KEY_PASSWORD }}
-        run: ./gradlew assembleSideloadRelease
+        run: ./gradlew assembleSideloadRelease bundlePlayRelease
       - name: Name the APK, verify the signature, write the checksum
         run: |
           mkdir dist
@@ -58,6 +59,21 @@ jobs:
           apksigner=$(ls "${ANDROID_HOME}"/build-tools/*/apksigner | sort -V | tail -n 1)
           "${apksigner}" verify --print-certs "dist/haac-${TAG}-sideload.apk"
           (cd dist && sha256sum "haac-${TAG}-sideload.apk" > "haac-${TAG}-sideload.apk.sha256")
+      - name: Name the Play bundle and verify its signature
+        env:
+          HAAC_KEYSTORE_PASSWORD: ${{ secrets.HAAC_KEYSTORE_PASSWORD }}
+          HAAC_KEY_ALIAS: ${{ secrets.HAAC_KEY_ALIAS }}
+        run: |
+          mkdir bundle
+          cp app/build/outputs/bundle/playRelease/app-play-release.aab "bundle/haac-${TAG}-play.aab"
+          jarsigner -verify -certs "bundle/haac-${TAG}-play.aab"
+          keytool -list -keystore "${HAAC_KEYSTORE_FILE}" -storepass "${HAAC_KEYSTORE_PASSWORD}" -alias "${HAAC_KEY_ALIAS}" | tail -n 2
+      - name: Keep the Play bundle for the upload to Google Play
+        uses: actions/upload-artifact@v7
+        with:
+          name: haac-${{ env.TAG }}-play-bundle
+          path: bundle/haac-${{ env.TAG }}-play.aab
+          retention-days: 30
       - name: Attach to the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
