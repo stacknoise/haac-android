@@ -1,10 +1,15 @@
 package com.stacknoise.haac.feature.schedules.data
 
+import com.stacknoise.haac.core.database.assignment.EntityAliasDao
+import com.stacknoise.haac.core.database.assignment.RoomAssignment
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
 import com.stacknoise.haac.core.database.entity.EntityStatus
+import com.stacknoise.haac.core.database.entity.ExposedEntity
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
+import com.stacknoise.haac.core.database.entity.byEntityId
 import com.stacknoise.haac.core.database.entity.displayName
 import com.stacknoise.haac.core.database.layout.PlaceRepository
+import com.stacknoise.haac.core.database.layout.Room
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -28,32 +33,41 @@ data class Candidates(val entities: List<Candidate> = emptyList(), val rooms: Li
 
 /**
  * The entities of the active instance a schedule may switch: the domain `switch` (concept 19.1), in the order of
- * their names. Entities the bridge withdrew stay listed, so an existing schedule can still name them, but are not
+ * their names. A name is the one the user sees everywhere else (concept 7.3): the local name if there is one.
+ * Entities the bridge withdrew stay listed, so an existing schedule can still name them, but are not
  * [Candidate.active].
  */
 @Singleton
 class ScheduleCandidates @Inject constructor(
     private val entities: ExposedEntityDao,
+    private val aliases: EntityAliasDao,
     private val places: PlaceRepository,
     private val assignments: RoomAssignmentDao,
 ) {
     /** The switches of instance [serverId] with their rooms, updated on every change. */
     fun of(serverId: String): Flow<Candidates> = combine(
         entities.observe(serverId),
+        aliases.observe(serverId),
         places.places(serverId),
         assignments.observeAll(serverId),
-    ) { rows, layout, placed ->
-        val rooms = layout.rooms.map { RoomChip(it.id, it.name) }
-        val byId = rooms.associateBy { it.id }
-        val roomsOf = placed.groupBy({ it.entityId }, { byId[it.roomId] }).mapValues { it.value.filterNotNull() }
-        val list = rows.filter { it.domain == SWITCH_DOMAIN }.map {
-            val active = it.status == EntityStatus.ACTIVE
-            Candidate(it.entityId, it.displayName(null), roomsOf[it.entityId].orEmpty(), active)
-        }
-        Candidates(list.sortedBy { it.name.lowercase() }, rooms)
-    }
-
-    private companion object {
-        const val SWITCH_DOMAIN = "switch"
-    }
+    ) { rows, names, layout, placed -> candidatesOf(rows, names.byEntityId(), layout.rooms, placed) }
 }
+
+/** The switches among [rows] with their display names ([aliases] by `entity_id`) and the rooms they are placed in. */
+internal fun candidatesOf(
+    rows: List<ExposedEntity>,
+    aliases: Map<String, String>,
+    roomList: List<Room>,
+    placed: List<RoomAssignment>,
+): Candidates {
+    val rooms = roomList.map { RoomChip(it.id, it.name) }
+    val byId = rooms.associateBy { it.id }
+    val roomsOf = placed.groupBy({ it.entityId }, { byId[it.roomId] }).mapValues { it.value.filterNotNull() }
+    val list = rows.filter { it.domain == SwitchDomain }.map {
+        val active = it.status == EntityStatus.ACTIVE
+        Candidate(it.entityId, it.displayName(aliases[it.entityId]), roomsOf[it.entityId].orEmpty(), active)
+    }
+    return Candidates(list.sortedBy { it.name.lowercase() }, rooms)
+}
+
+private const val SwitchDomain = "switch"
