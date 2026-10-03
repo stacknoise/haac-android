@@ -162,17 +162,17 @@ Suggested answers:
 
 | Question | Answer | Note |
 | --- | --- | --- |
-| Does the app collect or share any of the required user data types? | See the decision below | |
+| Does the app collect or share any of the required user data types? | **Yes: collected, not shared** | Everything that leaves the device goes to the Home Assistant server of the user; the developer and third parties receive nothing (decision below) |
+| Data types | **Personal info → User IDs** (the Home Assistant account name); **App activity → App interactions** (commands such as switching a device or changing a schedule) | Both: purpose *App functionality*, collection required, not shared. If the Console lists a type for sign-in credentials, tick it too; the password is sent once at sign-in and never stored |
 | Is all data encrypted in transit? | **No** | `http://` to private addresses is possible (concept 4.3); answering Yes would not be true |
 | Can users request that their data is deleted? | Yes, in the app | Removing an instance revokes the token and deletes all its local data; uninstalling deletes everything. The developer holds no data |
 | Independent security review | No | |
 
-**Decision for the maintainer.** Google counts data that leaves the device as "collected", even when the receiving server belongs to the user and not to the developer. Two honest readings exist:
+**Decision (maintainer, 3 October 2026): option 2, declare what goes to the user's own server.** Google defines "collect" as transmitting data off the device ([Provide information for Google Play's Data safety section](https://support.google.com/googleplay/android-developer/answer/10787469)), and the page names no exemption for a server the user operates. "No data collected" would therefore be hard to defend; the honest answer is the table above. It matches the privacy policy, which says that sign-in and commands go to the user's own server and that nothing goes to the developer or to a third party.
 
-1. *Declare "no data collected"*: the developer and third parties receive nothing; all traffic goes to a server the user chooses. Add a sentence to the privacy policy that makes this explicit (it is already there: "HAAC does not send any data to the developer or to any third party").
-2. *Declare the data that goes to the user's own server*: Personal info (user IDs, name) and Authentication information (credentials) as *collected*, purpose *App functionality*, *not shared*, and the encryption answer above.
-
-Option 2 is the more cautious one and is the usual choice for apps that connect to a self-hosted server. Check the current wording of the Play Console help ("Provide information for Google Play's Data safety section") before choosing, and use the same answer in both the form and the privacy policy.
+- The demo (version 0.3.0 and newer) sends nothing at all.
+- The names of the data types follow Google's help page. If the Console words them differently, take the matching type and update this table and, if needed, the privacy policy in the same pull request.
+- Encryption in transit stays **No**: Google allows "Yes" only if it applies to all data the app transmits, and `http://` to private addresses is possible after a warning (concept 4.3).
 
 ## 6. Graphics
 
