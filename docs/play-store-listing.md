@@ -128,7 +128,7 @@ HAAC steht in keiner Verbindung zu Home Assistant, der Open Home Foundation oder
 
 ## 4. Declarations
 
-**App access.** Reviewers need no account and no server: the app has a built-in demo (version 0.3.0 and newer). Choose "All or some functionality is restricted" and give this instruction: "No sign-in is needed. Open the app and tap *Try the demo* on the first screen. The demo works without a network and contains sample data: open *Places* and import the levels and rooms from Home Assistant, open a room and add entities to it, tap a tile to switch it, open a tile for its detail and history, and open *Schedules*. To leave the demo, open *Settings*, remove the instance *Demo* and the first screen returns." The production release must contain a build with the demo, so the internal test of 0.3.0 comes first.
+**App access.** Reviewers need no account and no server: the app has a built-in demo (version 0.3.0 and newer). Choose "All or some functionality is restricted" and give this instruction: "No sign-in is needed. Open the app and tap *Try the demo* on the first screen. The demo works without a network and contains sample data and prefilled rooms: open a room, tap a tile to switch it, open a tile for its detail and history, and open *Schedules*. To leave the demo, open *Settings*, remove the instance *Demo* and the first screen returns." The production release must contain a build with the demo, so the internal test of 0.4.0 (the first version with a prefilled demo) comes first.
 
 **Permissions** (merged manifest; none of them needs a special declaration form):
 
