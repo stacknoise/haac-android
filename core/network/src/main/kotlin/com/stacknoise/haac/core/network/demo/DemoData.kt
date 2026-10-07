@@ -74,6 +74,11 @@ data class DemoWorldData(
         const val KITCHEN = "kitchen"
         const val BEDROOM = "bedroom"
         const val LIVING_ROOM_LIGHT = "switch.demo_living_room_light"
+        const val KITCHEN_LIGHT = "switch.demo_kitchen_light"
+        const val BEDROOM_LAMP = "switch.demo_bedroom_lamp"
+        const val SOCKET = "switch.demo_socket"
+        const val TEMPERATURE = "sensor.demo_temperature"
+        const val ENERGY = "sensor.demo_energy"
         const val MORNING_LIGHT = "demo-morning-light"
         const val THERMOSTAT = "climate.demo_thermostat"
 
@@ -106,9 +111,9 @@ data class DemoWorldData(
         /** Four switches, two of them on. */
         private fun switches(now: Long): List<DemoEntity> = listOf(
             switch(LIVING_ROOM_LIGHT, "Living room light", "on", LIVING_ROOM, now),
-            switch("switch.demo_kitchen_light", "Kitchen light", "off", KITCHEN, now),
-            switch("switch.demo_bedroom_lamp", "Bedroom lamp", "off", BEDROOM, now),
-            switch("switch.demo_socket", "Socket", "on", LIVING_ROOM, now, deviceClass = "outlet"),
+            switch(KITCHEN_LIGHT, "Kitchen light", "off", KITCHEN, now),
+            switch(BEDROOM_LAMP, "Bedroom lamp", "off", BEDROOM, now),
+            switch(SOCKET, "Socket", "on", LIVING_ROOM, now, deviceClass = "outlet"),
         )
 
         /** A switch that last changed at [now]. */
@@ -124,11 +129,11 @@ data class DemoWorldData(
         /** Temperature (measurement) and energy (total increasing). */
         private fun sensors(now: Long): List<DemoEntity> = listOf(
             DemoEntity(
-                "sensor.demo_temperature", "Temperature", "21.4", now, now, LIVING_ROOM,
+                TEMPERATURE, "Temperature", "21.4", now, now, LIVING_ROOM,
                 deviceClass = "temperature", unit = "°C", stateClass = "measurement", displayPrecision = 1,
             ),
             DemoEntity(
-                "sensor.demo_energy", "Energy", "1234.5", now, now, KITCHEN,
+                ENERGY, "Energy", "1234.5", now, now, KITCHEN,
                 deviceClass = "energy", unit = "kWh", stateClass = "total_increasing", displayPrecision = 1,
             ),
         )
