@@ -26,16 +26,16 @@ class DemoLayoutSeederTest {
     private val tiles = mutableListOf<RoomAssignment>()
 
     private val homeDao = mockk<HomeDao>().also { dao ->
-        coEvery { dao.insert(any()) } answers { homes.add(firstArg()); Unit }
+        coEvery { dao.insert(any()) } answers { homes.add(firstArg()) }
     }
     private val floorDao = mockk<FloorDao>().also { dao ->
-        coEvery { dao.insert(any()) } answers { floors.add(firstArg()); Unit }
+        coEvery { dao.insert(any()) } answers { floors.add(firstArg()) }
     }
     private val roomDao = mockk<RoomDao>().also { dao ->
-        coEvery { dao.insert(any()) } answers { rooms.add(firstArg()); Unit }
+        coEvery { dao.insert(any()) } answers { rooms.add(firstArg()) }
     }
     private val assignmentDao = mockk<RoomAssignmentDao>().also { dao ->
-        coEvery { dao.insert(any()) } answers { tiles.addAll(firstArg<List<RoomAssignment>>()); Unit }
+        coEvery { dao.insert(any()) } answers { tiles.addAll(firstArg<List<RoomAssignment>>()) }
     }
     private val seeder = DemoLayoutSeeder(
         homes = homeDao,
