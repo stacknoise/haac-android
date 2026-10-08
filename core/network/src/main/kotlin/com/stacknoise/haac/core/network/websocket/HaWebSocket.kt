@@ -92,7 +92,7 @@ private class Forwarder(private val channel: Channel<JsonObject>, private val js
     /** Queues a message; a frame that is not a JSON object is not HA's WebSocket API (NET-004). */
     override fun onMessage(webSocket: WebSocket, text: String) {
         try {
-            if (channel.trySend(json.parseToJsonElement(text).jsonObject).isFailure && !channel.isClosedForSend) {
+            if (channel.trySend(json.parseToJsonElement(text).jsonObject).isFailure) {
                 // The reader does not keep up: end the connection instead of filling the memory (review S-06).
                 channel.close(NetworkException(ErrorCode.NET_CONNECTION_LOST))
                 webSocket.cancel()
