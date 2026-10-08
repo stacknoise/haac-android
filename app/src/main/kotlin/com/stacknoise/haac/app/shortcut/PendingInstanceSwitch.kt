@@ -2,6 +2,7 @@ package com.stacknoise.haac.app.shortcut
 
 import android.content.Context
 import android.content.Intent
+import androidx.core.content.edit
 import com.stacknoise.haac.app.MainActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.UUID
@@ -48,7 +49,7 @@ class PendingInstanceSwitch @Inject constructor(@ApplicationContext private val 
     private fun key(): String {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         return prefs.getString(EXTRA_KEY, null) ?: UUID.randomUUID().toString().also {
-            prefs.edit().putString(EXTRA_KEY, it).apply()
+            prefs.edit { putString(EXTRA_KEY, it) }
         }
     }
 
