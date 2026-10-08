@@ -54,7 +54,7 @@ class DefaultErrorFactory @Inject constructor() : ErrorFactory {
     /** Looks the HAB code up in [BRIDGE_CODES] and keeps it on the exception for the detail sheet. */
     override fun fromBridgeError(habCode: String): HaacException = when (val code = BRIDGE_CODES[habCode]) {
         null -> BridgeException(ErrorCode.BRG_ACTION_FAILED, bridgeCode = habCode)
-        ErrorCode.AUTH_SESSION_EXPIRED -> AuthException(code, bridgeCode = habCode)
+        ErrorCode.AUTH_SESSION_EXPIRED, ErrorCode.AUTH_USER_BLOCKED -> AuthException(code, bridgeCode = habCode)
         ErrorCode.ENT_NOT_FOUND -> ValidationException(code, bridgeCode = habCode)
         else -> BridgeException(code, bridgeCode = habCode)
     }
@@ -64,11 +64,13 @@ class DefaultErrorFactory @Inject constructor() : ErrorFactory {
         /** HAB codes that reach the app and the HAAC code shown for each. */
         val BRIDGE_CODES: Map<String, ErrorCode> = mapOf(
             "HAB-AUTH-001" to ErrorCode.AUTH_SESSION_EXPIRED,
+            "HAB-AUTH-002" to ErrorCode.AUTH_USER_BLOCKED,
             "HAB-SVC-001" to ErrorCode.BRG_NOT_ALLOWED,
             "HAB-SVC-002" to ErrorCode.BRG_ACTION_NOT_AVAILABLE,
             "HAB-SVC-003" to ErrorCode.BRG_ACTION_FAILED,
             "HAB-ENT-001" to ErrorCode.ENT_NOT_FOUND,
             "HAB-HIST-001" to ErrorCode.BRG_HISTORY_UNAVAILABLE,
+            "HAB-HIST-002" to ErrorCode.BRG_HISTORY_UNAVAILABLE,
             "HAB-SCH-001" to ErrorCode.SCH_INVALID,
             "HAB-SCH-003" to ErrorCode.SCH_REMOVED,
             "HAB-SCH-004" to ErrorCode.SCH_CONFLICT,

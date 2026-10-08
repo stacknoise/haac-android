@@ -95,7 +95,7 @@ enum class ErrorCode(
         "HAAC-AUTH-006",
         R.string.error_auth_user_blocked,
         ErrorAction.NONE,
-        "HTTP 403 from /auth/login_flow or /auth/token: user inactive, local-only or IP banned",
+        "HTTP 403 from /auth/login_flow or /auth/token (inactive, local-only, IP banned) or HAB-AUTH-002",
     ),
     AUTH_REVOKE_FAILED(
         "HAAC-AUTH-007",
@@ -161,7 +161,7 @@ enum class ErrorCode(
         "HAAC-BRG-006",
         R.string.error_brg_history_unavailable,
         ErrorAction.NONE,
-        "Recorder or history not available on the server (HAB-HIST-001)",
+        "Recorder or history not available (HAB-HIST-001), or period too long for the bridge (HAB-HIST-002)",
     ),
     ENT_NOT_FOUND(
         "HAAC-ENT-001",

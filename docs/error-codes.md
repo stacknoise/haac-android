@@ -19,7 +19,7 @@ Every error of the app carries one of these codes (format `HAAC-<AREA>-<NNN>`) a
 | HAAC-AUTH-003 | Your sign-in has expired. Please sign in again. | SIGN_IN | Refresh token revoked or expired, or the bridge saw no user (HAB-AUTH-001) |
 | HAAC-AUTH-004 | This server does not allow sign-in with username and password. | NONE | Server has no 'homeassistant' auth provider; browser fallback (5.1) not built yet |
 | HAAC-AUTH-005 | Sign-in took too long or had too many wrong codes. Please start again. | NONE | HA aborted the login flow (too_many_retry, login_expired) or no longer knows the flow |
-| HAAC-AUTH-006 | Home Assistant does not let this user sign in here. Ask your administrator. | NONE | HTTP 403 from /auth/login_flow or /auth/token: user inactive, local-only or IP banned |
+| HAAC-AUTH-006 | Home Assistant does not let this user sign in here. Ask your administrator. | NONE | HTTP 403 from /auth/login_flow or /auth/token (inactive, local-only, IP banned) or HAB-AUTH-002 |
 | HAAC-AUTH-007 | You are signed out here, but Home Assistant could not be reached. Delete the token in Home Assistant under Profile, Security. | NONE | Sign-out could not revoke the refresh token in HA (no address answered or the token was locked) |
 | HAAC-SEC-001 | Your fingerprints have changed. Please sign in with your password. | SIGN_IN | Fingerprint key invalidated by a biometric enrolment change, or missing |
 | HAAC-SEC-002 | Secure storage on this device is not available. | NONE | Android Keystore could not create or use the key |
@@ -30,7 +30,7 @@ Every error of the app carries one of these codes (format `HAAC-<AREA>-<NNN>`) a
 | HAAC-BRG-003 | You are not allowed to control this device. | NONE | Bridge rejected a service call to a non-exposed entity (HAB-SVC-001) |
 | HAAC-BRG-004 | This action is not available for this device. | NONE | Bridge rejected a service outside the entity's domain (HAB-SVC-002) |
 | HAAC-BRG-005 | Home Assistant could not carry out the action. Please try again. | RETRY | Bridge or HA failed to carry out a request, or an unknown HAB code |
-| HAAC-BRG-006 | History is not available on this server. | NONE | Recorder or history not available on the server (HAB-HIST-001) |
+| HAAC-BRG-006 | History is not available on this server. | NONE | Recorder or history not available (HAB-HIST-001), or period too long for the bridge (HAB-HIST-002) |
 | HAAC-ENT-001 | This device no longer exists in Home Assistant. | NONE | Entity no longer exists in HA (HAB-ENT-001) |
 | HAAC-ENT-002 | This device does not support this action. | NONE | ServiceCallFactory rejected a control for the entity's domain or supported_features (concept 8, 17.2) |
 | HAAC-DB-001 | Your changes could not be saved. Please try again. | RETRY | Room write failed (SQLiteException) |

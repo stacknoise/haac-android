@@ -63,11 +63,13 @@ class ErrorFactoryTest {
     @ParameterizedTest
     @CsvSource(
         "HAB-AUTH-001, HAAC-AUTH-003",
+        "HAB-AUTH-002, HAAC-AUTH-006",
         "HAB-SVC-001, HAAC-BRG-003",
         "HAB-SVC-002, HAAC-BRG-004",
         "HAB-SVC-003, HAAC-BRG-005",
         "HAB-ENT-001, HAAC-ENT-001",
         "HAB-HIST-001, HAAC-BRG-006",
+        "HAB-HIST-002, HAAC-BRG-006",
         "HAB-WS-001, HAAC-BRG-005",
         "HAB-INT-000, HAAC-BRG-005",
         "HAB-SCH-001, HAAC-SCH-003",
@@ -82,5 +84,12 @@ class ErrorFactoryTest {
         val error = factory.fromBridgeError(hab)
         assertEquals(haac, error.code.code)
         assertEquals(hab, error.bridgeCode)
+    }
+
+    @Test
+    fun `a deactivated user from the bridge is an auth error`() {
+        val error = factory.fromBridgeError("HAB-AUTH-002")
+        assertInstanceOf(AuthException::class.java, error)
+        assertEquals(ErrorCode.AUTH_USER_BLOCKED, error.code)
     }
 }
