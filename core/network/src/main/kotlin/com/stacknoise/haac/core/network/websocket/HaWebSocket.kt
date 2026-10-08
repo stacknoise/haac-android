@@ -48,14 +48,14 @@ class OkHttpWebSocketFactory @Inject constructor(
     /** Connects in the background; failures arrive through [HaWebSocket.receive]. */
     override fun open(baseUrl: HttpUrl): HaWebSocket {
         CleartextPolicy.requireAllowed(baseUrl)
-        val incoming = Channel<JsonObject>(MAX_QUEUED_MESSAGES)
+        val incoming = Channel<JsonObject>(MaxQueuedMessages)
         val request = Request.Builder().url(baseUrl.endpoint("api/websocket")).build()
         return OkHttpWebSocket(client.newWebSocket(request, Forwarder(incoming, json)), incoming, errors)
     }
 }
 
 /** Messages that may wait for the reader before the connection is ended. */
-private const val MAX_QUEUED_MESSAGES = 4096
+private const val MaxQueuedMessages = 4096
 
 /** [HaWebSocket] over an OkHttp [WebSocket] whose messages [Forwarder] puts into [incoming]. */
 private class OkHttpWebSocket(

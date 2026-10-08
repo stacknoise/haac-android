@@ -51,8 +51,8 @@ class DefaultEndpointSelector @Inject constructor(
      * refresh token must not go to an unverified `http://` address (review S-01).
      */
     private suspend fun internalAllowed(server: ServerEntity, url: HttpUrl): Boolean {
-        if (url.isHttps || server.alwaysUseInternal) return true
-        val uuid = server.instanceUuid ?: return server.externalUrl == null
-        return homeNetwork.confirms(uuid, url.host)
+        val uuid = server.instanceUuid
+        return url.isHttps || server.alwaysUseInternal ||
+            if (uuid == null) server.externalUrl == null else homeNetwork.confirms(uuid, url.host)
     }
 }

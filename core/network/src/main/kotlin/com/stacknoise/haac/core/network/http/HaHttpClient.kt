@@ -53,15 +53,15 @@ class HaHttpClient @Inject constructor(
     }
 }
 
-/** The body as text; HAAC-NET-004 if it is larger than [MAX_BODY_BYTES], so a wrong server cannot fill the memory. */
+/** The body as text; HAAC-NET-004 if it is larger than [MaxBodyBytes], so a wrong server cannot fill the memory. */
 private fun ResponseBody.boundedString(): String {
     val source = source()
-    if (!source.request(MAX_BODY_BYTES + 1)) return string()
+    if (!source.request(MaxBodyBytes + 1)) return string()
     throw NetworkException(ErrorCode.NET_NOT_HOME_ASSISTANT)
 }
 
 /** Largest accepted response body of a REST call. */
-private const val MAX_BODY_BYTES = 1_000_000L
+private const val MaxBodyBytes = 1_000_000L
 
 /** [this] base URL with [path] appended, e.g. `auth/token`. */
 fun HttpUrl.endpoint(path: String): HttpUrl = newBuilder().addPathSegments(path).build()

@@ -33,7 +33,7 @@ class SecretJsonTest {
     }
 
     @Test
-    fun `a lone surrogate becomes the replacement character`() {
-        assertEquals("a�b", parse("a\uD800b").getValue("password").jsonPrimitive.content)
+    fun `a lone surrogate becomes a question mark`() {
+        assertEquals("a?b", parse("a\uD800b").getValue("password").jsonPrimitive.content)
     }
 }
