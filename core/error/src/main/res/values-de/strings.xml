@@ -14,6 +14,7 @@
     <string name="error_auth_invalid_mfa_code">Der Bestätigungscode ist falsch.</string>
     <string name="error_auth_session_expired">Deine Anmeldung ist abgelaufen. Bitte melde dich erneut an.</string>
     <string name="error_auth_sign_in_aborted">Die Anmeldung hat zu lange gedauert oder es wurden zu viele falsche Codes eingegeben. Bitte beginne von vorn.</string>
+    <string name="error_auth_revoke_failed">Du bist hier abgemeldet, aber Home Assistant war nicht erreichbar. Lösche den Token in Home Assistant unter Profil, Sicherheit.</string>
     <string name="error_auth_user_blocked">Home Assistant erlaubt diesem Benutzer hier keine Anmeldung. Frage deinen Administrator.</string>
     <string name="error_sec_biometrics_changed">Deine Fingerabdrücke haben sich geändert. Bitte melde dich mit deinem Passwort an.</string>
     <string name="error_sec_storage_unavailable">Der sichere Speicher auf diesem Gerät ist nicht verfügbar.</string>

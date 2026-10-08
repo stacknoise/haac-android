@@ -6,7 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.database.settings.SecuritySettings
+import com.stacknoise.haac.core.error.AuthException
 import com.stacknoise.haac.core.error.ErrorCode
+import com.stacknoise.haac.core.error.ErrorReporter
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.network.demo.DemoInstance
 import com.stacknoise.haac.core.network.session.InstanceSignOut
@@ -60,6 +62,7 @@ class SettingsViewModel @Inject constructor(
     private val tokens: TokenStore,
     private val fingerprint: FingerprintUnlock,
     private val security: SecuritySettings,
+    private val reporter: ErrorReporter,
 ) : ViewModel() {
     private val progress = MutableStateFlow(SettingsUiState())
     private val fingerprintEnabled = MutableStateFlow(false)
@@ -111,7 +114,9 @@ class SettingsViewModel @Inject constructor(
         progress.update { it.copy(busy = true, error = null) }
         viewModelScope.launch {
             try {
-                signOut.signOut(instance.id)
+                if (!signOut.signOut(instance.id)) {
+                    reporter.report(AuthException(ErrorCode.AUTH_REVOKE_FAILED), instance.id)
+                }
                 progress.update { it.copy(busy = false, signedOutServerId = instance.id) }
             } catch (e: HaacException) {
                 progress.update { it.copy(busy = false, error = e.code) }

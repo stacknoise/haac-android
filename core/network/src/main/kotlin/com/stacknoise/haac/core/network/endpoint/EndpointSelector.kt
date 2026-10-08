@@ -17,8 +17,8 @@ fun interface EndpointSelector {
 
 /**
  * Selection rules of concept 4.5: the internal address first if it is `https://`, the user allowed it
- * always, the instance has no ID yet (schema 1) or the home network check confirms it; then the external
- * address. Each candidate is probed before it is returned.
+ * always, the home network check confirms it, or the instance has no ID yet (schema 1) and no external address;
+ * then the external address. Each candidate is probed before it is returned.
  */
 class DefaultEndpointSelector @Inject constructor(
     private val homeNetwork: HomeNetworkCheck,
@@ -45,10 +45,14 @@ class DefaultEndpointSelector @Inject constructor(
         server.externalUrl?.toHttpUrlOrNull(),
     )
 
-    /** A device that is not this server cannot complete TLS; plain `http://` needs the home network check. */
+    /**
+     * A device that is not this server cannot complete TLS; plain `http://` needs the home network check or the
+     * user's choice. An instance without ID (schema 1) gets no exception while another address exists, because the
+     * refresh token must not go to an unverified `http://` address (review S-01).
+     */
     private suspend fun internalAllowed(server: ServerEntity, url: HttpUrl): Boolean {
-        val trusted = url.isHttps || server.alwaysUseInternal
-        val uuid = server.instanceUuid
-        return trusted || uuid == null || homeNetwork.confirms(uuid, url.host)
+        if (url.isHttps || server.alwaysUseInternal) return true
+        val uuid = server.instanceUuid ?: return server.externalUrl == null
+        return homeNetwork.confirms(uuid, url.host)
     }
 }

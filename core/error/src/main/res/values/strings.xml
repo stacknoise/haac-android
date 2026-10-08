@@ -14,6 +14,7 @@
     <string name="error_auth_invalid_mfa_code">The verification code is wrong.</string>
     <string name="error_auth_session_expired">Your sign-in has expired. Please sign in again.</string>
     <string name="error_auth_sign_in_aborted">Sign-in took too long or had too many wrong codes. Please start again.</string>
+    <string name="error_auth_revoke_failed">You are signed out here, but Home Assistant could not be reached. Delete the token in Home Assistant under Profile, Security.</string>
     <string name="error_auth_user_blocked">Home Assistant does not let this user sign in here. Ask your administrator.</string>
     <string name="error_sec_biometrics_changed">Your fingerprints have changed. Please sign in with your password.</string>
     <string name="error_sec_storage_unavailable">Secure storage on this device is not available.</string>

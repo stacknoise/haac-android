@@ -2,7 +2,10 @@ package com.stacknoise.haac.feature.instance.data
 
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
+import com.stacknoise.haac.core.error.AuthException
+import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.ErrorFactory
+import com.stacknoise.haac.core.error.ErrorReporter
 import com.stacknoise.haac.core.error.database
 import com.stacknoise.haac.core.network.session.InstanceSignOut
 import com.stacknoise.haac.feature.instance.domain.RemoveOutcome
@@ -16,6 +19,7 @@ class InstanceEditor @Inject constructor(
     private val signOut: InstanceSignOut,
     private val switcher: InstanceSwitcher,
     private val errors: ErrorFactory,
+    private val reporter: ErrorReporter,
 ) {
     /** Stores the local [name] and [accent] colour of instance [id]. */
     suspend fun setAppearance(id: String, name: String, accent: Long) {
@@ -29,7 +33,7 @@ class InstanceEditor @Inject constructor(
      */
     suspend fun remove(id: String): RemoveOutcome {
         val wasActive = errors.database { active.activeServerId.first() } == id
-        signOut.signOut(id)
+        if (!signOut.signOut(id)) reporter.report(AuthException(ErrorCode.AUTH_REVOKE_FAILED), null)
         errors.database { servers.delete(id) }
         return if (wasActive) next() else RemoveOutcome.Kept
     }

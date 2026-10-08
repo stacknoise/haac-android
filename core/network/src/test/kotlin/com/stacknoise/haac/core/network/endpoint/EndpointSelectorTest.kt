@@ -83,6 +83,13 @@ class EndpointSelectorTest {
     }
 
     @Test
+    fun `instance without ID never sends its sign-in to an unverified http address while an external one exists`() =
+        runTest {
+            assertEquals(external, selector.select(server(uuid = null)).toString())
+            assertEquals(listOf(external), probed)
+        }
+
+    @Test
     fun `unreachable internal address falls back to external`() = runTest {
         home = true
         unreachable += internal

@@ -3,7 +3,10 @@ package com.stacknoise.haac.feature.instance.data
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.server.ServerEntity
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
+import com.stacknoise.haac.core.error.AuthException
 import com.stacknoise.haac.core.error.DefaultErrorFactory
+import com.stacknoise.haac.core.error.ErrorCode
+import com.stacknoise.haac.core.error.ErrorReporter
 import com.stacknoise.haac.core.network.session.InstanceSignOut
 import com.stacknoise.haac.feature.instance.domain.RemoveOutcome
 import com.stacknoise.haac.feature.instance.domain.SwitchStep
@@ -21,7 +24,8 @@ class InstanceEditorTest {
     private val servers = mockk<ServerDao>(relaxed = true)
     private val signOut = mockk<InstanceSignOut>(relaxed = true)
     private val switcher = mockk<InstanceSwitcher>(relaxed = true)
-    private val editor = InstanceEditor(servers, active, signOut, switcher, DefaultErrorFactory())
+    private val reporter = mockk<ErrorReporter>(relaxed = true)
+    private val editor = InstanceEditor(servers, active, signOut, switcher, DefaultErrorFactory(), reporter)
 
     private fun server(id: String) = ServerEntity(
         id = id,
@@ -43,12 +47,22 @@ class InstanceEditorTest {
     @Test
     fun `an inactive instance is signed out and deleted, nothing else changes`() = runTest {
         coEvery { active.activeServerId } returns flowOf("a")
+        coEvery { signOut.signOut(any()) } returns true
         assertEquals(RemoveOutcome.Kept, editor.remove("b"))
         coVerifyOrder {
             signOut.signOut("b")
             servers.delete("b")
         }
         coVerify(exactly = 0) { active.setActive(any()) }
+    }
+
+    @Test
+    fun `a sign-out that HA did not confirm is reported`() = runTest {
+        coEvery { active.activeServerId } returns flowOf("a")
+        coEvery { signOut.signOut("b") } returns false
+        editor.remove("b")
+        coVerify { reporter.report(match { it is AuthException && it.code == ErrorCode.AUTH_REVOKE_FAILED }, null) }
+        coVerify { servers.delete("b") }
     }
 
     @Test

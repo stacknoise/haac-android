@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 class InstanceShortcuts @Inject constructor(
     @ApplicationContext private val context: Context,
     private val servers: ServerDao,
+    private val switches: PendingInstanceSwitch,
 ) {
     /** Keeps the shortcuts in step with the stored instances while [scope] lives. */
     fun start(scope: CoroutineScope) {
@@ -38,7 +39,7 @@ class InstanceShortcuts @Inject constructor(
                 .setShortLabel(row.displayName)
                 .setLongLabel(row.displayName)
                 .setIcon(IconCompat.createWithResource(context, R.mipmap.ic_launcher))
-                .setIntent(PendingInstanceSwitch.intent(context, row.id))
+                .setIntent(switches.intent(row.id))
                 .build()
         }
         ShortcutManagerCompat.setDynamicShortcuts(context, shortcuts)

@@ -21,17 +21,22 @@ class InstanceSignOut @Inject constructor(
     private val demo: DemoWorld,
 ) {
     /**
-     * Revokes and deletes the token of [serverId]. The demo (concept 20.4) calls no server: its placeholder token is
-     * deleted and its saved state with it.
+     * Revokes and deletes the token of [serverId]; false if HA could not revoke it (no address answered or the token
+     * was locked), so the caller can tell the user (review S-02). The demo (concept 20.4) calls no server: its
+     * placeholder token is deleted and its saved state with it.
      */
-    suspend fun signOut(serverId: String) {
+    suspend fun signOut(serverId: String): Boolean {
         if (DemoInstance.isDemo(serverId)) {
             tokens.delete(serverId)
             demo.discard()
-            return
+            return true
         }
         val url = address(serverId)
-        if (url == null) tokens.delete(serverId) else sessions.create(serverId, url).signOut()
+        if (url == null) {
+            tokens.delete(serverId)
+            return false
+        }
+        return sessions.create(serverId, url).signOut()
     }
 
     /** The address to revoke the token at (concept 4.5), or null if none answers. */
