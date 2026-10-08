@@ -97,6 +97,12 @@ enum class ErrorCode(
         ErrorAction.NONE,
         "HTTP 403 from /auth/login_flow or /auth/token: user inactive, local-only or IP banned",
     ),
+    AUTH_REVOKE_FAILED(
+        "HAAC-AUTH-007",
+        R.string.error_auth_revoke_failed,
+        ErrorAction.NONE,
+        "Sign-out could not revoke the refresh token in HA (no address answered or the token was locked)",
+    ),
     SEC_BIOMETRICS_CHANGED(
         "HAAC-SEC-001",
         R.string.error_sec_biometrics_changed,

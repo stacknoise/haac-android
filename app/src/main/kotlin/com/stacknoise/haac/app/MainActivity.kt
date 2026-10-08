@@ -69,6 +69,6 @@ class MainActivity : FragmentActivity() {
 
     /** Passes the instance of a shortcut [intent] on to the main area. */
     private fun requestSwitchOf(intent: Intent?) {
-        PendingInstanceSwitch.serverIdOf(intent)?.let(pendingSwitch::request)
+        pendingSwitch.serverIdOf(intent)?.let(pendingSwitch::request)
     }
 }

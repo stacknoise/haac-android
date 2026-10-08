@@ -1,6 +1,8 @@
 package com.stacknoise.haac.core.network.http
 
+import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.ErrorFactory
+import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.network.server.CleartextPolicy
 import java.io.IOException
 import javax.inject.Inject
@@ -8,6 +10,7 @@ import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import okhttp3.coroutines.executeAsync
 
 /** Status code and body text of a HA response. */
@@ -43,12 +46,22 @@ class HaHttpClient @Inject constructor(
     private suspend fun execute(request: Request): HaResponse {
         CleartextPolicy.requireAllowed(request.url)
         return try {
-            client.newCall(request).executeAsync().use { HaResponse(it.code, it.body.string()) }
+            client.newCall(request).executeAsync().use { HaResponse(it.code, it.body.boundedString()) }
         } catch (e: IOException) {
             throw errors.from(e)
         }
     }
 }
+
+/** The body as text; HAAC-NET-004 if it is larger than [MaxBodyBytes], so a wrong server cannot fill the memory. */
+private fun ResponseBody.boundedString(): String {
+    val source = source()
+    if (!source.request(MaxBodyBytes + 1)) return string()
+    throw NetworkException(ErrorCode.NET_NOT_HOME_ASSISTANT)
+}
+
+/** Largest accepted response body of a REST call. */
+private const val MaxBodyBytes = 1_000_000L
 
 /** [this] base URL with [path] appended, e.g. `auth/token`. */
 fun HttpUrl.endpoint(path: String): HttpUrl = newBuilder().addPathSegments(path).build()

@@ -1,10 +1,14 @@
 package com.stacknoise.haac.core.network.auth
 
+import java.nio.ByteBuffer
 import java.nio.CharBuffer
+import java.nio.charset.CodingErrorAction
+import kotlin.math.ceil
 
 /**
  * Builds the JSON body with the password without ever creating a String of it (concept 5.1).
- * Every intermediate buffer is overwritten; the caller wipes the returned bytes after the request.
+ * Every intermediate buffer is overwritten and the UTF-8 bytes end in an exactly sized array; the caller
+ * wipes them after the request. Copies inside OkHttp and Okio cannot be wiped (review S-04).
  */
 internal object SecretJson {
     /** `{"client_id": …, "username": …, "password": …}` as UTF-8 bytes. */
@@ -61,12 +65,19 @@ internal object SecretJson {
             buffer[length++] = c
         }
 
-        /** Encodes the content as UTF-8 and wipes the encoder's buffer. */
+        /**
+         * Encodes the content as UTF-8 straight into a buffer of our own, copies the result into an exactly sized
+         * array and wipes the buffer, so no stray copy is left behind. Lone surrogates become `?`.
+         */
         fun toUtf8(): ByteArray {
-            val encoded = Charsets.UTF_8.newEncoder().encode(CharBuffer.wrap(buffer, 0, length))
-            val bytes = ByteArray(encoded.remaining())
-            encoded.get(bytes)
-            if (encoded.hasArray()) encoded.array().fill(0)
+            val encoder = Charsets.UTF_8.newEncoder()
+                .onMalformedInput(CodingErrorAction.REPLACE)
+                .onUnmappableCharacter(CodingErrorAction.REPLACE)
+            val out = ByteBuffer.allocate(ceil(length * encoder.maxBytesPerChar().toDouble()).toInt())
+            encoder.encode(CharBuffer.wrap(buffer, 0, length), out, true)
+            encoder.flush(out)
+            val bytes = out.array().copyOf(out.position())
+            out.array().fill(0)
             return bytes
         }
 

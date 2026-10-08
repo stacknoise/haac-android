@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -25,8 +24,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,7 +58,9 @@ import com.stacknoise.haac.feature.onboarding.domain.SignInResult
 fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hiltViewModel()) {
     SecureWindow()
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val password = rememberTextFieldState()
+    // Not rememberTextFieldState(): its saver would write the password into the saved-state bundle (review S-03).
+    val password = remember { TextFieldState() }
+    DisposableEffect(Unit) { onDispose { password.clearText() } }
     val signedIn by rememberUpdatedState(onSignedIn)
     val activity = LocalContext.current.findActivity() as? FragmentActivity
     LaunchedEffect(state.signedInServerId) {
@@ -76,7 +79,10 @@ fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hi
         actions = OnboardingActions(
             onServerSelected = viewModel::onServerSelected,
             onOtherAddress = viewModel::onOtherAddress,
-            onTryDemo = viewModel::onTryDemo,
+            onTryDemo = {
+                password.clearText()
+                viewModel.onTryDemo()
+            },
             onRescan = viewModel::onRescan,
             onManualUrlChanged = viewModel::onManualUrlChanged,
             onUsernameChanged = viewModel::onUsernameChanged,
@@ -84,7 +90,10 @@ fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hi
             onSignIn = signIn,
             onSubmitCode = viewModel::onSubmitCode,
             onRetryBridgeCheck = viewModel::onRetryBridgeCheck,
-            onStartOver = viewModel::onStartOver,
+            onStartOver = {
+                password.clearText()
+                viewModel.onStartOver()
+            },
             onCleartextConfirmed = {
                 viewModel.onCleartextConfirmed()
                 signIn()
@@ -262,7 +271,7 @@ private fun OnboardingPreview() {
                 selectedUrl = "http://192.168.1.10:8123",
                 username = "anna",
             ),
-            password = rememberTextFieldState(),
+            password = remember { TextFieldState() },
             actions = OnboardingActions(),
         )
     }

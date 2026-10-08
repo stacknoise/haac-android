@@ -33,7 +33,10 @@ import com.stacknoise.haac.feature.onboarding.R
 /** Where the install hint links to (concept 4.2 step 4). */
 private const val BridgeRepositoryUrl = "https://github.com/stacknoise/haac-bridge"
 
-/** Username and password fields of the mockup; the password never leaves [password] as a String. */
+/**
+ * Username and password fields of the mockup. [password] is the field state, not saved across process death;
+ * Compose keeps the text in internal Strings while the field exists, which Android does not allow to avoid.
+ */
 @Composable
 internal fun CredentialFields(state: OnboardingUiState, password: TextFieldState, actions: OnboardingActions) {
     Spacer(Modifier.height(16.dp))
