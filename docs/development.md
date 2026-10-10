@@ -226,7 +226,7 @@ NET_UNREACHABLE(
 
 ### The concept document
 
-`docs/concept.md` here is the **leading copy** of the specification; `stacknoise/haac-bridge` holds an identical copy. A change goes first into this repository; after it is merged, the copy is taken over into the bridge repository in its own pull request (same blob). The online document (Claude Doc) is updated by hand. Read the matching chapter before changing behaviour; items in concept 14.5 ("Open points") are undecided: ask, or implement behind a clearly marked TODO.
+`docs/concept.md` here is the **leading copy** of the specification; `stacknoise/haac-bridge` holds an identical copy. A change goes first into this repository; after it is merged, the copy is taken over into the bridge repository in its own pull request (same blob). The online document, the Claude Doc [HA Android Client (HAAC) – Technical Concept](https://claude.ai/artifact/3dxVZDWcZqvvJHdPj5hnvz), is kept in step automatically: whoever changes `docs/concept.md` (a coding agent with access to Claude Docs) applies the same change to the Claude Doc in the same task, section by section, and says so in the pull request. Text, tables and code blocks must match; images are uploaded there separately. A coding agent without access to Claude Docs says in the pull request that the doc still needs the update. Read the matching chapter before changing behaviour; items in concept 14.5 ("Open points") are undecided: ask, or implement behind a clearly marked TODO.
 
 ## 10. Versions and releases
 

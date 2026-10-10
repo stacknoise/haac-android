@@ -5,6 +5,7 @@ Native Android client for Home Assistant (HA). This repository contains the Andr
 ## Source of truth
 
 - `docs/concept.md` is the full technical concept. Read the chapter that matches the task before writing code; do not work from this file alone.
+- After changing `docs/concept.md`, apply the same change to the online Claude Doc of the concept (https://claude.ai/artifact/3dxVZDWcZqvvJHdPj5hnvz) in the same task, and copy the file to `stacknoise/haac-bridge` after the merge (`docs/development.md`, *The concept document*).
 - `docs/mockups/png/M-0x-*.png` shows one screen each; `docs/mockups/haac-mockups-1c.html` is the interactive design source (open it in a browser). Chapter 15 of the concept describes every screen in text and lists the design tokens.
 - Precedence: concept chapters 1–14 define behaviour and data; mockups define layout, style and wording. If they disagree, follow the concept; `docs/concept.md` 15.5 lists the decisions that override the mockups.
 - Items in concept 14.5 ("Open points") are undecided. Do not pick an answer silently: ask, or implement behind a clearly marked TODO.
