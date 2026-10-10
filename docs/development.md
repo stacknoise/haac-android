@@ -128,7 +128,7 @@ The factories of the app:
 | `EntityControlFactory` | control model per entity domain (switch, sensor, climate) |
 | `TileFactory` | tile spec with default size per domain |
 | `HistoryChartFactory` | history query (states or statistics) and chart kind per entity |
-| `ServiceCallFactory` | typed `haac_bridge/call_service` requests, checked against `supported_features` |
+| `ServiceCallFactory` | typed `haac_bridge/call_service` requests, checked against `supported_features`; only services and `service_data` keys of the bridge's list (concept 11.4) |
 | `BridgeMessageFactory` | WebSocket commands with message IDs |
 | `HaWebSocketFactory` | WebSocket to `/api/websocket` of one address |
 | `KeyFactory` / `CipherFactory` | Keystore keys and ciphers |
@@ -245,5 +245,7 @@ NET_UNREACHABLE(
 - Fingerprint unlock uses `BiometricPrompt` with a `CryptoObject` (Class 3); a UI-only check is not acceptable.
 - Login uses `client_id` `https://stacknoise.com/haac/` and `redirect_uri` `https://stacknoise.com/haac/auth-callback`. Do not change them; existing refresh tokens are bound to the `client_id`.
 - The app talks to entities only through `haac_bridge/*` WebSocket commands, never through Home Assistant's generic state and service APIs.
+- The bridge carries out only the services and `service_data` keys listed in concept 11.4 (others: `HAB-SVC-002`, `HAB-WS-001`). A new service or key in `ServiceCallFactory` needs a bridge release that allows it first, and an entry in that table.
+- The bridge never sends attributes that name other entities or carry an access link (concept 11.3); the app must not depend on them.
 - Local aliases, layout and tile sizes never write back to Home Assistant.
 - Only add dependencies under Apache-2.0-compatible licenses (Apache-2.0, MIT, BSD), never GPL. No license headers in source files.

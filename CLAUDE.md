@@ -102,6 +102,7 @@ LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 - Fingerprint unlock must use `BiometricPrompt` with a `CryptoObject` (Class 3); a UI-only check is not acceptable (5.4).
 - No HTTP logging of `/auth/*` requests, also in debug builds.
 - The app talks to entities only through `haac_bridge/*` WebSocket commands, never through HA's generic state/service APIs (11, 13.1).
+- The bridge carries out only the services and `service_data` keys in the table of concept 11.4. A new service or key in `ServiceCallFactory` needs the bridge to allow it first. Attributes that name other entities (`entity_id`, `entities`, `*_entity_id`) and `entity_picture`/`access_token` never arrive from the bridge (11.3).
 - Local aliases, layout and tile sizes never write back to HA.
 - Data of different HA instances is strictly separated by `serverId` (4.4, 12).
 
