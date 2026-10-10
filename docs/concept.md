@@ -765,7 +765,7 @@ Mitigations:
 ### 13.3 Standards and checks
 
 - Aligned with **OWASP MASVS** (storage, crypto, auth, network, platform) and OAuth 2.0 for Native Apps (RFC 8252) incl. PKCE for the browser fallback.
-- Release builds: R8 obfuscation, `debuggable=false`; cleartext only to private addresses, enforced by `CleartextPolicy` (4.3); only system CAs are trusted (self-signed certificates via per-instance pinning).
+- Release builds: R8 obfuscation and resource shrinking (as built: `isMinifyEnabled` and `isShrinkResources` in the application convention plugin, rules in `app/proguard-rules.pro`; the release workflow keeps `mapping.txt` as an artifact for crash reports), `debuggable=false`; cleartext only to private addresses, enforced by `CleartextPolicy` (4.3); only system CAs are trusted (self-signed certificates via per-instance pinning).
 - Dependency scanning (Dependabot/Renovate) and static analysis (Android Lint security checks, Detekt) in CI; `bandit` and `ruff` for the integration.
 
 ### 13.4 Bridge code review (October 2026)
