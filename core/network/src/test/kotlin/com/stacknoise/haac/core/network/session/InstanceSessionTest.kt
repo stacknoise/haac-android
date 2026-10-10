@@ -4,6 +4,7 @@ import com.stacknoise.haac.core.error.AuthException
 import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.KeystoreException
+import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.network.auth.TokenClient
 import com.stacknoise.haac.core.network.http.HaHttpClient
 import com.stacknoise.haac.core.security.token.TokenProtection
@@ -77,6 +78,15 @@ class InstanceSessionTest {
         server.enqueue(MockResponse.Builder().code(400).body("""{"error":"invalid_grant"}""").build())
         assertEquals(ErrorCode.AUTH_SESSION_EXPIRED, assertThrows<AuthException> { session.accessToken() }.code)
         assertFalse("s1" in stored)
+    }
+
+    @Test
+    fun `rejected refresh token at an unverified address is kept`() = runTest {
+        server.enqueue(MockResponse.Builder().code(401).body("""{"error":"invalid_grant"}""").build())
+        val tokens = TokenClient(HaHttpClient(OkHttpClient(), DefaultErrorFactory()), Json { ignoreUnknownKeys = true })
+        val unverified = InstanceSession("s1", server.url("/"), tokens, store, verified = false) { now }
+        assertEquals(ErrorCode.NET_UNREACHABLE, assertThrows<NetworkException> { unverified.accessToken() }.code)
+        assertTrue("s1" in stored)
     }
 
     @Test
