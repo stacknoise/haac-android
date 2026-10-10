@@ -76,6 +76,7 @@ class DefaultErrorFactory @Inject constructor() : ErrorFactory {
             "HAB-SCH-004" to ErrorCode.SCH_CONFLICT,
             "HAB-SCH-005" to ErrorCode.SCH_LIMIT,
             "HAB-SCH-006" to ErrorCode.SCH_NOT_ALLOWED,
+            "HAB-SCH-007" to ErrorCode.BRG_ACTION_FAILED,
             "HAB-WS-001" to ErrorCode.BRG_ACTION_FAILED,
             "HAB-INT-000" to ErrorCode.BRG_ACTION_FAILED,
         )

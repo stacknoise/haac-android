@@ -155,7 +155,7 @@ enum class ErrorCode(
         "HAAC-BRG-005",
         R.string.error_brg_action_failed,
         ErrorAction.RETRY,
-        "Bridge or HA failed to carry out a request, or an unknown HAB code",
+        "Bridge or HA failed to carry out a request (also HAB-SCH-007), or an unknown HAB code",
     ),
     BRG_HISTORY_UNAVAILABLE(
         "HAAC-BRG-006",

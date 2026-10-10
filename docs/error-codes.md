@@ -29,7 +29,7 @@ Every error of the app carries one of these codes (format `HAAC-<AREA>-<NNN>`) a
 | HAAC-BRG-002 | HAAC Bridge on the server needs an update. | NONE | Bridge api_version outside the range the app supports |
 | HAAC-BRG-003 | You are not allowed to control this device. | NONE | Bridge rejected a service call to a non-exposed entity (HAB-SVC-001) |
 | HAAC-BRG-004 | This action is not available for this device. | NONE | Bridge rejected a service outside the entity's domain (HAB-SVC-002) |
-| HAAC-BRG-005 | Home Assistant could not carry out the action. Please try again. | RETRY | Bridge or HA failed to carry out a request, or an unknown HAB code |
+| HAAC-BRG-005 | Home Assistant could not carry out the action. Please try again. | RETRY | Bridge or HA failed to carry out a request (also HAB-SCH-007), or an unknown HAB code |
 | HAAC-BRG-006 | History is not available on this server. | NONE | Recorder or history not available (HAB-HIST-001), or period too long for the bridge (HAB-HIST-002) |
 | HAAC-ENT-001 | This device no longer exists in Home Assistant. | NONE | Entity no longer exists in HA (HAB-ENT-001) |
 | HAAC-ENT-002 | This device does not support this action. | NONE | ServiceCallFactory rejected a control for the entity's domain or supported_features (concept 8, 17.2) |

@@ -592,7 +592,7 @@ All entity traffic runs over HA's standard WebSocket endpoint `wss://<server>/ap
 | `haac_bridge/info` | – | Bridge version, API version, supported domains, HA version, `instance_id`, `features` (list of optional features of the bridge, for example `["schedules"]`; missing counts as empty) and `urls` with the `internal`, `external` and `cloud` address configured in HA (each `null` if not set) (4.5) |
 | `haac_bridge/exposure/revision` | – | `revision` (hash over the exposed entity IDs and their configured names), entity count |
 | `haac_bridge/entities/list` | – | `revision`, list of entity descriptors incl. current state |
-| `haac_bridge/subscribe_entities` | – | Empty result, then events: `a` initial and added states, `c` changes, `r` removals (HA's compressed state format) and `exposure_changed` (11.3) |
+| `haac_bridge/subscribe_entities` | – | Empty result, then events: `a` initial and added states, `c` changes, `r` removals (HA's compressed state format) and `exposure_changed` (11.3); one per connection, a new one ends the previous |
 | `haac_bridge/call_service` | `entity_id`, `service`, `service_data` (without target keys) | Empty result, or an error reply with a HAB code (18.3) |
 | `haac_bridge/history` | `entity_ids[]`, `start`, `end`, `minimal_response` | State history per entity |
 | `haac_bridge/statistics` | `entity_ids[]`, `start`, `end`, `period` (hour/day/week/month), `types` | Long-term statistics (mean/min/max/sum) |
@@ -602,8 +602,8 @@ All entity traffic runs over HA's standard WebSocket endpoint `wss://<server>/ap
 | `haac_bridge/schedules/create` | `name`, `when`, `action`, `entities[]`, `enabled` | The created schedule; always owned by the caller (19.4) |
 | `haac_bridge/schedules/update` | `schedule_id`, `updated_at` of the edited version and the changed fields | The updated schedule; `HAB-SCH-004` if it changed in the meantime (19.4) |
 | `haac_bridge/schedules/delete` | `schedule_id` | Empty result; an unknown `schedule_id` is not an error (19.4) |
-| `haac_bridge/schedules/run_now` | `schedule_id` | Empty result as soon as the run has started; its `last_run` follows with `schedules_changed`; does not change the plan (19.4) |
-| `haac_bridge/subscribe_schedules` | – | Empty result, then `schedules_changed` events with the new `revision` (19.4) |
+| `haac_bridge/schedules/run_now` | `schedule_id` | Empty result as soon as the run has started; its `last_run` follows with `schedules_changed`; does not change the plan; `HAB-SCH-007` while the schedule runs or within 10 s of the last manual run (19.4) |
+| `haac_bridge/subscribe_schedules` | – | Empty result, then `schedules_changed` events with the new `revision`; one per connection, a new one ends the previous (19.4) |
 
 ### 11.3 Message examples
 
@@ -651,6 +651,8 @@ Error reply (format of HA's WebSocket API, `code` = HAB code from 18.3):
 ```
 
 Subscription (`haac_bridge/subscribe_entities`): an empty result, then events in Home Assistant's compressed state format, limited to the caller's exposed entities. Keys: `s` state, `a` attributes, `lc`/`lu` last changed/updated (Unix time), `c` context; in a change, `+` holds new or changed values and `-` removed attribute names.
+
+Attributes that name other entities or carry an access link are never sent, neither in `entities/list` nor in events nor in `history`: `entity_id`, `entities`, every name ending in `_entity_id`, `entity_picture` and `access_token`. A group or min/max sensor therefore does not reveal its members. All other attributes are passed on unchanged, so the detail screen still shows them (8.1).
 
 ```json
 {"id": 14, "type": "haac_bridge/subscribe_entities"}
@@ -749,6 +751,7 @@ Mitigations:
 | Manipulated service call to a non-exposed entity | Bridge checks `entity_id` against exposure and the service and its `service_data` keys against a fixed list per domain (11.4) before calling HA |
 | Overloading HA with large history or statistics requests | At most 50 entities per request and a maximum period per kind (10.3); longer periods are refused with `HAB-HIST-002` |
 | Reading the history of another user's deleted schedule | Entities of the platform `haac_bridge` stay hidden after their deletion, too |
+| Attributes reveal entities that are not shared (members of a group, source of a min/max sensor) or carry an access link | The bridge leaves out `entity_id`, `entities`, `*_entity_id`, `entity_picture` and `access_token` in descriptors, events and history (11.3) |
 | Pasted YAML that reads files or environment variables in the bridge's options flow | The import accepts plain YAML only; `!include`, `!env_var` and `!secret` are rejected |
 | A deactivated HA user keeps using the bridge | The bridge refuses the user (`HAB-AUTH-002`); HA also revokes the user's tokens, which closes open connections |
 | A hanging integration blocks commands or schedules | Bridge service calls time out after 15 s (`HAB-SVC-003`) |
@@ -767,34 +770,34 @@ Mitigations:
 
 ### 13.4 Bridge code review (October 2026)
 
-A review of the bridge (version 0.2.2) found no critical issue: 1 high, 3 medium and 14 low findings plus 6 notes, each with a work package (WP). The findings are fixed one pull request per package; the state on 8 October 2026:
+A review of the bridge (version 0.2.2) found no critical issue: 1 high, 3 medium and 14 low findings plus 6 notes, each with a work package (WP). The findings are fixed one pull request per package; the state on 10 October 2026, with bridge 0.3.0:
 
 | Finding | Severity | Work package | State |
 | --- | --- | --- | --- |
 | S1 a HA token is not limited to the bridge (13.1) | High | WP20–WP25: bridge-owned tokens, API v2 | Open, planned for bridge 1.0; needs a spike and a concept first (14.5) |
 | U1 schedules of UI users deleted while the config entry is not loaded | Medium | WP1 | Done in 0.2.3 (#73) |
-| S2 history and statistics without limits | Medium | WP8 | Done for 0.3.0 (#83): 50 entities, 366 days history, 32 days hourly and 5 years other statistics, `HAB-HIST-002` |
-| P1 costly filter for every state change of every subscription | Medium | WP3, WP11 | Domain check first done in 0.2.3 (#75); index and caches open (WP11) |
+| S2 history and statistics without limits | Medium | WP8 | Done in 0.3.0 (#83): 50 entities, 366 days history, 32 days hourly and 5 years other statistics, `HAB-HIST-002` |
+| P1 costly filter for every state change of every subscription | Medium | WP3, WP11 | Domain check first done in 0.2.3 (#75); caches done for 0.3.0 (#85) |
 | S3 deleted bridge entities counted as exposed | Low | WP2 | Done in 0.2.3 (#74) |
-| S4 any service of the domain was allowed | Low | WP9 | Done for 0.3.0 (#81): list of services and `service_data` keys (11.4) |
-| S5 all attributes are sent to the app | Low | WP19 | Open (0.3.0) |
+| S4 any service of the domain was allowed | Low | WP9 | Done in 0.3.0 (#81): list of services and `service_data` keys (11.4) |
+| S5 all attributes are sent to the app | Low | WP19 | Done in 0.3.0 (#93): a denylist instead of the planned allowlist, because the app shows all attributes (8.1); attributes that name other entities or carry an access link are left out |
 | S6 YAML import resolved `!include` and `!env_var` | Low | WP4 | Done in 0.2.3 (#76) |
-| S7 no limit for subscriptions and `run_now` | Low | WP10 | Open (0.3.0) |
+| S7 no limit for subscriptions and `run_now` | Low | WP10 | Done in 0.3.0 (#86): one subscription of each kind per connection, `run_now` 10 s apart (`HAB-SCH-007`) |
 | S8 deactivated users not refused | Low | WP6 | Done in 0.2.3 (#78): `HAB-AUTH-002` |
 | S9 CI actions not pinned | Low | WP7 | Done in 0.2.3 (#79) |
-| U2 a run due during a reload is lost | Low | WP15 | Open (0.3.0) |
+| U2 a run due during a reload is lost | Low | WP15 | Done in 0.3.0 (#89): it waits and runs once after the setup, within 5 minutes |
 | U3 service calls without a timeout | Low | WP5 | Done in 0.2.3 (#77): 15 s |
-| U4 options flow can overwrite parallel changes | Low | WP16 | Open (0.3.0) |
-| P2 every schedule change updates all schedule entities | Low | WP12 | Open (0.3.0) |
-| P3 exposed set recomputed for every request | Low | WP11 | Open (0.3.0) |
-| P4 every run writes the whole schedule file at once | Low | WP13 | Open (0.3.0) |
-| P5 runs switch one entity after another; `run_now` waits for the run | Low | WP14 | Done for 0.3.0 (#82): parallel; `run_now` replies at once |
-| S10 manual run by an admin is logged as the owner | Note | WP18 | Open (0.3.0) |
+| U4 options flow can overwrite parallel changes | Low | WP16 | Done in 0.3.0 (#91): the flow saves against the current entry (HA reads it live), and a user deleted while the form was open is not added back |
+| P2 every schedule change updates all schedule entities | Low | WP12 | Done in 0.3.0 (#87): one signal per schedule; the owner's name is read again only when the owner changes |
+| P3 exposed set recomputed for every request | Low | WP11 | Done in 0.3.0 (#85) |
+| P4 every run writes the whole schedule file at once | Low | WP13 | Done in 0.3.0 (#88): run results and system pauses are written after 1 s, together; changes by users at once |
+| P5 runs switch one entity after another; `run_now` waits for the run | Low | WP14 | Done in 0.3.0 (#82): parallel; `run_now` replies at once |
+| S10 manual run by an admin is logged as the owner | Note | WP18 | Done in 0.3.0 (#90): a manual run uses the caller's context |
 | S11 `info` for unconfigured users; binding by login name | Note | WP25 | Open (1.0) |
-| U5 duplicate YAML entries for one user | Note | WP17 | Open (0.3.0) |
-| U6 wildcard check only in the UI | Note | WP17 | Open (0.3.0) |
-| P6 schedule store sorts on every access | Note | – | Open, with WP12 |
-| P7 sun trigger computes up to 367 days | Note | – | Open, with WP12 |
+| U5 duplicate YAML entries for one user | Note | WP17 | Done in 0.3.0 (#92): Repairs issue `HAB-CFG-003`; the first entry is used |
+| U6 wildcard check only in the UI | Note | WP17 | Done in 0.3.0 (#92): one check (`domain.pattern`) for YAML, UI and import |
+| P6 schedule store sorts on every access | Note | WP12 | Done in 0.3.0 (#87): sorted once per change |
+| P7 sun trigger computes up to 367 days | Note | – | Open; only weekday sets with long polar gaps reach many days, kept as is |
 
 Decisions taken during the review: history up to 366 days instead of 31, because the app reads states of switches and climate entities over any custom range; hourly statistics up to 32 days because counters read one lead period; daily statistics up to 5 years; the service list is what the app's `ServiceCallFactory` sends plus `switch.toggle` for schedules; `run_now` replies at once. The app maps the new codes since #91: `HAB-AUTH-002` → `HAAC-AUTH-006`, `HAB-HIST-002` → `HAAC-BRG-006`. Pull request numbers refer to `stacknoise/haac-bridge` unless stated otherwise.
 
@@ -1436,6 +1439,7 @@ Every error of the bridge is a `HaacBridgeError` with a unique code. All codes a
 | --- | --- | --- |
 | HAB-CFG-001 | The haac\_bridge configuration in configuration.yaml is invalid | – (HA admin, Repairs) |
 | HAB-CFG-002 | A user in the haac\_bridge configuration does not exist in Home Assistant | – (HA admin, Repairs) |
+| HAB-CFG-003 | Several entries of the haac\_bridge configuration refer to the same user | – (HA admin, Repairs) |
 | HAB-AUTH-001 | The request has no signed-in Home Assistant user | HAAC-AUTH-003 |
 | HAB-AUTH-002 | Your Home Assistant user is deactivated | HAAC-AUTH-006 |
 | HAB-SVC-001 | You are not allowed to control this device | HAAC-BRG-003 |
@@ -1450,6 +1454,7 @@ Every error of the bridge is a `HaacBridgeError` with a unique code. All codes a
 | HAB-SCH-004 | The schedule was changed in the meantime | HAAC-SCH-004 |
 | HAB-SCH-005 | You have reached the limit of schedules | HAAC-SCH-005 |
 | HAB-SCH-006 | You are not allowed to change this schedule | HAAC-SCH-006 |
+| HAB-SCH-007 | This schedule ran a moment ago, try again shortly | HAAC-BRG-005 |
 | HAB-WS-001 | The request could not be understood | HAAC-BRG-005 |
 | HAB-INT-000 | Something went wrong in HAAC Bridge | HAAC-BRG-005 |
 
@@ -1529,10 +1534,10 @@ Limits: at most 50 schedules per user. `next_run` is never stored; it is compute
 2. **Run.** On trigger, under a per-schedule lock:
    1. Re-validate: the schedule still exists, the owner exists and is active (`hass.auth.async_get_user`), the owner is still configured in the bridge. If the owner no longer exists or is no longer configured, the schedule is deleted (19.6) and the run is aborted; if the owner is inactive, the run is aborted and the schedule is paused.
    2. Re-check the exposure per entity with the same logic as `call_service` (`HAB-SVC-001`, `HAB-ENT-001`, `HAB-SVC-002`). Unexposed entities are skipped; if none is left the schedule is paused with `no_entities`.
-   3. Call the service with `Context(user_id=<owner>)`, so the logbook shows who triggered it. HA then applies the owner's permissions; an `Unauthorized` answer counts as failed for that entity.
+   3. Call the service with `Context(user_id=<owner>)`, so the logbook shows who triggered it. HA then applies the owner's permissions; an `Unauthorized` answer counts as failed for that entity. A manual run (`run_now`) uses the context of the user who started it, for example an admin; the entities checked are still those exposed to the owner.
    4. Entities that are `unavailable` are tried once more after 30 s; then they count as failed.
    5. Store `last_run` (result `ok` if all entities worked, `partial` if some did, `failed` if none; code `HAB-SCH-002` unless `ok`), save the store, send `schedules_changed`.
-3. **Missed runs.** If HA starts later than the planned time, the run is executed once if it is at most 5 minutes late; otherwise it is skipped and `last_run` is not changed.
+3. **Missed runs.** If HA starts later than the planned time, the run is executed once if it is at most 5 minutes late; otherwise it is skipped and `last_run` is not changed. The same applies to a run that comes due while the bridge's config entry is unloaded or reloading: it waits and runs once after the setup if it is at most 5 minutes late.
 4. **Time changes (decided).** Fixed times are evaluated as wall-clock times in the HA time zone:
    - A time that does not exist on a day (clocks go forward) runs at the first existing minute after the gap, on that day. A schedule for 02:30 on the day the clock jumps from 02:00 to 03:00 runs at 03:00.
    - A time that occurs twice (clocks go back) runs once, at its first occurrence.
@@ -1553,7 +1558,7 @@ All commands go through the existing command wrapper (HAB error codes, 18.3). Re
 {"id": 22, "type": "event", "event": {"schedules_changed": {"revision": "7c0a…19ef"}}}
 ```
 
-`update`, `delete` and `run_now` name the schedule with `schedule_id`, because `id` is the message id of the WebSocket protocol. `update` needs the `updated_at` of the version the app edited (optimistic concurrency); a mismatch returns `HAB-SCH-004`. `delete` of an unknown `schedule_id` is not an error. `run_now` starts one run of the schedule without changing the plan and replies at once; the run switches its entities in parallel, and its result arrives as `last_run` with the next `schedules_changed`.
+`update`, `delete` and `run_now` name the schedule with `schedule_id`, because `id` is the message id of the WebSocket protocol. `update` needs the `updated_at` of the version the app edited (optimistic concurrency); a mismatch returns `HAB-SCH-004`. `delete` of an unknown `schedule_id` is not an error. `run_now` starts one run of the schedule without changing the plan and replies at once; the run switches its entities in parallel, and its result arrives as `last_run` with the next `schedules_changed`. While the schedule runs, and for 10 seconds after a manual run, `run_now` returns `HAB-SCH-007`.
 
 ### 19.5 Entities in HA
 

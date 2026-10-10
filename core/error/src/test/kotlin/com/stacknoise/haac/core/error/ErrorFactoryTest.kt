@@ -77,6 +77,7 @@ class ErrorFactoryTest {
         "HAB-SCH-004, HAAC-SCH-004",
         "HAB-SCH-005, HAAC-SCH-005",
         "HAB-SCH-006, HAAC-SCH-006",
+        "HAB-SCH-007, HAAC-BRG-005",
         "HAB-SCH-002, HAAC-BRG-005",
         "HAB-XYZ-999, HAAC-BRG-005",
     )
