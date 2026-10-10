@@ -55,6 +55,15 @@ class PinningTest {
     }
 
     @Test
+    fun `removing a pin drops the kept connection, so the next request fails at once`() = runTest {
+        pins.trust(url, PeerCertificate.keyHashOf(certificate.certificate))
+        server.enqueue(MockResponse.Builder().code(200).body("ok").build())
+        assertEquals("ok", http.get(url).body)
+        pins.forget(url)
+        assertEquals(ErrorCode.NET_CERTIFICATE_UNTRUSTED, failure())
+    }
+
+    @Test
     fun `the probe reads the certificate without completing the handshake`() = runTest {
         val seen = TlsCertificateProbe().inspect(url)
         assertEquals(PeerCertificate.of(certificate.certificate), seen)

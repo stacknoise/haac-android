@@ -35,11 +35,12 @@ interface KeyFactory {
 
 /** Keys in the Android Keystore, StrongBox-backed when the device has it (concept 5.3). */
 class AndroidKeyFactory @Inject constructor() : KeyFactory {
-    /** Loads the key of [serverId] or generates it. */
+    private val creation = KeyCreationLocks()
+
+    /** Loads the key of [serverId] or generates it, once even if several callers ask at the same time (review S-14). */
     override fun tokenKey(serverId: String): SecretKey {
         val alias = tokenAlias(serverId)
-        (keyStore().getKey(alias, null) as? SecretKey)?.let { return it }
-        return generate(alias) {}
+        return creation.getOrCreate(alias, { keyStore().getKey(alias, null) as? SecretKey }) { generate(alias) {} }
     }
 
     /** Loads the fingerprint key; null after the Keystore lost it. */
