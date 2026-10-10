@@ -60,7 +60,7 @@ class BridgeConnectorTest {
         servers = servers,
         endpoints = { url },
         sessions = object : InstanceSessionFactory {
-            override fun create(serverId: String, baseUrl: HttpUrl) = session
+            override fun create(serverId: String, baseUrl: HttpUrl, verified: Boolean) = session
         },
         bridge = bridge,
         errors = errors,

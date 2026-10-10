@@ -14,6 +14,7 @@ import com.stacknoise.haac.core.network.bridge.BridgeInfoClient
 import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.core.network.endpoint.EndpointProbe
 import com.stacknoise.haac.core.network.endpoint.EndpointSelector
+import com.stacknoise.haac.core.network.endpoint.HomeNetworkCheck
 import com.stacknoise.haac.core.network.endpoint.InstanceAddresses
 import com.stacknoise.haac.core.network.endpoint.addresses
 import com.stacknoise.haac.core.network.endpoint.pinnedBy
@@ -33,6 +34,7 @@ class InstanceAddressRepository @Inject constructor(
     private val probe: EndpointProbe,
     private val errors: ErrorFactory,
     private val pins: PinRegistry,
+    private val homeNetwork: HomeNetworkCheck,
 ) {
     /** Turns *Always use the internal address* of instance [serverId] on or off. */
     suspend fun setAlwaysUseInternal(serverId: String, enabled: Boolean) {
@@ -48,19 +50,29 @@ class InstanceAddressRepository @Inject constructor(
 
     /**
      * Stores [url] in [slot] once HA answers there with the instance's own ID (HAAC-NET-008 otherwise).
-     * The access token comes from the working address if there is one, so a foreign server never sees
-     * the refresh token.
+     * The access token comes from an address that already works and is stored, so the refresh token never
+     * goes to [url]; if none answers, nothing is sent and the call ends with that address's error. [url] itself
+     * only receives the access token, and only over `https://` or an `http://` host the home network check confirms.
      */
     suspend fun change(serverId: String, slot: AddressSlot, url: HttpUrl) {
         val server = load(serverId)
         probe.check(url)
-        val tokenUrl = try {
-            endpoints.select(server)
-        } catch (_: HaacException) {
-            url
-        }
-        val info = infoAt(server, url, tokenUrl)
+        requireSafeForToken(server, url)
+        val info = infoAt(server, url, endpoints.select(server))
         save(server.withAddresses(server.addresses.with(slot, url)).pinnedBy(pins).withInstanceId(info))
+    }
+
+    /**
+     * HAAC-NET-006 unless an access token may go to [url]: `https://` (the probe passed, so the system or a pin
+     * trusts it) or an `http://` host announced by the instance's own mDNS service; an instance without ID
+     * cannot be confirmed.
+     */
+    private suspend fun requireSafeForToken(server: ServerEntity, url: HttpUrl) {
+        if (url.isHttps) return
+        val uuid = server.instanceUuid
+        if (uuid == null || !homeNetwork.confirms(uuid, url.host)) {
+            throw NetworkException(ErrorCode.NET_CLEARTEXT_NOT_ALLOWED)
+        }
     }
 
     /** Takes the internal and external address from HA; a slot HA leaves empty keeps its address. */
@@ -74,7 +86,7 @@ class InstanceAddressRepository @Inject constructor(
         save(server.withAddresses(merged).pinnedBy(pins).withInstanceId(info))
     }
 
-    /** `haac_bridge/info` at [url] with an access token refreshed at [tokenUrl]; checks the instance ID. */
+    /** `haac_bridge/info` at [url] with an access token refreshed at the stored address [tokenUrl]; checks the ID. */
     private suspend fun infoAt(server: ServerEntity, url: HttpUrl, tokenUrl: HttpUrl): BridgeInfo {
         val token = sessions.create(server.id, tokenUrl).accessToken()
         val info = try {
