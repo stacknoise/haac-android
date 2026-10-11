@@ -1,6 +1,7 @@
 package com.stacknoise.haac.core.security.di
 
 import android.content.Context
+import com.stacknoise.haac.core.common.dispatch.IoDispatcher
 import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.security.biometric.AndroidBiometricPrompter
 import com.stacknoise.haac.core.security.biometric.BiometricPrompter
@@ -22,6 +23,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.io.File
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 
 /** Bindings of the security topic. */
 @Module
@@ -60,6 +62,7 @@ abstract class SecurityModule {
             ciphers: CipherFactory,
             unlocked: UnlockedTokens,
             errors: ErrorFactory,
-        ): TokenStore = KeystoreTokenStore(files, keys, ciphers, unlocked, errors)
+            @IoDispatcher io: CoroutineDispatcher,
+        ): TokenStore = KeystoreTokenStore(files, keys, ciphers, unlocked, errors, io)
     }
 }

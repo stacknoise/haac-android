@@ -5,6 +5,7 @@ import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.KeystoreException
 import com.stacknoise.haac.core.security.keystore.CipherFactory
 import com.stacknoise.haac.core.security.keystore.KeyFactory
+import kotlinx.coroutines.CoroutineDispatcher
 
 /**
  * Token files with the device-bound key (concept 5.3); fingerprint-protected tokens are read from
@@ -17,9 +18,10 @@ class KeystoreTokenStore(
     private val ciphers: CipherFactory,
     private val unlocked: UnlockedTokens,
     private val errors: ErrorFactory,
+    private val io: CoroutineDispatcher,
 ) : TokenStore {
     /** Encrypts with the device-bound key, replaces the file, then drops the fingerprint keys it replaces. */
-    override suspend fun save(serverId: String, refreshToken: String) = keystoreGuarded(errors) {
+    override suspend fun save(serverId: String, refreshToken: String) = keystoreGuarded(io, errors) {
         val previous = files.read(serverId)?.protection
         val cipher = ciphers.encrypt(keys.tokenKey(serverId))
         val plain = refreshToken.encodeToByteArray()
@@ -34,7 +36,7 @@ class KeystoreTokenStore(
     }
 
     /** Decrypts a device-key token; a fingerprint token comes from memory or fails with HAAC-SEC-003. */
-    override suspend fun read(serverId: String): String? = keystoreGuarded(errors) {
+    override suspend fun read(serverId: String): String? = keystoreGuarded(io, errors) {
         val token = files.read(serverId) ?: return@keystoreGuarded null
         when (token.protection) {
             TokenProtection.DeviceKey -> decrypt(serverId, token)
@@ -44,14 +46,14 @@ class KeystoreTokenStore(
     }
 
     /** Checks only that the file exists. */
-    override suspend fun contains(serverId: String): Boolean = keystoreGuarded(errors) { files.exists(serverId) }
+    override suspend fun contains(serverId: String): Boolean = keystoreGuarded(io, errors) { files.exists(serverId) }
 
     /** Reads only the file header. */
     override suspend fun protection(serverId: String): TokenProtection? =
-        keystoreGuarded(errors) { files.read(serverId)?.protection }
+        keystoreGuarded(io, errors) { files.read(serverId)?.protection }
 
     /** Removes file, unlocked copy and keys; missing ones are fine. */
-    override suspend fun delete(serverId: String) = keystoreGuarded(errors) {
+    override suspend fun delete(serverId: String) = keystoreGuarded(io, errors) {
         files.delete(serverId)
         unlocked.remove(serverId)
         keys.deleteKeys(serverId)

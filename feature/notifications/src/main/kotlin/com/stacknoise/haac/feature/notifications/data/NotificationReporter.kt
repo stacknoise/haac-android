@@ -1,5 +1,6 @@
 package com.stacknoise.haac.feature.notifications.data
 
+import com.stacknoise.haac.core.common.dispatch.IoDispatcher
 import com.stacknoise.haac.core.common.sync.EntityChangeReporter
 import com.stacknoise.haac.core.common.sync.ScheduleChangeReporter
 import com.stacknoise.haac.core.error.ErrorReporter
@@ -7,7 +8,7 @@ import com.stacknoise.haac.core.error.HaacException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
@@ -19,8 +20,8 @@ class NotificationReporter internal constructor(
 ) : ErrorReporter, EntityChangeReporter, ScheduleChangeReporter {
     /** Error entries are written in the background, so reporting never blocks the caller. */
     @Inject
-    constructor(repository: NotificationRepository) :
-        this(repository, CoroutineScope(SupervisorJob() + Dispatchers.IO))
+    constructor(repository: NotificationRepository, @IoDispatcher io: CoroutineDispatcher) :
+        this(repository, CoroutineScope(SupervisorJob() + io))
 
     /** Adds or counts an error entry. */
     override fun report(error: HaacException, serverId: String?) {

@@ -6,12 +6,12 @@ import com.stacknoise.haac.core.error.KeystoreException
 import java.io.IOException
 import java.security.GeneralSecurityException
 import java.security.ProviderException
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
-/** Runs [block] on the IO dispatcher and converts file and Keystore errors to HAAC-SEC codes (concept 17.3). */
-internal suspend fun <T> keystoreGuarded(errors: ErrorFactory, block: suspend () -> T): T =
-    withContext(Dispatchers.IO) {
+/** Runs [block] on [io] and converts file and Keystore errors to HAAC-SEC codes (concept 17.3). */
+internal suspend fun <T> keystoreGuarded(io: CoroutineDispatcher, errors: ErrorFactory, block: suspend () -> T): T =
+    withContext(io) {
         try {
             block()
         } catch (e: IOException) {

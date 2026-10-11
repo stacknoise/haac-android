@@ -10,6 +10,7 @@ import androidx.biometric.BiometricPrompt.ERROR_TIMEOUT
 import androidx.biometric.BiometricPrompt.ERROR_USER_CANCELED
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import com.stacknoise.haac.core.common.dispatch.MainDispatcher
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.KeystoreException
 import com.stacknoise.haac.core.security.R
@@ -19,13 +20,14 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 
 /** [BiometricPrompter] with AndroidX `BiometricPrompt`; the prompt is cancelled with the calling coroutine. */
 class AndroidBiometricPrompter @Inject constructor(
     @param:ApplicationContext private val context: Context,
+    @param:MainDispatcher private val main: CoroutineDispatcher,
 ) : BiometricPrompter {
     /** Asks `BiometricManager` for Class 3. */
     override fun canAuthenticate(): Boolean =
@@ -37,7 +39,7 @@ class AndroidBiometricPrompter @Inject constructor(
         purpose: PromptPurpose,
         instanceName: String,
         cipher: Cipher?,
-    ): PromptResult = withContext(Dispatchers.Main) {
+    ): PromptResult = withContext(main) {
         suspendCancellableCoroutine { continuation ->
             val prompt = BiometricPrompt(activity, ContextCompat.getMainExecutor(activity), callback(continuation))
             val info = promptInfo(purpose, instanceName)

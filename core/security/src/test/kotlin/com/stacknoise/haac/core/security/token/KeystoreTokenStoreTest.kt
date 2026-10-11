@@ -6,6 +6,7 @@ import com.stacknoise.haac.core.error.KeystoreException
 import com.stacknoise.haac.core.security.keystore.AesGcmCipherFactory
 import com.stacknoise.haac.core.security.keystore.SoftwareKeyFactory
 import java.io.File
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -22,8 +23,9 @@ class KeystoreTokenStoreTest {
     private val keys = SoftwareKeyFactory()
     private val unlocked = UnlockedTokens()
 
-    private fun store() =
-        KeystoreTokenStore(TokenFiles(dir), keys, AesGcmCipherFactory(), unlocked, DefaultErrorFactory())
+    private fun store() = KeystoreTokenStore(
+        TokenFiles(dir), keys, AesGcmCipherFactory(), unlocked, DefaultErrorFactory(), Dispatchers.Unconfined,
+    )
 
     @Test
     fun `stores the token encrypted and reads it back`() = runTest {

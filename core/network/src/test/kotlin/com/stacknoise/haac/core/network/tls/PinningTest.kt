@@ -4,6 +4,7 @@ import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.network.http.HaHttpClient
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
@@ -65,7 +66,7 @@ class PinningTest {
 
     @Test
     fun `the probe reads the certificate without completing the handshake`() = runTest {
-        val seen = TlsCertificateProbe().inspect(url)
+        val seen = TlsCertificateProbe(Dispatchers.IO).inspect(url)
         assertEquals(PeerCertificate.of(certificate.certificate), seen)
         assertEquals(0, server.requestCount)
     }

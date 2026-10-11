@@ -6,6 +6,7 @@ import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.network.websocket.OkHttpWebSocketFactory
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import mockwebserver3.MockResponse
@@ -29,6 +30,7 @@ class BridgeInfoClientTest {
         json,
         DefaultBridgeMessageFactory(),
         DefaultErrorFactory(),
+        Dispatchers.IO,
     )
 
     @BeforeEach

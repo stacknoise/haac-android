@@ -18,6 +18,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import okhttp3.HttpUrl
@@ -55,7 +56,9 @@ class BridgeConnectorTest {
     private val json = Json { ignoreUnknownKeys = true }
     private val messages = DefaultBridgeMessageFactory()
     private val errors = DefaultErrorFactory()
-    private val bridge = BridgeInfoClient({ sockets.removeFirst().also { opened += it } }, json, messages, errors)
+    private val bridge = BridgeInfoClient(
+        { sockets.removeFirst().also { opened += it } }, json, messages, errors, Dispatchers.Unconfined,
+    )
     private val connector = DefaultBridgeConnector(
         servers = servers,
         endpoints = { url },

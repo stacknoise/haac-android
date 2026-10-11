@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":core:common"))
     implementation(project(":core:error"))
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.biometric)

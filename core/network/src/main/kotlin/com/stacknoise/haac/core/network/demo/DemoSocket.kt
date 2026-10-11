@@ -6,7 +6,6 @@ import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.network.websocket.HaWebSocket
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
@@ -23,7 +22,7 @@ import kotlinx.serialization.json.jsonObject
  */
 class DemoSocket(
     world: DemoWorld,
-    dispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(1),
+    dispatcher: CoroutineDispatcher,
 ) : HaWebSocket {
     private val incoming = Channel<JsonObject>(Channel.UNLIMITED)
     private val commands = Channel<JsonObject>(Channel.UNLIMITED)
