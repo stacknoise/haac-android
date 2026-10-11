@@ -7,5 +7,11 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
+    <!-- Shown by the splash screen API until the stored design is read, so the first frame has the right colours. -->
+    <style name="Theme.Haac.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/haac_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.Haac</item>
+    </style>
+
     <color name="haac_background">#F3F5F0</color>
 </resources>
