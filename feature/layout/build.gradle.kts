@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(":core:network"))
+    testImplementation(testFixtures(project(":core:network")))
     implementation(project(":core:database"))
     implementation(libs.kotlinx.serialization.json)
 }

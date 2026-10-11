@@ -37,6 +37,10 @@ data class HaacPalette(
     val scrim: Color,
     val onAccent: Color,
     val outlinedText: Color,
+    val chartGreen: Color,
+    val chartBlue: Color,
+    val chartMagenta: Color,
+    val chartYellow: Color,
 )
 
 /** The tokens of the light "Salbei" theme. */
@@ -66,6 +70,10 @@ val LightHaacPalette = HaacPalette(
     scrim = Color(0x801D2620),
     onAccent = Color(0xFFFFFFFF),
     outlinedText = Color(0xFF2B3A31),
+    chartGreen = Color(0xFF1F9A4B),
+    chartBlue = Color(0xFF3987E5),
+    chartMagenta = Color(0xFFD55181),
+    chartYellow = Color(0xFFB27300),
 )
 
 /** The tokens of the dark Salbei theme: a deep green-grey ground, lifted cards, the sage accent in a lighter step. */
@@ -95,6 +103,10 @@ val DarkHaacPalette = HaacPalette(
     scrim = Color(0xB3000000),
     onAccent = Color(0xFF0C2418),
     outlinedText = Color(0xFFD6E0D8),
+    chartGreen = Color(0xFF22A852),
+    chartBlue = Color(0xFF3987E5),
+    chartMagenta = Color(0xFFD55181),
+    chartYellow = Color(0xFFC98500),
 )
 
 /** The palette of the current theme; [HaacTheme] provides it. */
@@ -128,6 +140,10 @@ object HaacColors {
     val Scrim: Color @Composable @ReadOnlyComposable get() = LocalHaacPalette.current.scrim
     val OnAccent: Color @Composable @ReadOnlyComposable get() = LocalHaacPalette.current.onAccent
     val OutlinedText: Color @Composable @ReadOnlyComposable get() = LocalHaacPalette.current.outlinedText
+    val ChartGreen: Color @Composable @ReadOnlyComposable get() = LocalHaacPalette.current.chartGreen
+    val ChartBlue: Color @Composable @ReadOnlyComposable get() = LocalHaacPalette.current.chartBlue
+    val ChartMagenta: Color @Composable @ReadOnlyComposable get() = LocalHaacPalette.current.chartMagenta
+    val ChartYellow: Color @Composable @ReadOnlyComposable get() = LocalHaacPalette.current.chartYellow
 }
 
 /** The Material 3 color scheme built from [palette]; the dark palette starts from Material's dark scheme. */

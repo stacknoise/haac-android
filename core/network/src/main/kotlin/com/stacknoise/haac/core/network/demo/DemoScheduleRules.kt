@@ -1,5 +1,6 @@
 package com.stacknoise.haac.core.network.demo
 
+import com.stacknoise.haac.core.common.entity.HaDomains
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -80,7 +81,7 @@ internal object DemoScheduleRules {
     private fun entityProblem(plan: Plan, entities: List<DemoEntity>): String? = when {
         plan.entities.size !in 1..MAX_ENTITIES || plan.entities.distinct() != plan.entities ->
             "A schedule needs 1 to $MAX_ENTITIES different entities"
-        plan.entities.any { id -> entities.none { it.entityId == id && it.domain == "switch" } } ->
+        plan.entities.any { id -> entities.none { it.entityId == id && it.domain == HaDomains.SWITCH } } ->
             "Only exposed switches can be scheduled"
         else -> null
     }

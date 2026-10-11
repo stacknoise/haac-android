@@ -1,5 +1,6 @@
 package com.stacknoise.haac.core.network.demo
 
+import com.stacknoise.haac.core.common.entity.HaDomains
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -51,8 +52,8 @@ internal object DemoServices {
      */
     fun call(entity: DemoEntity, service: String, data: JsonObject, now: Long): DemoOutcome<DemoEntity> =
         when (entity.domain) {
-            "switch" -> switchCall(entity, service, now)
-            "climate" -> climateCall(entity, service, data, now)
+            HaDomains.SWITCH -> switchCall(entity, service, now)
+            HaDomains.CLIMATE -> climateCall(entity, service, data, now)
             else -> notAvailable(entity, service)
         }
 

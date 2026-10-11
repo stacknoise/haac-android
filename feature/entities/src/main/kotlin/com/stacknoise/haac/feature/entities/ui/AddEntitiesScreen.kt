@@ -47,6 +47,7 @@ import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.core.common.ui.theme.haacSegmentedColors
 import com.stacknoise.haac.core.common.ui.theme.haacTextFieldColors
 import com.stacknoise.haac.feature.entities.R
+import com.stacknoise.haac.feature.entities.domain.DomainLabels
 import com.stacknoise.haac.feature.entities.domain.PickerRow
 
 /** *Add entities* for one room (M-04, concept 7.1, 7.2); [onClose] after adding or on Back. */
@@ -68,7 +69,7 @@ fun AddEntitiesScreen(onClose: () -> Unit, viewModel: AddEntitiesViewModel = hil
             Text(state.roomName.uppercase(), style = SectionLabelStyle)
         }
         HaacScreenTitle(stringResource(R.string.add_title))
-        DomainTabs(state, viewModel::onDomain)
+        DomainTabs(state, viewModel::labels, viewModel::onDomain)
         OutlinedTextField(
             value = state.input.filter,
             onValueChange = viewModel::onFilter,
@@ -86,7 +87,7 @@ fun AddEntitiesScreen(onClose: () -> Unit, viewModel: AddEntitiesViewModel = hil
                 PickerRowItem(row, row.entry.entityId in state.input.picked) { viewModel.onToggle(row.entry.entityId) }
             }
         }
-        AddButton(state, viewModel::onAdd)
+        AddButton(state, viewModel::labels, viewModel::onAdd)
     }
 }
 
@@ -95,11 +96,15 @@ fun AddEntitiesScreen(onClose: () -> Unit, viewModel: AddEntitiesViewModel = hil
  * the tabs give way to a plain caption *Switch · 2*.
  */
 @Composable
-private fun DomainTabs(state: AddEntitiesUiState, onSelect: (String) -> Unit) {
+private fun DomainTabs(
+    state: AddEntitiesUiState,
+    labels: (String) -> DomainLabels?,
+    onSelect: (String) -> Unit,
+) {
     val single = state.domains.singleOrNull()
     if (single != null) {
         Text(
-            "${domainLabel(single)} · ${state.counts[single] ?: 0}".uppercase(),
+            "${domainLabel(single, labels)} · ${state.counts[single] ?: 0}".uppercase(),
             style = SectionLabelStyle,
             modifier = Modifier.padding(top = 16.dp),
         )
@@ -113,7 +118,7 @@ private fun DomainTabs(state: AddEntitiesUiState, onSelect: (String) -> Unit) {
                 onClick = { onSelect(domain) },
                 shape = SegmentedButtonDefaults.itemShape(index, state.domains.size, HaacShapes.Small),
                 colors = haacSegmentedColors(),
-                label = { Text("${domainLabel(domain)} ${state.counts[domain] ?: 0}", maxLines = 1) },
+                label = { Text("${domainLabel(domain, labels)} ${state.counts[domain] ?: 0}", maxLines = 1) },
             )
         }
     }
@@ -161,7 +166,7 @@ private fun PickerRowItem(row: PickerRow, picked: Boolean, onToggle: () -> Unit)
 
 /** *Add N entities* with the picks per domain below (M-04). */
 @Composable
-private fun AddButton(state: AddEntitiesUiState, onAdd: () -> Unit) {
+private fun AddButton(state: AddEntitiesUiState, labels: (String) -> DomainLabels?, onAdd: () -> Unit) {
     val total = state.pickedByDomain.values.sum()
     Button(
         onClick = onAdd,
@@ -177,33 +182,24 @@ private fun AddButton(state: AddEntitiesUiState, onAdd: () -> Unit) {
                 pluralStringResource(R.plurals.add_button, total, total)
             }
             Text(label)
-            if (total > 0) Text(pickedSummary(state.pickedByDomain), style = MaterialTheme.typography.bodySmall)
+            if (total > 0) Text(pickedSummary(state.pickedByDomain, labels), style = MaterialTheme.typography.bodySmall)
         }
     }
 }
 
 /** "2 switches · 1 sensor · 1 climate". */
 @Composable
-private fun pickedSummary(picked: Map<String, Int>): String {
+private fun pickedSummary(picked: Map<String, Int>, labels: (String) -> DomainLabels?): String {
     val parts = picked.entries.map { (domain, count) ->
-        when (domain) {
-            "switch" -> pluralStringResource(R.plurals.add_switches, count, count)
-            "sensor" -> pluralStringResource(R.plurals.add_sensors, count, count)
-            "climate" -> pluralStringResource(R.plurals.add_climates, count, count)
-            else -> "$count $domain"
-        }
+        labels(domain)?.let { pluralStringResource(it.count, count, count) } ?: "$count $domain"
     }
     return parts.joinToString(" · ")
 }
 
 /** Tab label of [domain]; domains beyond v1 show their id. */
 @Composable
-private fun domainLabel(domain: String): String = when (domain) {
-    "switch" -> stringResource(R.string.add_domain_switch)
-    "sensor" -> stringResource(R.string.add_domain_sensor)
-    "climate" -> stringResource(R.string.add_domain_climate)
-    else -> domain
-}
+private fun domainLabel(domain: String, labels: (String) -> DomainLabels?): String =
+    labels(domain)?.let { stringResource(it.name) } ?: domain
 
 /** Secondary hint text in a list. */
 @Composable

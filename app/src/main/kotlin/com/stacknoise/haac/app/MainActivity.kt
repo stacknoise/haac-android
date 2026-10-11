@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import com.stacknoise.haac.app.navigation.HaacNavHost
 import com.stacknoise.haac.app.shortcut.PendingInstanceSwitch
 import com.stacknoise.haac.core.common.ui.theme.DarkHaacPalette
@@ -22,6 +23,7 @@ import com.stacknoise.haac.core.database.settings.AppearanceSettings
 import com.stacknoise.haac.core.database.settings.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 /**
  * The single activity of the app; hosts the Compose navigation graph (concept 3). A [FragmentActivity],
@@ -73,6 +75,6 @@ class MainActivity : FragmentActivity() {
 
     /** Passes the instance of a shortcut [intent] on to the main area. */
     private fun requestSwitchOf(intent: Intent?) {
-        pendingSwitch.serverIdOf(intent)?.let(pendingSwitch::request)
+        lifecycleScope.launch { pendingSwitch.serverIdOf(intent)?.let(pendingSwitch::request) }
     }
 }

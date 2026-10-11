@@ -98,11 +98,12 @@ class PlaceEditorViewModel @Inject constructor(
     /** Deletes the edited place; a level's rooms go with it if [withRooms] (concept 6.2). */
     fun onDelete(withRooms: Boolean = false) {
         val current = places.value ?: return
+        val instance = serverId.value ?: return
         submit {
             when (kind) {
-                PlaceKind.HOME -> current.home(placeId)?.let { trash.deleteHome(it) }
-                PlaceKind.FLOOR -> current.floor(placeId)?.let { trash.deleteFloor(it, withRooms) }
-                PlaceKind.ROOM -> current.room(placeId)?.let { trash.deleteRoom(it) }
+                PlaceKind.HOME -> current.home(placeId)?.let { trash.deleteHome(instance, it) }
+                PlaceKind.FLOOR -> current.floor(placeId)?.let { trash.deleteFloor(instance, it, withRooms) }
+                PlaceKind.ROOM -> current.room(placeId)?.let { trash.deleteRoom(instance, it) }
             }
         }
     }

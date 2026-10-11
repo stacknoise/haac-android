@@ -59,7 +59,7 @@ class NsdServerDiscovery @Inject constructor(
             }
         }
         nsd.discoverServices(HaServiceParser.SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, listener)
-        awaitClose { runCatching { nsd.stopServiceDiscovery(listener) } }
+        awaitClose { stopDiscovery(listener) }
     }
 
     /** Resolves one service with the API of the running Android version. */
@@ -82,7 +82,7 @@ class NsdServerDiscovery @Inject constructor(
             override fun onServiceUpdated(serviceInfo: NsdServiceInfo) {
                 val ip = serviceInfo.hostAddresses.firstOrNull()?.hostAddress ?: return
                 onResolved(serviceInfo.toServer(ip))
-                runCatching { nsd.unregisterServiceInfoCallback(this) }
+                unregister(this)
             }
 
             /** The service went away before it was resolved. */
@@ -92,6 +92,25 @@ class NsdServerDiscovery @Inject constructor(
             override fun onServiceInfoCallbackUnregistered() = Unit
         }
         nsd.registerServiceInfoCallback(info, Executor(Runnable::run), callback)
+    }
+
+    /** Stops browsing; NsdManager throws if the listener is not registered (any more), which is the goal anyway. */
+    private fun stopDiscovery(listener: NsdManager.DiscoveryListener) {
+        try {
+            nsd.stopServiceDiscovery(listener)
+        } catch (_: IllegalArgumentException) {
+            // Already stopped.
+        }
+    }
+
+    /** Removes a service info callback; one that is already gone needs no removal. */
+    @androidx.annotation.RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    private fun unregister(callback: NsdManager.ServiceInfoCallback) {
+        try {
+            nsd.unregisterServiceInfoCallback(callback)
+        } catch (_: IllegalArgumentException) {
+            // Already removed.
+        }
     }
 
     /** Parses a resolved service reached at [ip]. */

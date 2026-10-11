@@ -11,7 +11,9 @@ import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.feature.entities.data.AssignmentWriter
 import com.stacknoise.haac.feature.entities.data.EntityCatalog
 import com.stacknoise.haac.feature.entities.domain.CatalogEntry
+import com.stacknoise.haac.feature.entities.domain.DomainLabels
 import com.stacknoise.haac.feature.entities.domain.PickerRow
+import com.stacknoise.haac.feature.entities.domain.TileFactory
 import com.stacknoise.haac.feature.entities.domain.pickerDomains
 import com.stacknoise.haac.feature.entities.domain.pickerRows
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -58,6 +60,7 @@ class AddEntitiesViewModel @Inject constructor(
     catalog: EntityCatalog,
     places: PlaceRepository,
     private val writer: AssignmentWriter,
+    private val tiles: TileFactory,
 ) : ViewModel() {
     private val roomId: String = savedState[ROOM_ARG] ?: ""
     private val input = MutableStateFlow(PickerInput())
@@ -71,6 +74,9 @@ class AddEntitiesViewModel @Inject constructor(
 
     private val placeFlow: Flow<Places> = active.activeServerId
         .flatMapLatest { id -> if (id == null) flowOf(Places()) else places.places(id).reportErrors(Places()) }
+
+    /** The texts of [domain], or null for a domain beyond v1; the factory knows them. */
+    fun labels(domain: String): DomainLabels? = tiles.labels(domain)
 
     /** The current screen state. */
     val state: StateFlow<AddEntitiesUiState> = combine(entries, placeFlow, input, status) { list, where, choice, run ->

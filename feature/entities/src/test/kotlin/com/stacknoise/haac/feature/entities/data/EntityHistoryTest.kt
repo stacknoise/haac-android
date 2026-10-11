@@ -8,6 +8,7 @@ import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.network.connection.BridgeChannel
 import com.stacknoise.haac.core.network.connection.BridgeConnection
 import com.stacknoise.haac.core.network.connection.LiveConnection
+import com.stacknoise.haac.core.network.demo.demoConnection
 import com.stacknoise.haac.feature.entities.domain.DefaultHistoryChartFactory
 import com.stacknoise.haac.feature.entities.domain.HistoryChart
 import com.stacknoise.haac.feature.entities.domain.HistoryPreset

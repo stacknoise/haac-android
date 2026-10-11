@@ -1,8 +1,11 @@
 package com.stacknoise.haac.feature.entities.domain
 
+import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
 import com.stacknoise.haac.core.database.assignment.TileSize
 import com.stacknoise.haac.core.database.entity.EntityStatus
 import com.stacknoise.haac.core.database.entity.ExposedEntity
+import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.EntityDomains.CLIMATE
 import com.stacknoise.haac.feature.entities.domain.EntityDomains.OFF
 import com.stacknoise.haac.feature.entities.domain.EntityDomains.ON
@@ -24,12 +27,26 @@ interface TileFactory {
 
     /** The tile of [entity] with its last [state], display [name] and [size]. */
     fun create(entity: ExposedEntity, state: EntityState?, name: String, size: TileSize): Tile
+
+    /** The texts for [domain] in *Add entities*, or null for a domain beyond v1 (it shows its id). */
+    fun labels(domain: String): DomainLabels?
 }
+
+/** The text resources of one domain: the tab [name] and the plural of the picked [count] (M-04). */
+data class DomainLabels(@param:StringRes val name: Int, @param:PluralsRes val count: Int)
 
 /** [TileFactory] for switch, sensor and climate (concept 1.2, 8). */
 class DefaultTileFactory @Inject constructor() : TileFactory {
     /** Climate tiles hold the dial, everything else fits 1×1. */
     override fun defaultSize(domain: String): TileSize = if (domain == CLIMATE) TileSize.LARGE else TileSize.SMALL
+
+    /** Switch, sensor and climate have texts; any other domain has none. */
+    override fun labels(domain: String): DomainLabels? = when (domain) {
+        SWITCH -> DomainLabels(R.string.add_domain_switch, R.plurals.add_switches)
+        SENSOR -> DomainLabels(R.string.add_domain_sensor, R.plurals.add_sensors)
+        CLIMATE -> DomainLabels(R.string.add_domain_climate, R.plurals.add_climates)
+        else -> null
+    }
 
     /** Picks icon and content by domain; `unavailable` and `unknown` states mark the tile unavailable. */
     override fun create(entity: ExposedEntity, state: EntityState?, name: String, size: TileSize): Tile {

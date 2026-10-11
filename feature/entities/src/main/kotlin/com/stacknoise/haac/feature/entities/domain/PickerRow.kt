@@ -1,5 +1,6 @@
 package com.stacknoise.haac.feature.entities.domain
 
+import com.stacknoise.haac.core.common.entity.HaDomains
 import com.stacknoise.haac.core.database.layout.Places
 
 /**
@@ -9,7 +10,7 @@ import com.stacknoise.haac.core.database.layout.Places
 data class PickerRow(val entry: CatalogEntry, val inRoom: Boolean, val otherRoom: String?)
 
 /** The domains of v1 first, in the order of the tabs (M-04); others follow alphabetically. */
-private val TabOrder = listOf("switch", "sensor", "climate")
+private val TabOrder = listOf(HaDomains.SWITCH, HaDomains.SENSOR, HaDomains.CLIMATE)
 
 /** Position of [domain] among the tabs: the v1 domains first. */
 private fun tabIndex(domain: String): Int = TabOrder.indexOf(domain).let { if (it < 0) TabOrder.size else it }

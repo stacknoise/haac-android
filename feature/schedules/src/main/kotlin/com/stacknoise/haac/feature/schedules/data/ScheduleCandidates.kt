@@ -1,5 +1,6 @@
 package com.stacknoise.haac.feature.schedules.data
 
+import com.stacknoise.haac.core.common.entity.HaDomains
 import com.stacknoise.haac.core.database.assignment.EntityAliasDao
 import com.stacknoise.haac.core.database.assignment.RoomAssignment
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
@@ -63,11 +64,9 @@ internal fun candidatesOf(
     val rooms = roomList.map { RoomChip(it.id, it.name) }
     val byId = rooms.associateBy { it.id }
     val roomsOf = placed.groupBy({ it.entityId }, { byId[it.roomId] }).mapValues { it.value.filterNotNull() }
-    val list = rows.filter { it.domain == SwitchDomain }.map {
+    val list = rows.filter { it.domain == HaDomains.SWITCH }.map {
         val active = it.status == EntityStatus.ACTIVE
         Candidate(it.entityId, it.displayName(aliases[it.entityId]), roomsOf[it.entityId].orEmpty(), active)
     }
     return Candidates(list.sortedBy { it.name.lowercase() }, rooms)
 }
-
-private const val SwitchDomain = "switch"

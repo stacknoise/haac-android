@@ -1,14 +1,15 @@
 package com.stacknoise.haac.feature.entities.domain
 
+import com.stacknoise.haac.core.common.entity.HaDomains
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.doubleOrNull
 
 /** Domains, states and attribute names of v1 that the factories share (concept 1.2, 8). */
 internal object EntityDomains {
-    const val SWITCH = "switch"
-    const val SENSOR = "sensor"
-    const val CLIMATE = "climate"
+    const val SWITCH = HaDomains.SWITCH
+    const val SENSOR = HaDomains.SENSOR
+    const val CLIMATE = HaDomains.CLIMATE
     const val ON = "on"
     const val OFF = "off"
     const val TEMPERATURE = "temperature"

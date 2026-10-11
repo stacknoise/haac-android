@@ -8,6 +8,8 @@ import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.network.connection.BridgeChannel
 import com.stacknoise.haac.core.network.demo.DemoWorld
+import com.stacknoise.haac.core.network.demo.demoConnection
+import com.stacknoise.haac.core.network.demo.demoWorld
 import com.stacknoise.haac.feature.schedules.domain.ScheduleDraft
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel

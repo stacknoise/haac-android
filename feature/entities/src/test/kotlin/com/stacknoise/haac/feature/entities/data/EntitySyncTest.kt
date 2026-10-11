@@ -10,6 +10,8 @@ import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.network.connection.BridgeChannel
 import com.stacknoise.haac.core.network.connection.BridgeConnection
 import com.stacknoise.haac.core.network.demo.DemoWorld
+import com.stacknoise.haac.core.network.demo.demoConnection
+import com.stacknoise.haac.core.network.demo.demoWorld
 import com.stacknoise.haac.feature.entities.domain.ControlRequest
 import com.stacknoise.haac.feature.entities.domain.DefaultServiceCallFactory
 import com.stacknoise.haac.feature.entities.domain.EntityState
