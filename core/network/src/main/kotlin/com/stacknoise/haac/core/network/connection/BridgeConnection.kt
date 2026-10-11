@@ -33,8 +33,9 @@ import okhttp3.HttpUrl
 /**
  * The live WebSocket of the active instance after auth and `haac_bridge/info` (concept 9.1, 11.4): replies
  * are matched to requests by message id, subscription events are passed on, and HA's `ping` runs every 30 s.
- * A missing `pong` or a failed socket ends the connection with HAAC-NET-002; [ConnectionSupervisor] then
- * reconnects.
+ * A missing `pong`, a failed socket or a subscription whose collector falls too far behind ends the connection with
+ * HAAC-NET-002; [ConnectionSupervisor] then reconnects and the next sync starts from scratch. A request the bridge
+ * does not answer within 15 s fails with HAAC-NET-001 (review P-03, P-04).
  */
 class BridgeConnection(
     /** The address this connection uses (concept 4.5). */
@@ -66,13 +67,16 @@ class BridgeConnection(
         scope.launch { heartbeat() }
     }
 
-    /** Sends the command and waits for the reply with its message id. */
+    /** Sends the command and waits for the reply with its message id; HAAC-NET-001 after 15 s without one. */
     override suspend fun request(type: String, fields: JsonObject): JsonElement =
         exchange(type, fields).resultOrThrow(errors)
 
-    /** Events arrive in a channel registered before the command is sent; stopping sends `unsubscribe_events`. */
+    /**
+     * Events arrive in a bounded channel registered before the command is sent; stopping sends `unsubscribe_events`.
+     * A collector that lets the channel overflow ends the connection.
+     */
     override fun subscribe(type: String, fields: JsonObject): Flow<JsonObject> = flow {
-        val events = Channel<JsonObject>(Channel.UNLIMITED)
+        val events = Channel<JsonObject>(SUBSCRIPTION_QUEUE)
         var id = 0
         try {
             exchange(type, fields) { sent ->
@@ -106,7 +110,8 @@ class BridgeConnection(
                 onId(id)
                 if (ended.isCompleted || !socket.send(command.json)) throw ended.getOrLost()
             }
-            return reply.await()
+            return withTimeoutOrNull(REQUEST_TIMEOUT_MS) { reply.await() }
+                ?: throw NetworkException(ErrorCode.NET_UNREACHABLE)
         } finally {
             replies.remove(id)
         }
@@ -125,7 +130,9 @@ class BridgeConnection(
     private fun dispatch(message: JsonObject) {
         val id = message.messageId ?: return
         if (message.text("type") == "event") {
-            (message["event"] as? JsonObject)?.let { subscriptions[id]?.trySend(it) }
+            val event = message["event"] as? JsonObject ?: return
+            val sent = subscriptions[id]?.trySend(event)
+            if (sent != null && sent.isFailure && !sent.isClosed) end(NetworkException(ErrorCode.NET_CONNECTION_LOST))
         } else {
             replies[id]?.complete(message)
         }
@@ -165,10 +172,14 @@ class BridgeConnection(
         }
     }
 
-    /** Heartbeat timing and command names. */
+    /** Heartbeat and request timing, queue size and command names. */
     private companion object {
         const val HEARTBEAT_MS = 30_000L
         const val PONG_TIMEOUT_MS = 10_000L
+        const val REQUEST_TIMEOUT_MS = 15_000L
+
+        /** Events a collector may lag behind, the same bound as the socket queue (review S-06). */
+        const val SUBSCRIPTION_QUEUE = 4096
         const val PING = "ping"
         const val UNSUBSCRIBE = "unsubscribe_events"
     }

@@ -1,7 +1,10 @@
 package com.stacknoise.haac.app.lock
 
 import com.stacknoise.haac.core.database.settings.SecuritySettings
+import com.stacknoise.haac.core.network.session.InstanceSessionFactory
 import com.stacknoise.haac.core.security.token.UnlockedTokens
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
@@ -13,6 +16,7 @@ class AppLockTest {
     private var now = 0L
     private val timeout = MutableStateFlow(5)
     private val unlocked = UnlockedTokens().apply { put("a", "token") }
+    private val sessions = mockk<InstanceSessionFactory>(relaxed = true)
 
     private val lock = AppLock(
         settings = object : SecuritySettings {
@@ -24,6 +28,7 @@ class AppLockTest {
             override suspend fun setLockTimeoutMinutes(minutes: Int) = error("not used")
         },
         unlocked = unlocked,
+        sessions = sessions,
         clock = { now },
     )
 
@@ -43,6 +48,7 @@ class AppLockTest {
         lock.onForeground()
         assertEquals(1, lock.locks.value)
         assertNull(unlocked.get("a"))
+        verify { sessions.discardAll() }
     }
 
     @Test

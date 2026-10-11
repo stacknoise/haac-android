@@ -11,8 +11,10 @@ import com.stacknoise.haac.core.network.websocket.FakeHaWebSocket
 import com.stacknoise.haac.core.network.websocket.messageId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -30,6 +32,10 @@ import org.junit.jupiter.api.assertThrows
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BridgeConnectionTest {
+    private companion object {
+        const val FLOOD_EVENTS = 5_000
+    }
+
     private var answerPings = true
 
     /** HA side: `echo` returns its fields, `fail` a HAB error, `subscribe` a result and two events. */
@@ -109,6 +115,33 @@ class BridgeConnectionTest {
         assertEquals(ErrorCode.NET_CONNECTION_LOST, error.code)
         assertEquals(ErrorCode.NET_CONNECTION_LOST, connection.end.await().code)
         assertEquals(ErrorCode.NET_CONNECTION_LOST, assertThrows<HaacException> { connection.request("echo") }.code)
+    }
+
+    @Test
+    fun `a request the bridge never answers fails with NET-001 after 15 s`() = runTest {
+        val connection = connect(FakeHaWebSocket())
+        val request = async { runCatching { connection.request("echo") } }
+        advanceTimeBy(14_000)
+        assertFalse(request.isCompleted)
+        advanceTimeBy(1_100)
+        assertEquals(ErrorCode.NET_UNREACHABLE, (request.await().exceptionOrNull() as HaacException).code)
+        assertTrue(connection.isOpen)
+    }
+
+    @Test
+    fun `a collector that falls too far behind ends the connection with NET-002`() = runTest {
+        val flood = FakeHaWebSocket { message ->
+            val id = message.messageId
+            if (message.text("type") == "flood") {
+                push("""{"id":$id,"type":"result","success":true,"result":null}""")
+                repeat(FLOOD_EVENTS) { push("""{"id":$id,"type":"event","event":{"n":$it}}""") }
+            }
+        }
+        val connection = connect(flood)
+        backgroundScope.launch { connection.subscribe("flood").collect { awaitCancellation() } }
+        runCurrent()
+        assertEquals(ErrorCode.NET_CONNECTION_LOST, connection.end.await().code)
+        assertTrue(flood.closed)
     }
 
     @Test

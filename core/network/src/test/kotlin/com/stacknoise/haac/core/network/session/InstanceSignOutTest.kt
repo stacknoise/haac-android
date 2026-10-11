@@ -24,7 +24,7 @@ class InstanceSignOutTest {
     private val tokens = mockk<TokenStore>(relaxed = true)
     private val servers = mockk<ServerDao>()
     private val endpoints = mockk<EndpointSelector>()
-    private val sessions = mockk<InstanceSessionFactory>()
+    private val sessions = mockk<InstanceSessionFactory>(relaxed = true)
     private val signOut = InstanceSignOut(servers, endpoints, sessions, tokens, world)
 
     @Test

@@ -27,7 +27,9 @@ class InstanceSignOut @Inject constructor(
      */
     suspend fun signOut(serverId: String): Boolean {
         if (DemoInstance.isDemo(serverId)) return signOutDemo(serverId)
-        return address(serverId)?.let { sessions.create(serverId, it).signOut() } ?: signOutLocally(serverId)
+        val revoked = address(serverId)?.let { sessions.create(serverId, it).signOut() } ?: signOutLocally(serverId)
+        sessions.discard(serverId)
+        return revoked
     }
 
     /** No address answered: only the local token is deleted; HA expires it later, so this counts as not revoked. */
