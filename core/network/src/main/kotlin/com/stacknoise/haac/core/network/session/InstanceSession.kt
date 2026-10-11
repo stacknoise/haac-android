@@ -7,6 +7,7 @@ import com.stacknoise.haac.core.error.NetworkException
 import com.stacknoise.haac.core.network.auth.AccessToken
 import com.stacknoise.haac.core.network.auth.TokenClient
 import com.stacknoise.haac.core.security.token.TokenStore
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -19,6 +20,12 @@ interface InstanceSessionFactory {
      * false for an address that is not stored and confirmed yet; a refresh token it rejects is kept.
      */
     fun create(serverId: String, baseUrl: HttpUrl, verified: Boolean = true): InstanceSession
+
+    /** Forgets the session of [serverId] and its access token, e.g. on sign-out or when the app locks. */
+    fun discard(serverId: String)
+
+    /** Forgets every session, so no access token stays in memory while the app is locked (concept 5.5). */
+    fun discardAll()
 }
 
 /** Default [InstanceSessionFactory]. */
@@ -26,9 +33,25 @@ class DefaultInstanceSessionFactory @Inject constructor(
     private val tokens: TokenClient,
     private val store: TokenStore,
 ) : InstanceSessionFactory {
-    /** Wires the token client and store into a new session. */
+    private val sessions = ConcurrentHashMap<String, InstanceSession>()
+
+    /**
+     * The session of [serverId] at [baseUrl], reused while the address stays the same, so a reconnect finds the
+     * access token that is still valid instead of refreshing it (review P-05). Another address starts a new one.
+     */
     override fun create(serverId: String, baseUrl: HttpUrl, verified: Boolean): InstanceSession =
-        InstanceSession(serverId, baseUrl, tokens, store, verified)
+        sessions.compute(serverId) { _, current ->
+            current?.takeIf { it.baseUrl == baseUrl && it.verified == verified }
+                ?: InstanceSession(serverId, baseUrl, tokens, store, verified)
+        }!!
+
+    /** Drops the cached session, and with it the access token in memory. */
+    override fun discard(serverId: String) {
+        sessions.remove(serverId)
+    }
+
+    /** Drops all cached sessions. */
+    override fun discardAll() = sessions.clear()
 }
 
 /**
@@ -41,7 +64,7 @@ class InstanceSession(
     val baseUrl: HttpUrl,
     private val tokens: TokenClient,
     private val store: TokenStore,
-    private val verified: Boolean = true,
+    val verified: Boolean = true,
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
     private val mutex = Mutex()

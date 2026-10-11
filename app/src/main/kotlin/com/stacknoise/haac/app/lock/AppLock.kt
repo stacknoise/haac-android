@@ -2,6 +2,7 @@ package com.stacknoise.haac.app.lock
 
 import android.os.SystemClock
 import com.stacknoise.haac.core.database.settings.SecuritySettings
+import com.stacknoise.haac.core.network.session.InstanceSessionFactory
 import com.stacknoise.haac.core.security.token.UnlockedTokens
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,12 +21,13 @@ import kotlinx.coroutines.flow.update
 class AppLock internal constructor(
     private val settings: SecuritySettings,
     private val unlocked: UnlockedTokens,
+    private val sessions: InstanceSessionFactory,
     private val clock: () -> Long,
 ) {
     /** Uses the monotonic clock, so changing the device time cannot skip the lock. */
     @Inject
-    constructor(settings: SecuritySettings, unlocked: UnlockedTokens) :
-        this(settings, unlocked, SystemClock::elapsedRealtime)
+    constructor(settings: SecuritySettings, unlocked: UnlockedTokens, sessions: InstanceSessionFactory) :
+        this(settings, unlocked, sessions, SystemClock::elapsedRealtime)
 
     private var backgroundSince: Long? = null
     private val _locks = MutableStateFlow(0)
@@ -46,9 +48,10 @@ class AppLock internal constructor(
         if (clock() - since >= timeoutMs) lock()
     }
 
-    /** Drops all unlocked tokens and asks for the start routing again. */
+    /** Drops all unlocked tokens and cached access tokens and asks for the start routing again. */
     fun lock() {
         unlocked.clear()
+        sessions.discardAll()
         _locks.update { it + 1 }
     }
 
