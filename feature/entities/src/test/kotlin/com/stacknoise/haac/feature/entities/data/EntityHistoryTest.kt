@@ -39,6 +39,8 @@ class EntityHistoryTest {
 
         override fun observe(serverId: String): Flow<List<ExposedEntity>> = flowOf(rows)
 
+        override fun observeOne(serverId: String, entityId: String): Flow<ExposedEntity?> = error("not read")
+
         override suspend fun revision(serverId: String): String? = error("not read")
 
         override suspend fun state(serverId: String, entityId: String): String? = error("not read")

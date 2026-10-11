@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -34,6 +36,12 @@ import org.junit.jupiter.api.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class EntitySyncTest {
+    private companion object {
+        const val FLUSH_MS = 5_000L
+        const val ENTITIES = 200
+        const val EVENTS = 50
+    }
+
     private val json = Json { ignoreUnknownKeys = true }
 
     /** The bridge side: [revision] and [listed] answer the commands, [events] feed the subscription. */
@@ -68,6 +76,8 @@ class EntitySyncTest {
 
         override fun observe(serverId: String): Flow<List<ExposedEntity>> = error("not used")
 
+        override fun observeOne(serverId: String, entityId: String): Flow<ExposedEntity?> = error("not used")
+
         override suspend fun upsert(rows: List<ExposedEntity>) {
             rows.forEach { cache[it.entityId] = it }
         }
@@ -82,11 +92,15 @@ class EntitySyncTest {
         override suspend fun state(serverId: String, entityId: String) = cache[entityId]?.lastState
 
         override suspend fun setState(serverId: String, entityId: String, state: String) {
+            writes++
             cache.computeIfPresent(entityId) { _, row -> row.copy(lastState = state) }
         }
     }
 
+    private var writes = 0
     private var now = 100L
+    private val testDispatcher = StandardTestDispatcher()
+    private val live = LiveStates()
     private val reportedErrors = mutableListOf<ErrorCode>()
     private val reportedChanges = mutableListOf<Pair<List<String>, List<String>>>()
     private val sync = EntitySync(
@@ -95,6 +109,9 @@ class EntitySyncTest {
         DefaultErrorFactory(),
         { error, _ -> reportedErrors += error.code },
         { _, added, removed -> reportedChanges += added to removed },
+        live,
+        testDispatcher,
+        FLUSH_MS,
     ) { now }
     private val channel = FakeChannel()
 
@@ -104,7 +121,11 @@ class EntitySyncTest {
         """{"entity_id":"$id","domain":"${id.substringBefore('.')}","name":"$name","state":"$state",""" +
             """"attributes":{},"last_changed":"2026-09-26T07:12:03+00:00"}"""
 
-    private fun stateOf(id: String): EntityState? =
+    /** The live state, as the tiles see it. */
+    private fun stateOf(id: String): EntityState? = live.current("s1", id)
+
+    /** The state in the cache row, as the offline display sees it. */
+    private fun cachedStateOf(id: String): EntityState? =
         cache[id]?.lastState?.let { json.decodeFromString(EntityState.serializer(), it) }
 
     private fun TestScope.follow() {
@@ -113,7 +134,7 @@ class EntitySyncTest {
     }
 
     @Test
-    fun `first sync stores the list, the revision and the states`() = runTest {
+    fun `first sync stores the list, the revision and the states`() = runTest(testDispatcher) {
         follow()
         assertEquals(listOf("sensor.b", "switch.a"), cache.keys.sorted())
         assertEquals("r1", storedRevision)
@@ -121,10 +142,11 @@ class EntitySyncTest {
         assertEquals(SyncResult(added = listOf("sensor.b", "switch.a")), sync.status.value.result)
         assertEquals(emptyList<Pair<List<String>, List<String>>>(), reportedChanges)
         assertEquals(EntityState("on", lastChanged = 1790406723000, lastUpdated = 1790406723000), stateOf("switch.a"))
+        assertEquals(stateOf("switch.a"), cachedStateOf("switch.a"))
     }
 
     @Test
-    fun `an unchanged revision skips the entity list`() = runTest {
+    fun `an unchanged revision skips the entity list`() = runTest(testDispatcher) {
         storedRevision = "r1"
         follow()
         assertEquals(listOf("haac_bridge/exposure/revision"), channel.requests)
@@ -132,19 +154,71 @@ class EntitySyncTest {
     }
 
     @Test
-    fun `live states update the cache`() = runTest {
+    fun `live states are applied in memory without a write to the cache`() = runTest(testDispatcher) {
         follow()
+        writes = 0
         channel.push("""{"a":{"switch.a":{"s":"off","a":{"device_class":"outlet"},"lc":2.0}}}""")
-        channel.push("""{"c":{"switch.a":{"+":{"s":"on","lc":3.0}},"unknown.x":{"+":{"s":"1"}}}}""")
+        channel.push("""{"c":{"switch.a":{"+":{"s":"standby","lc":3.0}},"unknown.x":{"+":{"s":"1"}}}}""")
         runCurrent()
-        assertEquals("on", stateOf("switch.a")?.state)
+        assertEquals("standby", stateOf("switch.a")?.state)
         assertEquals(3000L, stateOf("switch.a")?.lastChanged)
         assertEquals("outlet", stateOf("switch.a")?.attributes?.get("device_class")?.jsonPrimitive?.content)
-        assertNull(cache["unknown.x"])
+        assertNull(live.current("s1", "unknown.x"))
+        assertEquals(0, writes)
+        assertEquals("on", cachedStateOf("switch.a")?.state)
     }
 
     @Test
-    fun `exposure_changed with a new revision withdraws and adds entities`() = runTest {
+    fun `changed states reach the cache in one batch after the flush interval`() = runTest(testDispatcher) {
+        follow()
+        writes = 0
+        repeat(10) { channel.push("""{"c":{"switch.a":{"+":{"s":"s$it"}},"sensor.b":{"+":{"s":"v$it"}}}}""") }
+        runCurrent()
+        assertEquals(0, writes)
+        advanceTimeBy(FLUSH_MS + 1)
+        assertEquals(2, writes)
+        assertEquals("s9", cachedStateOf("switch.a")?.state)
+        assertEquals("v9", cachedStateOf("sensor.b")?.state)
+        advanceTimeBy(FLUSH_MS)
+        assertEquals(2, writes)
+    }
+
+    @Test
+    fun `200 entities with 10 events a second cause no write in a flush interval`() = runTest(testDispatcher) {
+        channel.listed = List(ENTITIES) { descriptor("sensor.e$it", "0") }
+        follow()
+        writes = 0
+        repeat(EVENTS) { n -> channel.push("""{"c":{"sensor.e${n % ENTITIES}":{"+":{"s":"$n"}}}}""") }
+        runCurrent()
+        assertEquals("49", stateOf("sensor.e49")?.state)
+        assertEquals(0, writes)
+    }
+
+    @Test
+    fun `the states are written when the connection ends`() = runTest(testDispatcher) {
+        val job = backgroundScope.launch { sync.follow("s1", channel) }
+        runCurrent()
+        channel.push("""{"c":{"switch.a":{"+":{"s":"off"}}}}""")
+        runCurrent()
+        assertEquals("on", cachedStateOf("switch.a")?.state)
+        job.cancel()
+        runCurrent()
+        assertEquals("off", cachedStateOf("switch.a")?.state)
+    }
+
+    @Test
+    fun `the cached states are the starting point of a new connection`() = runTest(testDispatcher) {
+        storedRevision = "r1"
+        cache["switch.a"] = ExposedEntity("s1", "switch.a", "switch", "A", lastState = """{"state":"on"}""")
+        follow()
+        assertEquals("on", stateOf("switch.a")?.state)
+        channel.push("""{"c":{"switch.a":{"+":{"s":"off"}}}}""")
+        runCurrent()
+        assertEquals("off", stateOf("switch.a")?.state)
+    }
+
+    @Test
+    fun `exposure_changed with a new revision withdraws and adds entities`() = runTest(testDispatcher) {
         follow()
         now = 200
         channel.revision = "r2"
@@ -161,7 +235,7 @@ class EntitySyncTest {
     }
 
     @Test
-    fun `a recheck runs the revision check on the running connection`() = runTest {
+    fun `a recheck runs the revision check on the running connection`() = runTest(testDispatcher) {
         sync.recheck() // Before the sync: answered by its own revision check.
         follow()
         channel.requests.clear()
@@ -171,7 +245,7 @@ class EntitySyncTest {
     }
 
     @Test
-    fun `errors are kept in the status unless the connection ended`() = runTest {
+    fun `errors are kept in the status unless the connection ended`() = runTest(testDispatcher) {
         channel.failure = NetworkException(ErrorCode.NET_CONNECTION_LOST)
         channel.isOpen = false
         follow()
@@ -193,7 +267,7 @@ class EntitySyncTest {
     }
 
     @Test
-    fun `the first sync of the demo bridge caches the seven entities with names, areas and states`() = runTest {
+    fun `the first sync of the demo bridge caches seven entities with names and states`() = runTest(testDispatcher) {
         followDemo()
         assertEquals(7, cache.size)
         assertEquals("Living room light", cache.getValue("switch.demo_living_room_light").haName)
@@ -208,7 +282,7 @@ class EntitySyncTest {
     }
 
     @Test
-    fun `service calls built by the app change the cached state through the demo subscription`() = runTest {
+    fun `service calls change the state through the demo subscription`() = runTest(testDispatcher) {
         val connection = followDemo()
         val calls = DefaultServiceCallFactory()
         val socket = calls.create(cache.getValue("switch.demo_socket"), ControlRequest.SwitchTo(false))
@@ -225,7 +299,7 @@ class EntitySyncTest {
     }
 
     @Test
-    fun `a second connection to the same demo finds the same revision and reports nothing`() = runTest {
+    fun `a second connection to the same demo finds the same revision and reports nothing`() = runTest(testDispatcher) {
         val world = demoWorld()
         followDemo(world)
         val revision = storedRevision

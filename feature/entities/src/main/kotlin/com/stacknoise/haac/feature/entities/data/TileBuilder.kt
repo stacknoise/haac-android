@@ -25,16 +25,29 @@ class TileBuilder @Inject constructor(
     private val factory: TileFactory,
     private val controls: EntityControlFactory,
 ) {
-    /** The tile of [entity] with its local [alias] and [size], showing the result of [pending] if there is one. */
-    fun tile(entity: ExposedEntity, alias: String?, size: TileSize, pending: ControlRequest? = null): Tile =
-        tile(entity, alias, size, state(entity, pending))
+    /**
+     * The tile of [entity] with its local [alias] and [size], showing the result of [pending] if there is one. The
+     * [live] state wins over the one in the cache row.
+     */
+    fun tile(
+        entity: ExposedEntity,
+        alias: String?,
+        size: TileSize,
+        pending: ControlRequest? = null,
+        live: EntityState? = null,
+    ): Tile = tile(entity, alias, size, state(entity, live, pending))
 
     /**
      * The detail screen of [entity] (concept 8.1, 15.4): its tile, names, times, readings, attributes and every
      * control of its domain; no controls while it is unavailable or withdrawn.
      */
-    fun detail(entity: ExposedEntity, alias: String?, pending: ControlRequest? = null): EntityDetail {
-        val state = state(entity, pending)
+    fun detail(
+        entity: ExposedEntity,
+        alias: String?,
+        pending: ControlRequest? = null,
+        live: EntityState? = null,
+    ): EntityDetail {
+        val state = state(entity, live, pending)
         val tile = tile(entity, alias, factory.defaultSize(entity.domain), state)
         val reported = state?.attributes ?: JsonObject(emptyMap())
         return EntityDetail(
@@ -59,9 +72,9 @@ class TileBuilder @Inject constructor(
         )
     }
 
-    /** The cached state of [entity] with the result of [pending] applied. */
-    private fun state(entity: ExposedEntity, pending: ControlRequest?): EntityState? =
-        json.decodeState(entity.lastState)?.let { pending?.applyTo(it) ?: it }
+    /** The [live] state of [entity], else its cached one, with the result of [pending] applied. */
+    private fun state(entity: ExposedEntity, live: EntityState?, pending: ControlRequest?): EntityState? =
+        (live ?: json.decodeState(entity.lastState))?.let { pending?.applyTo(it) ?: it }
 
     /**
      * The tile of an assigned entity the cache does not know (e.g. removed before the first sync after an
@@ -75,7 +88,7 @@ class TileBuilder @Inject constructor(
             haName = entityId,
             status = EntityStatus.WITHDRAWN,
         )
-        return tile(placeholder, alias, size)
+        return tile(placeholder, alias, size, null, null)
     }
 
     /** Default size of a new tile of [domain]. */

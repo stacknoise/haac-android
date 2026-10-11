@@ -10,6 +10,7 @@ import com.stacknoise.haac.core.network.connection.BridgeChannel
 import com.stacknoise.haac.core.network.connection.StaleDelayMs
 import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.feature.entities.domain.ControlRequest
+import com.stacknoise.haac.feature.entities.domain.EntityState
 import com.stacknoise.haac.feature.entities.domain.DefaultServiceCallFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -53,6 +54,8 @@ class EntityControllerTest {
     private val dao = object : ExposedEntityDao {
         override fun observe(serverId: String): Flow<List<ExposedEntity>> = table
 
+        override fun observeOne(serverId: String, entityId: String): Flow<ExposedEntity?> = error("not read")
+
         override suspend fun all(serverId: String): List<ExposedEntity> = table.value
 
         override suspend fun state(serverId: String, entityId: String): String? = null
@@ -87,18 +90,19 @@ class EntityControllerTest {
     }
 
     private val pending = PendingStates()
+    private val states = LiveStates()
     private val reported = mutableListOf<ErrorCode>()
     private var rechecks = 0
     private val failures = ControlFailures({ error, _ -> reported += error.code }) { rechecks++ }
     private val tools = ControlTools(DefaultServiceCallFactory(), DefaultErrorFactory(), Json)
 
-    private fun TestScope.controller() = EntityController(live, dao, tools, pending, failures, backgroundScope)
+    private fun TestScope.controller() = EntityController(live, dao, states, tools, pending, failures, backgroundScope)
 
     private suspend fun shown(entityId: String): ControlRequest? = pending.of("s1").first()[entityId]
 
     /** Writes [state] of [entityId] as the subscription would. */
     private fun confirm(entityId: String, state: String) {
-        table.value = table.value.map { if (it.entityId == entityId) it.copy(lastState = state) else it }
+        states.putAll("s1", mapOf(entityId to Json.decodeFromString(EntityState.serializer(), state)))
     }
 
     @Test

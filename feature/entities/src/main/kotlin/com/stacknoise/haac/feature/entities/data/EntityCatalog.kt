@@ -1,6 +1,7 @@
 package com.stacknoise.haac.feature.entities.data
 
 import android.database.SQLException
+import com.stacknoise.haac.core.common.dispatch.DefaultDispatcher
 import com.stacknoise.haac.core.database.assignment.EntityAliasDao
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
 import com.stacknoise.haac.core.database.entity.EntityStatus
@@ -10,35 +11,50 @@ import com.stacknoise.haac.feature.entities.domain.CatalogEntry
 import com.stacknoise.haac.feature.entities.domain.EntityDetail
 import com.stacknoise.haac.feature.entities.domain.Tile
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 
-/** Reads the entities of an instance as tiles: per room for the grid, all of them for the picker (concept 7). */
+/**
+ * Reads the entities of an instance as tiles: per room for the grid, all of them for the picker (concept 7). Live
+ * states come from [LiveStates]; the cache rows supply names and, offline, the last state. Tiles are built on the
+ * default dispatcher.
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
 class EntityCatalog @Inject constructor(
     private val entities: ExposedEntityDao,
     private val aliases: EntityAliasDao,
     private val assignments: RoomAssignmentDao,
     private val builder: TileBuilder,
     private val pending: PendingStates,
+    private val live: LiveStates,
     private val errors: ErrorFactory,
+    @param:DefaultDispatcher private val dispatcher: CoroutineDispatcher,
 ) {
     /**
      * The tiles of room [roomId] of instance [serverId] in their order, with live states and the result of
      * requests HA has not confirmed yet (M-05, M-08, concept 8.1).
      */
-    fun roomTiles(serverId: String, roomId: String): Flow<List<Tile>> {
-        val rooms = assignments.observe(roomId)
-        val cache = entities.observe(serverId)
-        return combine(rooms, cache, aliases.observe(serverId), pending.of(serverId)) { rows, cached, aliased, sent ->
-            val byId = cached.associateBy { it.entityId }
-            val alias = aliased.associate { it.entityId to it.alias }
-            rows.map { row ->
-                byId[row.entityId]?.let { builder.tile(it, alias[row.entityId], row.tileSize, sent[row.entityId]) }
-                    ?: builder.missing(serverId, row.entityId, alias[row.entityId], row.tileSize)
+    fun roomTiles(serverId: String, roomId: String): Flow<List<Tile>> = assignments.observe(roomId)
+        .flatMapLatest { rows ->
+            // Only the states of this room's entities are watched, so other entities' events build no tiles here.
+            val states = live.of(serverId, rows.map { it.entityId })
+            combine(entities.observe(serverId), aliases.observe(serverId), pending.of(serverId), states) {
+                    cached, aliased, sent, liveStates ->
+                val byId = cached.associateBy { it.entityId }
+                val alias = aliased.associate { it.entityId to it.alias }
+                rows.map { row ->
+                    byId[row.entityId]?.let {
+                        val size = row.tileSize
+                        builder.tile(it, alias[row.entityId], size, sent[row.entityId], liveStates[row.entityId])
+                    } ?: builder.missing(serverId, row.entityId, alias[row.entityId], row.tileSize)
+                }
             }
-        }.databaseErrors()
-    }
+        }.flowOn(dispatcher).databaseErrors()
 
     /**
      * Every entity of [serverId] that can be assigned, i.e. still shared (concept 7.4), with the rooms it is in;
@@ -63,12 +79,14 @@ class EntityCatalog @Inject constructor(
      * null while the cache does not know it.
      */
     fun detail(serverId: String, entityId: String): Flow<EntityDetail?> {
-        val cache = entities.observe(serverId)
-        return combine(cache, aliases.observe(serverId), pending.of(serverId)) { cached, names, sent ->
-            cached.firstOrNull { it.entityId == entityId }?.let { entity ->
-                builder.detail(entity, names.firstOrNull { it.entityId == entityId }?.alias, sent[entityId])
+        val row = entities.observeOne(serverId, entityId)
+        return combine(row, aliases.observe(serverId), pending.of(serverId), live.of(serverId, entityId)) {
+                entity, names, sent, liveState ->
+            entity?.let {
+                val alias = names.firstOrNull { name -> name.entityId == entityId }?.alias
+                builder.detail(it, alias, sent[entityId], liveState)
             }
-        }.databaseErrors()
+        }.flowOn(dispatcher).databaseErrors()
     }
 
     /** Database errors of a flow arrive as HAAC-DB-001. */

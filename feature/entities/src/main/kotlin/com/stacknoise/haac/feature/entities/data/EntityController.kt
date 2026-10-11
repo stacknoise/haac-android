@@ -20,7 +20,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
@@ -35,6 +34,7 @@ import kotlinx.serialization.json.Json
 class EntityController @Inject constructor(
     private val live: LiveConnection,
     private val entities: ExposedEntityDao,
+    private val states: LiveStates,
     private val tools: ControlTools,
     private val pending: PendingStates,
     private val failures: ControlFailures,
@@ -78,9 +78,7 @@ class EntityController @Inject constructor(
         val channel = live.requireOpen()
         channel.request(CALL_SERVICE, tools.calls.create(entity, request).fields())
         withTimeoutOrNull(CONFIRM_MS) {
-            entities.observe(key.serverId)
-                .map { rows -> rows.firstOrNull { it.entityId == key.entityId }?.lastState }
-                .first { tools.json.decodeState(it)?.let(request::isConfirmedBy) == true }
+            states.of(key.serverId, key.entityId).first { it?.let(request::isConfirmedBy) == true }
         }
     }
 
