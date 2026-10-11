@@ -35,9 +35,12 @@ import java.math.RoundingMode
 @Composable
 internal fun LineChart(chart: HistoryChart.Line) {
     var selected by remember(chart) { mutableStateOf<Long?>(null) }
-    val values = chart.series.flatMap { series -> series.points.map { it.value } } +
-        chart.band.flatMap { listOf(it.low, it.high) }
-    val axis = valueAxis(values.min(), values.max())
+    // The value range of a chart does not change while the selection moves, so it is computed once per chart.
+    val axis = remember(chart) {
+        val values = chart.series.flatMap { series -> series.points.map { it.value } } +
+            chart.band.flatMap { listOf(it.low, it.high) }
+        valueAxis(values.min(), values.max())
+    }
     Column {
         Text(
             selected?.let { lineReadout(chart, it) }.orEmpty(),

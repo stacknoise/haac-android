@@ -8,8 +8,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import com.stacknoise.haac.app.navigation.HaacNavHost
 import com.stacknoise.haac.app.shortcut.PendingInstanceSwitch
@@ -20,8 +22,6 @@ import com.stacknoise.haac.core.database.settings.AppearanceSettings
 import com.stacknoise.haac.core.database.settings.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 
 /**
  * The single activity of the app; hosts the Compose navigation graph (concept 3). A [FragmentActivity],
@@ -35,15 +35,19 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var appearance: AppearanceSettings
 
+    private var themeLoaded = false
+
     /** Enables edge-to-edge drawing and sets the themed Compose content. */
     override fun onCreate(savedInstanceState: Bundle?) {
+        // The splash screen stays until the stored mode is read, so a chosen design never flashes the other one.
+        installSplashScreen().setKeepOnScreenCondition { !themeLoaded }
         super.onCreate(savedInstanceState)
         // A recreated activity gets the same intent again; only the first start counts as a request.
         if (savedInstanceState == null) requestSwitchOf(intent)
-        // The stored mode is read once before the first frame, so a chosen design never flashes the other one.
-        val firstMode = runBlocking { appearance.themeMode.first() }
         setContent {
-            val mode by appearance.themeMode.collectAsState(initial = firstMode)
+            val stored by appearance.themeMode.collectAsState(initial = null)
+            val mode = stored ?: return@setContent
+            LaunchedEffect(Unit) { themeLoaded = true }
             val dark = mode == ThemeMode.DARK || (mode == ThemeMode.SYSTEM && isSystemInDarkTheme())
             // Transparent bars with icons that stay readable on the design in use.
             DisposableEffect(dark) {

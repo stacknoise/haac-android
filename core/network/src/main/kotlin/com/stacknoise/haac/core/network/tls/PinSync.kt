@@ -6,7 +6,9 @@ import com.stacknoise.haac.core.network.di.ConnectionScope
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
@@ -23,7 +25,11 @@ class PinSync @Inject constructor(
     fun start() {
         if (started) return
         started = true
-        servers.observeAll().onEach { rows -> pins.replaceStored(rows.pinnedAddresses()) }.launchIn(scope)
+        servers.observeAll()
+            .map { rows -> rows.pinnedAddresses() }
+            .distinctUntilChanged()
+            .onEach(pins::replaceStored)
+            .launchIn(scope)
     }
 }
 

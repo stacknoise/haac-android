@@ -30,6 +30,7 @@ dependencies {
     implementation(project(":feature:schedules"))
     implementation(project(":feature:settings"))
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.splashscreen)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
