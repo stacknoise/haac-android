@@ -29,6 +29,7 @@ import com.stacknoise.haac.feature.onboarding.domain.SignInStep
 import com.stacknoise.haac.feature.onboarding.domain.SignInTarget
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -124,6 +125,7 @@ class HaSignInRepositoryTest {
             json,
             DefaultBridgeMessageFactory(),
             DefaultErrorFactory(),
+            Dispatchers.IO,
         ),
         registry,
         firstAddress,

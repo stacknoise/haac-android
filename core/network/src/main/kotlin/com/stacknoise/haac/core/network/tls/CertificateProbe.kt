@@ -1,5 +1,6 @@
 package com.stacknoise.haac.core.network.tls
 
+import com.stacknoise.haac.core.common.dispatch.IoDispatcher
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.NetworkException
 import android.annotation.SuppressLint
@@ -12,7 +13,7 @@ import javax.net.ssl.SNIHostName
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSocket
 import javax.net.ssl.X509TrustManager
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
 
@@ -26,9 +27,11 @@ fun interface CertificateProbe {
  * [CertificateProbe] with a bare TLS handshake. The probe's trust manager notes the chain and then refuses it, so
  * the handshake never completes and no application data, credentials or tokens are ever sent to the server.
  */
-class TlsCertificateProbe @Inject constructor() : CertificateProbe {
+class TlsCertificateProbe @Inject constructor(
+    @param:IoDispatcher private val io: CoroutineDispatcher,
+) : CertificateProbe {
     /** Connects, lets the handshake fail on purpose and returns what the server presented. */
-    override suspend fun inspect(url: HttpUrl): PeerCertificate = withContext(Dispatchers.IO) {
+    override suspend fun inspect(url: HttpUrl): PeerCertificate = withContext(io) {
         val seen = AtomicReference<X509Certificate?>()
         val context = SSLContext.getInstance("TLS").apply { init(null, arrayOf(Recorder(seen)), null) }
         try {

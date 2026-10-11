@@ -1,5 +1,6 @@
 package com.stacknoise.haac.core.security.biometric
 
+import com.stacknoise.haac.core.common.dispatch.IoDispatcher
 import com.stacknoise.haac.core.error.AuthException
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.ErrorFactory
@@ -9,6 +10,7 @@ import com.stacknoise.haac.core.security.token.TokenProtection
 import com.stacknoise.haac.core.security.token.TokenStore
 import com.stacknoise.haac.core.security.token.UnlockedTokens
 import com.stacknoise.haac.core.security.token.keystoreGuarded
+import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Inject
 
 /** A decrypted refresh token and the fingerprint key it came from (null: the device-bound key). */
@@ -21,6 +23,7 @@ class KeystoreFingerprintUnlock @Inject constructor(
     private val unlocked: UnlockedTokens,
     private val prompter: BiometricPrompter,
     private val errors: ErrorFactory,
+    @param:IoDispatcher private val io: CoroutineDispatcher,
 ) : FingerprintUnlock {
     private val authorizer = FingerprintAuthorizer(prompter)
 
@@ -124,7 +127,7 @@ class KeystoreFingerprintUnlock @Inject constructor(
         target: FingerprintTarget,
         block: suspend () -> FingerprintOutcome,
     ): FingerprintOutcome = try {
-        keystoreGuarded(errors, block)
+        keystoreGuarded(io, errors, block)
     } catch (e: KeystoreException) {
         if (e.code == ErrorCode.SEC_BIOMETRICS_CHANGED) store.delete(target.serverId)
         throw e

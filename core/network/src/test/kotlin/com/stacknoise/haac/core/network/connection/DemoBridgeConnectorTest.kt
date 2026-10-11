@@ -55,7 +55,7 @@ class DemoBridgeConnectorTest {
     }
 
     private val real = RecordingConnector()
-    private val connector = DemoBridgeConnector(real, world, messages, errors)
+    private val connector = DemoBridgeConnector(real, world, messages, errors, Dispatchers.IO)
 
     @Test
     fun `the demo ID selects the demo address and connects over the built-in bridge`() = runBlocking {
@@ -87,7 +87,7 @@ class DemoBridgeConnectorTest {
         val sessions = mockk<InstanceSessionFactory>()
         val bridge = mockk<BridgeInfoClient>()
         val default = DefaultBridgeConnector(servers, endpoints, sessions, bridge, errors)
-        val productive = DemoBridgeConnector(default, world, messages, errors)
+        val productive = DemoBridgeConnector(default, world, messages, errors, Dispatchers.IO)
         val url = productive.select(DemoInstance.SERVER_ID)
         productive.connect(DemoInstance.SERVER_ID, url, backgroundScope).close()
         confirmVerified(servers, endpoints, sessions, bridge)

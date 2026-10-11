@@ -13,6 +13,7 @@ import com.stacknoise.haac.core.security.token.UnlockedTokens
 import io.mockk.mockk
 import java.io.File
 import javax.crypto.Cipher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -58,13 +59,14 @@ class KeystoreFingerprintUnlockTest {
     fun setUp() = runTest {
         files = TokenFiles(dir)
         val ciphers = AesGcmCipherFactory()
-        store = KeystoreTokenStore(files, keys, ciphers, unlocked, DefaultErrorFactory())
+        store = KeystoreTokenStore(files, keys, ciphers, unlocked, DefaultErrorFactory(), Dispatchers.Unconfined)
         unlock = KeystoreFingerprintUnlock(
             FingerprintVault(files, keys, ciphers),
             store,
             unlocked,
             prompter,
             DefaultErrorFactory(),
+            Dispatchers.Unconfined,
         )
         store.save("a", "refresh-a")
     }

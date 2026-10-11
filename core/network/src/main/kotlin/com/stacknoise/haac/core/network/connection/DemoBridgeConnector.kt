@@ -1,5 +1,6 @@
 package com.stacknoise.haac.core.network.connection
 
+import com.stacknoise.haac.core.common.dispatch.IoDispatcher
 import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.network.bridge.BridgeMessageFactory
 import com.stacknoise.haac.core.network.demo.DemoInstance
@@ -8,7 +9,6 @@ import com.stacknoise.haac.core.network.demo.DemoWorld
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
@@ -23,6 +23,7 @@ class DemoBridgeConnector internal constructor(
     private val world: DemoWorld,
     private val messages: BridgeMessageFactory,
     private val errors: ErrorFactory,
+    private val io: CoroutineDispatcher,
 ) : BridgeConnector {
     /** Routes to the default connector in the app. */
     @Inject
@@ -31,7 +32,8 @@ class DemoBridgeConnector internal constructor(
         world: DemoWorld,
         messages: BridgeMessageFactory,
         errors: ErrorFactory,
-    ) : this(real as BridgeConnector, world, messages, errors)
+        @IoDispatcher io: CoroutineDispatcher,
+    ) : this(real as BridgeConnector, world, messages, errors, io)
 
     /** The fixed demo address for the demo; the selection rules of the real connector for every other instance. */
     override suspend fun select(serverId: String): HttpUrl =
@@ -40,7 +42,7 @@ class DemoBridgeConnector internal constructor(
     /** A connection over a [DemoSocket] for the demo, the handshake of the real connector for every other instance. */
     override suspend fun connect(serverId: String, url: HttpUrl, scope: CoroutineScope): BridgeConnection =
         if (DemoInstance.isDemo(serverId)) {
-            connectDemo(world, messages, errors, scope, url)
+            connectDemo(world, messages, errors, scope, url, io.limitedParallelism(1))
         } else {
             real.connect(serverId, url, scope)
         }
@@ -56,6 +58,6 @@ fun connectDemo(
     errors: ErrorFactory,
     scope: CoroutineScope,
     url: HttpUrl = DemoInstance.ADDRESS.toHttpUrl(),
-    dispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(1),
+    dispatcher: CoroutineDispatcher,
 ): BridgeConnection =
     BridgeConnection(url, DemoInstance.info, DemoSocket(world, dispatcher), messages, errors, scope)

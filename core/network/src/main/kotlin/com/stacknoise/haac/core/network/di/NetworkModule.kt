@@ -2,6 +2,7 @@ package com.stacknoise.haac.core.network.di
 
 import android.content.Context
 import android.net.nsd.NsdManager
+import com.stacknoise.haac.core.common.dispatch.MainDispatcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,7 +11,7 @@ import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import com.stacknoise.haac.core.network.tls.PinRegistry
@@ -47,5 +48,6 @@ object NetworkModule {
     @Provides
     @Singleton
     @ConnectionScope
-    fun provideConnectionScope(): CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    fun provideConnectionScope(@MainDispatcher main: CoroutineDispatcher): CoroutineScope =
+        CoroutineScope(SupervisorJob() + main)
 }

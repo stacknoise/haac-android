@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":core:common"))
     implementation(project(":core:error"))
     implementation(project(":core:security"))
     implementation(project(":core:database"))

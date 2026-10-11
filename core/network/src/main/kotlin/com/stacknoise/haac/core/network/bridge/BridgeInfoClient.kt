@@ -1,5 +1,6 @@
 package com.stacknoise.haac.core.network.bridge
 
+import com.stacknoise.haac.core.common.dispatch.IoDispatcher
 import com.stacknoise.haac.core.error.BridgeException
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.ErrorFactory
@@ -10,7 +11,7 @@ import com.stacknoise.haac.core.network.websocket.HaWebSocketFactory
 import com.stacknoise.haac.core.network.websocket.authenticate
 import com.stacknoise.haac.core.network.websocket.awaitReply
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.SerialName
@@ -53,6 +54,7 @@ class BridgeInfoClient @Inject constructor(
     private val json: Json,
     private val messages: BridgeMessageFactory,
     private val errors: ErrorFactory,
+    @param:IoDispatcher private val io: CoroutineDispatcher,
 ) {
     /** The bridge info from a short-lived socket that is closed again, e.g. after login. */
     suspend fun fetch(baseUrl: HttpUrl, accessToken: String): BridgeInfo {
@@ -70,7 +72,7 @@ class BridgeInfoClient @Inject constructor(
         var done = false
         try {
             // Real time on the IO dispatcher, also under a test scheduler with virtual time.
-            val info = withContext(Dispatchers.IO) {
+            val info = withContext(io) {
                 withTimeoutOrNull(TIMEOUT_MS) { converse(socket, accessToken) }
             } ?: throw NetworkException(ErrorCode.NET_UNREACHABLE)
             done = true
