@@ -1,5 +1,6 @@
 package com.stacknoise.haac.core.network.demo
 
+import com.stacknoise.haac.core.common.entity.HaDomains
 import com.stacknoise.haac.core.network.bridge.BridgeInfo
 import com.stacknoise.haac.core.network.bridge.BridgeUrls
 
@@ -31,7 +32,7 @@ object DemoInstance {
     val info = BridgeInfo(
         bridgeVersion = "demo",
         apiVersion = 1,
-        domains = listOf("climate", "sensor", "switch"),
+        domains = listOf(HaDomains.CLIMATE, HaDomains.SENSOR, HaDomains.SWITCH),
         haVersion = "demo",
         instanceId = INSTANCE_ID,
         urls = BridgeUrls(),

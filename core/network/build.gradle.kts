@@ -16,4 +16,7 @@ dependencies {
     testImplementation(libs.okhttp.mockwebserver)
     testImplementation(libs.okhttp.tls)
     testImplementation(libs.kotlinx.coroutines.test)
+    testFixturesImplementation(project(":core:error"))
+    testFixturesImplementation(libs.kotlinx.serialization.json)
+    testFixturesApi(libs.kotlinx.coroutines.test)
 }

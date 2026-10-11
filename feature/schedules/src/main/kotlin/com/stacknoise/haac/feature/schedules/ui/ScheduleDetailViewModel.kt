@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
 import com.stacknoise.haac.core.error.ErrorCode
+import com.stacknoise.haac.core.error.ValidationException
 import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.core.network.connection.connected
 import com.stacknoise.haac.core.network.connection.stale
@@ -52,7 +53,7 @@ class ScheduleDetailViewModel @Inject constructor(
     private val commands: ScheduleCommands,
     private val failures: ScheduleFailures,
 ) : ViewModel() {
-    private val scheduleId: String = checkNotNull(savedState[ID_ARG])
+    private val scheduleId: String = savedState[ID_ARG] ?: throw ValidationException(ErrorCode.APP_UNEXPECTED)
     private val serverId = active.activeServerId.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     private val failure = MutableStateFlow<ErrorCode?>(null)
     private val deletedFlow = MutableStateFlow(false)

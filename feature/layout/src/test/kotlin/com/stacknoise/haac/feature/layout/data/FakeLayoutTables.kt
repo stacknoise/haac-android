@@ -116,16 +116,24 @@ class FakeLayoutTables {
     }
 
     val trashDao = object : LayoutTrashDao {
-        override suspend fun restoreHomes(at: Long) {
-            homes.value = homes.value.map { if (it.deletedAt == at) it.copy(deletedAt = null) else it }
+        override suspend fun restoreHomes(at: Long, serverId: String) {
+            homes.value = homes.value.map {
+                if (it.deletedAt == at && it.serverId == serverId) it.copy(deletedAt = null) else it
+            }
         }
 
-        override suspend fun restoreFloors(at: Long) {
-            floors.value = floors.value.map { if (it.deletedAt == at) it.copy(deletedAt = null) else it }
+        override suspend fun restoreFloors(at: Long, serverId: String) {
+            val own = homes.value.filter { it.serverId == serverId }.map { it.id }.toSet()
+            floors.value = floors.value.map {
+                if (it.deletedAt == at && it.homeId in own) it.copy(deletedAt = null) else it
+            }
         }
 
-        override suspend fun restoreRooms(at: Long) {
-            rooms.value = rooms.value.map { if (it.deletedAt == at) it.copy(deletedAt = null) else it }
+        override suspend fun restoreRooms(at: Long, serverId: String) {
+            val own = homes.value.filter { it.serverId == serverId }.map { it.id }.toSet()
+            rooms.value = rooms.value.map {
+                if (it.deletedAt == at && it.homeId in own) it.copy(deletedAt = null) else it
+            }
         }
 
         override suspend fun purgeRooms(before: Long) {

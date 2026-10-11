@@ -14,27 +14,14 @@ internal class ChartPalette(val green: Color, val blue: Color, val magenta: Colo
 }
 
 /**
- * Light design: validated with the dataviz validator on the former dark background; green and yellow are darkened
- * by hand for the light "Salbei" background (contrast against white) and still need a validator run.
+ * The chart colours of the current design: the tokens `chartGreen`, `chartBlue`, `chartMagenta` and `chartYellow` of
+ * [HaacColors]. The light set is darkened by hand for the "Salbei" background and still needs a dataviz validator
+ * run; the dark set passed it on the former dark background `#161826`. Read in the composable and handed to the
+ * drawing functions.
  */
-internal val LightChartPalette = ChartPalette(
-    green = Color(0xFF1F9A4B),
-    blue = Color(0xFF3987E5),
-    magenta = Color(0xFFD55181),
-    yellow = Color(0xFFB27300),
-)
-
-/** Dark design: the set that passed the dataviz validator on the former dark background `#161826`. */
-internal val DarkChartPalette = ChartPalette(
-    green = Color(0xFF22A852),
-    blue = Color(0xFF3987E5),
-    magenta = Color(0xFFD55181),
-    yellow = Color(0xFFC98500),
-)
-
-/** The chart colours of the current design; read in the composable and handed to the drawing functions. */
 @Composable
-internal fun chartPalette(): ChartPalette = if (HaacColors.IsDark) DarkChartPalette else LightChartPalette
+internal fun chartPalette(): ChartPalette =
+    ChartPalette(HaacColors.ChartGreen, HaacColors.ChartBlue, HaacColors.ChartMagenta, HaacColors.ChartYellow)
 
 /** Values shared by all designs. */
 internal object ChartColors {

@@ -39,7 +39,7 @@ class InstanceShortcuts @Inject constructor(
     }
 
     /** Replaces the dynamic shortcuts with the first instances that fit; none for a single instance. */
-    private fun publish(rows: List<InstanceLabel>) {
+    private suspend fun publish(rows: List<InstanceLabel>) {
         if (rows.size < MIN_INSTANCES) {
             ShortcutManagerCompat.removeAllDynamicShortcuts(context)
             return

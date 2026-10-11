@@ -32,10 +32,11 @@ class PlaceTrashTest {
     @Test
     fun `deleting a home hides everything in it until undo restores it`() = runTest {
         val before = mainHouse()
-        trash.deleteHome(before.homes.single())
+        trash.deleteHome("s1", before.homes.single())
 
         assertEquals(Places(), places())
         assertEquals("Main house", trash.pending.value?.name)
+        assertEquals("s1", trash.pending.value?.serverId)
         trash.undo(checkNotNull(trash.pending.value))
         assertEquals(before, places())
         assertNull(trash.pending.value)
@@ -44,7 +45,7 @@ class PlaceTrashTest {
     @Test
     fun `a deleted level keeps its rooms in the home, or takes them along`() = runTest {
         val before = mainHouse()
-        trash.deleteFloor(before.floors.single(), withRooms = false)
+        trash.deleteFloor("s1", before.floors.single(), withRooms = false)
         assertEquals(listOf(null, null), places().rooms.map { it.floorId })
 
         now += 1
@@ -55,7 +56,7 @@ class PlaceTrashTest {
 
         val ground = writer.save("s1", PlaceForm(PlaceKind.FLOOR, name = "Ground", homeId = before.homes.single().id))
         tables.rooms.value = tables.rooms.value.map { it.copy(floorId = ground) }
-        trash.deleteFloor(places().floors.single(), withRooms = true)
+        trash.deleteFloor("s1", places().floors.single(), withRooms = true)
         trash.expire(checkNotNull(trash.pending.value))
         assertEquals(emptyList<Any>(), tables.rooms.value)
     }
@@ -63,9 +64,9 @@ class PlaceTrashTest {
     @Test
     fun `a new deletion ends the previous one, which can no longer be undone`() = runTest {
         val before = mainHouse()
-        trash.deleteRoom(before.rooms.first { it.name == "Hall" })
+        trash.deleteRoom("s1", before.rooms.first { it.name == "Hall" })
         val first = checkNotNull(trash.pending.value)
-        trash.deleteRoom(before.rooms.first { it.name == "Kitchen" })
+        trash.deleteRoom("s1", before.rooms.first { it.name == "Kitchen" })
 
         trash.undo(first)
         assertEquals(emptyList<Any>(), places().rooms)
@@ -77,7 +78,7 @@ class PlaceTrashTest {
     @Test
     fun `purging expired deletions keeps the pending one`() = runTest {
         val before = mainHouse()
-        trash.deleteRoom(before.rooms.first())
+        trash.deleteRoom("s1", before.rooms.first())
         // Left over from a deletion whose window ended while the app was closed.
         tables.homes.value += tables.homes.value.single().copy(id = "old", deletedAt = now - 60_000)
 

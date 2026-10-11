@@ -8,6 +8,8 @@ import com.stacknoise.haac.core.network.connection.BridgeChannel
 import com.stacknoise.haac.core.network.connection.BridgeConnection
 import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.core.network.demo.DemoWorld
+import com.stacknoise.haac.core.network.demo.demoConnection
+import com.stacknoise.haac.core.network.demo.demoWorld
 import com.stacknoise.haac.feature.schedules.domain.ScheduleAction
 import com.stacknoise.haac.feature.schedules.domain.ScheduleDraft
 import com.stacknoise.haac.feature.schedules.domain.toItem

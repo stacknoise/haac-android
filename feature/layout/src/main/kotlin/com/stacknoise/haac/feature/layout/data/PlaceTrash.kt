@@ -42,30 +42,32 @@ class PlaceTrash internal constructor(
     /** The deletion that can still be undone; the Places screen shows it as a snackbar. */
     val pending: StateFlow<Deletion?> = current.asStateFlow()
 
-    /** Deletes [home] with its levels and rooms. */
-    suspend fun deleteHome(home: Home) = delete(PlaceKind.HOME, home.name) { at ->
+    /** Deletes [home] of instance [serverId] with its levels and rooms. */
+    suspend fun deleteHome(serverId: String, home: Home) = delete(serverId, PlaceKind.HOME, home.name) { at ->
         daos.homes.markDeleted(home.id, at)
         daos.floors.markDeletedOfHome(home.id, at)
         daos.rooms.markDeletedOfHome(home.id, at)
     }
 
     /** Deletes [floor]; its rooms are deleted too if [withRooms], else they stay directly in the home. */
-    suspend fun deleteFloor(floor: Floor, withRooms: Boolean) = delete(PlaceKind.FLOOR, floor.name) { at ->
-        daos.floors.markDeleted(floor.id, at)
-        if (withRooms) daos.rooms.markDeletedOfFloor(floor.id, at)
-    }
+    suspend fun deleteFloor(serverId: String, floor: Floor, withRooms: Boolean) =
+        delete(serverId, PlaceKind.FLOOR, floor.name) { at ->
+            daos.floors.markDeleted(floor.id, at)
+            if (withRooms) daos.rooms.markDeletedOfFloor(floor.id, at)
+        }
 
-    /** Deletes [room]. */
-    suspend fun deleteRoom(room: Room) = delete(PlaceKind.ROOM, room.name) { at -> daos.rooms.markDeleted(room.id, at) }
+    /** Deletes [room] of instance [serverId]. */
+    suspend fun deleteRoom(serverId: String, room: Room) =
+        delete(serverId, PlaceKind.ROOM, room.name) { at -> daos.rooms.markDeleted(room.id, at) }
 
     /** *Undo*: restores everything [deletion] marked, if it is still the pending one. */
     suspend fun undo(deletion: Deletion) = lock.withLock {
         if (current.value == deletion) {
             errors.database {
                 transactions.run {
-                    trash.restoreHomes(deletion.at)
-                    trash.restoreFloors(deletion.at)
-                    trash.restoreRooms(deletion.at)
+                    trash.restoreHomes(deletion.at, deletion.serverId)
+                    trash.restoreFloors(deletion.at, deletion.serverId)
+                    trash.restoreRooms(deletion.at, deletion.serverId)
                 }
             }
             current.value = null
@@ -84,13 +86,14 @@ class PlaceTrash internal constructor(
     }
 
     /** Ends the pending deletion, then marks the rows with [mark] under a new time and makes it pending. */
-    private suspend fun delete(kind: PlaceKind, name: String, mark: suspend (Long) -> Unit) = lock.withLock {
+    private suspend fun delete(serverId: String, kind: PlaceKind, name: String, mark: suspend (Long) -> Unit) =
+        lock.withLock {
         val now = clock()
         purge(maxOf(current.value?.at ?: 0L, now - UNDO_MS))
         val at = maxOf(now, lastMark + 1)
         lastMark = at
         errors.database { transactions.run { mark(at) } }
-        current.value = Deletion(kind, name, at)
+        current.value = Deletion(kind, name, at, serverId)
     }
 
     /** Deletes the rows marked at or before [before]; rooms first, so a level's purge only frees kept rooms. */

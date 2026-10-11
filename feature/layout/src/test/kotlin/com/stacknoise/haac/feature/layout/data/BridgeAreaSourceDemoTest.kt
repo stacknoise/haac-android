@@ -2,6 +2,7 @@ package com.stacknoise.haac.feature.layout.data
 
 import com.stacknoise.haac.core.network.connection.BridgeChannel
 import com.stacknoise.haac.core.network.connection.LiveConnection
+import com.stacknoise.haac.core.network.demo.demoConnection
 import com.stacknoise.haac.feature.layout.domain.HaArea
 import com.stacknoise.haac.feature.layout.domain.HaFloor
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,5 +1,6 @@
 package com.stacknoise.haac.core.network.demo
 
+import com.stacknoise.haac.core.common.entity.HaDomains
 import java.time.Clock
 import java.time.Instant
 import java.time.ZonedDateTime
@@ -21,7 +22,7 @@ internal class DemoHistory(private val clock: Clock, private val series: DemoSer
         val until = minOf(end, clock.millis())
         if (until <= start) return JsonArray(emptyList())
         val rows = when {
-            entity.domain == "climate" -> sampled(start, until) { climateRow(entity, it) }
+            entity.domain == HaDomains.CLIMATE -> sampled(start, until) { climateRow(entity, it) }
             entity.unit != null -> sampled(start, until) { valueRow(entity, it) }
             else -> switchRows(entity, start, until, minimal)
         }

@@ -3,7 +3,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 
-/** Every `:core:*` and `:feature:*` module: library plugin, SDK levels, tests and Detekt. */
+/** Every `:core:*` and `:feature:*` module: library plugin, SDK levels, tests (also shared fixtures) and Detekt. */
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         pluginManager.apply("com.android.library")
@@ -21,6 +21,8 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 warningsAsErrors = true
                 abortOnError = true
             }
+            // A module opts in to shared test code by having a `src/testFixtures` folder.
+            testFixtures.enable = target.file("src/testFixtures").exists()
         }
         configureKotlin()
         configureUnitTests()
