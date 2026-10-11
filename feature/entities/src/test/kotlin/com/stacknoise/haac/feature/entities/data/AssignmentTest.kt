@@ -16,6 +16,7 @@ import com.stacknoise.haac.feature.entities.domain.DefaultEntityControlFactory
 import com.stacknoise.haac.feature.entities.domain.DefaultTileFactory
 import com.stacknoise.haac.feature.entities.domain.TileContent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -43,6 +44,9 @@ class AssignmentTest {
         override suspend fun all(serverId: String) = cache.value
 
         override fun observe(serverId: String): Flow<List<ExposedEntity>> = cache
+
+        override fun observeOne(serverId: String, entityId: String): Flow<ExposedEntity?> =
+            cache.map { list -> list.firstOrNull { it.entityId == entityId } }
 
         override suspend fun upsert(rows: List<ExposedEntity>) = unused()
 
@@ -109,7 +113,9 @@ class AssignmentTest {
     private val errors = DefaultErrorFactory()
     private val builder =
         TileBuilder(Json { ignoreUnknownKeys = true }, DefaultTileFactory(), DefaultEntityControlFactory())
-    private val catalog = EntityCatalog(entityDao, aliasDao, assignmentDao, builder, PendingStates(), errors)
+    private val catalog = EntityCatalog(
+        entityDao, aliasDao, assignmentDao, builder, PendingStates(), LiveStates(), errors, Dispatchers.Unconfined,
+    )
     private val writer = AssignmentWriter(assignmentDao, aliasDao, passThrough, errors) { 42 }
 
     @Test

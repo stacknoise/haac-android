@@ -95,6 +95,8 @@ class NotificationRepositoryTest {
 
         override fun observe(serverId: String): Flow<List<ExposedEntity>> = error("not used")
 
+        override fun observeOne(serverId: String, entityId: String): Flow<ExposedEntity?> = error("not used")
+
         override suspend fun upsert(rows: List<ExposedEntity>) = error("not used")
 
         override suspend fun revision(serverId: String) = error("not used")

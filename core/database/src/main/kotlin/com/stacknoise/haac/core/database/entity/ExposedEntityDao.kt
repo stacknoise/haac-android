@@ -17,6 +17,10 @@ interface ExposedEntityDao {
     @Query("SELECT * FROM exposed_entity WHERE server_id = :serverId")
     fun observe(serverId: String): Flow<List<ExposedEntity>>
 
+    /** One row of [observe], updated when it changes; null while the entity is not cached. */
+    @Query("SELECT * FROM exposed_entity WHERE server_id = :serverId AND entity_id = :entityId")
+    fun observeOne(serverId: String, entityId: String): Flow<ExposedEntity?>
+
     /** Inserts new rows and replaces existing ones. */
     @Upsert
     suspend fun upsert(rows: List<ExposedEntity>)
