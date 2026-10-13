@@ -81,7 +81,7 @@ LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 - Features never depend on each other; shared code and interfaces live in `core.*`.
 
 **Factories (17.2)**
-- Objects whose kind depends on a type or runtime data are created only by a factory (`EntityControlFactory`, `TileFactory`, `ServiceCallFactory`, `BridgeMessageFactory`, `KeyFactory`/`CipherFactory`, `InstanceSessionFactory`, `ErrorFactory`, `@AssistedFactory` ViewModels).
+- Objects whose kind depends on a type or runtime data are created only by a factory (`EntityControlFactory`, `TileFactory`, `ServiceCallFactory`, `BridgeMessageFactory`, `KeyFactory`/`CipherFactory`, `InstanceSessionFactory`, `ErrorFactory`; ViewModels read navigation arguments from `SavedStateHandle`).
 - Never branch on the entity domain or key type to construct objects outside a factory. Factories are interfaces with a Hilt-provided implementation.
 
 **Errors (17.3, 17.4)**
