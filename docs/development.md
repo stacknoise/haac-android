@@ -60,7 +60,7 @@ docs/                 concept.md, code-index.md, error-codes.md, mockups, icons,
 Dependency rules:
 
 - A feature module depends on `core:common` and `core:error` (added by its convention plugin) and on the other `core:*` modules it needs. **Features never depend on each other.** Code two features need goes into a `core:*` module; they talk through interfaces defined there.
-- `:app` depends on everything and holds nothing but wiring.
+- `:app` depends on everything. It holds the wiring plus the app-wide parts that need every feature: the lock (concept 5.5), the start routing (4.1), shortcuts (4.4) and the crash marker. Packages of `core` modules may be split by sub-topic without the layer folders (app review K-06).
 
 ### Packages by topic (concept 17.1)
 
@@ -135,7 +135,7 @@ The factories of the app:
 | `InstanceSessionFactory` | per-instance session: HTTP client, WebSocket, token store for one `serverId` |
 | `EndpointSelector` | the address of an instance to connect to |
 | `ErrorFactory` | `HaacException` from any caught `Throwable` |
-| ViewModel factories (`@AssistedFactory`) | ViewModels with runtime parameters (`roomId`, `entityId`) |
+| `SavedStateHandle` (no factory) | ViewModels with navigation arguments (`roomId`, `entityId`); `@AssistedFactory` only for an argument the route does not carry |
 
 Adding a factory:
 
@@ -198,7 +198,7 @@ NET_UNREACHABLE(
 
 - Code needed in a second place is extracted into its own function **at that moment**, in the topic package or in `core:common` if several topics use it.
 - CI runs PMD CPD over `app/src`, `core` and `feature` and fails from **100 duplicated tokens**. This includes tests: identical fakes (for example a `ScheduleDao`) belong in one shared test class (`FakeScheduleDao`).
-- Detekt (`config/detekt/detekt.yml`): documented public classes and functions, lines of at most 120 characters, no magic numbers (`20.dp` is allowed), top-level constants in PascalCase (`StaleDelayMs`), at most 11 functions per file. Compose functions are exempt from the length and naming rules.
+- Detekt (`config/detekt/detekt.yml`): documented public classes and functions, lines of at most 120 characters, no magic numbers (`20.dp` is allowed), top-level constants in PascalCase (`StaleDelayMs`), at most 11 functions per file. ViewModels with one small handler per input, DAOs and repositories with one small function per operation may exceed it with `@Suppress("TooManyFunctions")` and a comment that gives the reason (app review K-09); any other class is split. Compose functions are exempt from the length and naming rules.
 - The Kotlin compiler treats warnings as errors.
 
 ## 7. UI rules

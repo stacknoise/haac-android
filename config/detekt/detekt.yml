@@ -6,6 +6,8 @@ comments:
   UndocumentedPublicFunction:
     active: true
 
+# TooManyFunctions stays at the default (11). ViewModels with one small handler per input, DAOs and repositories
+# with one function per operation may exceed it with @Suppress("TooManyFunctions") and a reason (development guide).
 complexity:
   LongParameterList:
     ignoreAnnotated: ['Composable']
