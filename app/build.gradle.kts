@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.aboutlibraries)
 }
 
-val appVersion = "0.4.0"
+val appVersion = "0.4.1"
 
 android {
     defaultConfig {
