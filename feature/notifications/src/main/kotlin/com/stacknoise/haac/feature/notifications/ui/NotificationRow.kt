@@ -60,7 +60,7 @@ internal fun NotificationRow(item: NotificationItem, actions: NotificationAction
                 Text(timeOf(item.createdAt), style = MaterialTheme.typography.bodySmall, color = secondary())
             }
             Text(text(item), style = MaterialTheme.typography.bodyMedium, color = secondary())
-            if (!item.resolved) EntryActions(item, actions)
+            if (!item.resolved || item.canAssign) EntryActions(item, actions)
         }
         Spacer(Modifier.width(12.dp))
         UnreadDot(item.unread)
@@ -116,11 +116,12 @@ private fun EntryActions(item: NotificationItem, actions: NotificationActions) {
         modifier = Modifier.padding(top = 8.dp),
     ) {
         when (item.type) {
-            NotificationType.ADDED -> {
-                val label = if (item.count == 1) {
+            NotificationType.ADDED -> if (item.canAssign) {
+                val left = item.unassigned.size
+                val label = if (left == 1) {
                     stringResource(R.string.notifications_add_to_room)
                 } else {
-                    pluralStringResource(R.plurals.notifications_review, item.count, item.count)
+                    pluralStringResource(R.plurals.notifications_review, left, left)
                 }
                 ActionButton(label, primary = true) { actions.onAddToRoom(item) }
             }
@@ -134,13 +135,16 @@ private fun EntryActions(item: NotificationItem, actions: NotificationActions) {
             }
             NotificationType.SCHEDULE_REMOVED, NotificationType.SCHEDULE_PAUSED -> Unit
         }
-        val resolve = when (item.type) {
-            NotificationType.REMOVED -> R.string.notifications_keep
-            else -> R.string.notifications_dismiss
+        if (!item.resolved) {
+            val resolve = when (item.type) {
+                NotificationType.REMOVED -> R.string.notifications_keep
+                else -> R.string.notifications_dismiss
+            }
+            ActionButton(stringResource(resolve), primary = false) { actions.onResolve(item) }
         }
-        ActionButton(stringResource(resolve), primary = false) { actions.onResolve(item) }
     }
 }
+
 
 /** Outlined button in the accent colour ([primary]) or neutral (concept 15.2). */
 @Composable

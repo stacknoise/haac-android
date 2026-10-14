@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** What *Add to room* shows: the entities still shared, the rooms to choose from and the chosen [roomId]. */
+/** What *Add to room* shows: the unassigned entities, the rooms to choose from and the chosen [roomId]. */
 data class AssignUiState(
     val entries: List<CatalogEntry> = emptyList(),
     val groups: List<RoomGroup>? = null,
@@ -57,7 +57,7 @@ class AssignViewModel @Inject constructor(
         if (id == null) {
             flowOf(emptyList())
         } else {
-            catalog.assignable(id).map { list -> list.filter { it.entityId in ids } }
+            catalog.assignable(id).map { list -> list.filter { it.entityId in ids && it.roomIds.isEmpty() } }
         }
     }.reportErrors(emptyList())
 

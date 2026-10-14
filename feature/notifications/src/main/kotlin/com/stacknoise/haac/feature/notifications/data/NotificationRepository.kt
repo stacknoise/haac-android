@@ -3,6 +3,7 @@ package com.stacknoise.haac.feature.notifications.data
 import com.stacknoise.haac.core.database.assignment.EntityAlias
 import com.stacknoise.haac.core.database.assignment.EntityAliasDao
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
+import com.stacknoise.haac.core.database.entity.EntityStatus
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.database.entity.byEntityId
 import com.stacknoise.haac.core.database.entity.displayName
@@ -20,6 +21,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.builtins.ListSerializer
@@ -125,14 +127,27 @@ class NotificationRepository internal constructor(
      * name if the user gave one, else the name from the bridge or HA (concept 7.3).
      */
     fun items(serverId: String?): Flow<List<NotificationItem>> =
-        combine(notifications.observe(serverId), localNames(serverId)) { rows, local ->
+        combine(notifications.observe(serverId), localNames(serverId), placedIds(serverId)) { rows, local, placed ->
             val names = entityNames(serverId, local)
-            rows.map { it.toItem(names) }
+            val shared = sharedIds(serverId)
+            rows.map { it.toItem(names, shared - placed) }
         }
 
     /** The local names of instance [serverId]; none for the global entries. */
     private fun localNames(serverId: String?): Flow<List<EntityAlias>> =
         serverId?.let(aliases::observe) ?: flowOf(emptyList())
+
+    /** The ids of the entities of [serverId] that are in at least one room; none for the global entries. */
+    private fun placedIds(serverId: String?): Flow<Set<String>> =
+        serverId?.let { id -> assignments.observeAll(id).map { rows -> rows.map { it.entityId }.toSet() } }
+            ?: flowOf(emptySet())
+
+    /** The ids of the entities of [serverId] that are still shared, so they can be assigned (concept 7.4). */
+    private suspend fun sharedIds(serverId: String?): Set<String> {
+        val id = serverId ?: return emptySet()
+        return errors.database { entities.all(id) }.filter { it.status == EntityStatus.ACTIVE }
+            .map { it.entityId }.toSet()
+    }
 
     /** The display names of the entities of [serverId] by `entity_id`, with the [local] names (concept 7.3). */
     private suspend fun entityNames(serverId: String?, local: List<EntityAlias>): Map<String, String> {
@@ -187,7 +202,7 @@ class NotificationRepository internal constructor(
     }
 
     /** The screen's view of a row; unknown error codes (newer app data) show as HAAC-APP-000. */
-    private fun NotificationEntity.toItem(names: Map<String, String>) = NotificationItem(
+    private fun NotificationEntity.toItem(names: Map<String, String>, free: Set<String>) = NotificationItem(
         id = id,
         type = type,
         createdAt = createdAt,
@@ -199,6 +214,7 @@ class NotificationRepository internal constructor(
         detail = detail,
         bridgeCode = bridgeCode,
         serverId = serverId,
+        unassigned = if (type == NotificationType.ADDED) decode(entityIds).filter { it in free } else emptyList(),
     )
 
     /** Time limits (concept 9.1, 17.4) and the JSON of column `entity_ids`. */

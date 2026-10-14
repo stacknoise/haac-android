@@ -109,10 +109,11 @@ class NotificationRepositoryTest {
     }
 
     private val removed = mutableListOf<Pair<String, List<String>>>()
+    private val placed = MutableStateFlow<List<RoomAssignment>>(emptyList())
     private val assignments = object : RoomAssignmentDao {
         override fun observe(roomId: String): Flow<List<RoomAssignment>> = error("not used")
 
-        override fun observeAll(serverId: String): Flow<List<RoomAssignment>> = error("not used")
+        override fun observeAll(serverId: String): Flow<List<RoomAssignment>> = placed
 
         override suspend fun insert(rows: List<RoomAssignment>) = error("not used")
 
@@ -156,6 +157,18 @@ class NotificationRepositoryTest {
             listOf(EntityLabel("sensor.h", "Humidity")),
             items.single { it.type == NotificationType.REMOVED }.entities,
         )
+    }
+
+    @Test
+    fun `new entities stay assignable after dismissing until a room has them`() = runTest {
+        repository.addEntityChanges("s1", added = listOf("switch.hall", "sensor.h"), removed = emptyList())
+        val id = repository.items("s1").first().single().id
+        repository.resolve(id)
+
+        assertEquals(listOf("switch.hall", "sensor.h"), repository.items("s1").first().single().unassigned)
+
+        placed.value = listOf(RoomAssignment("r1", "switch.hall", 1, TileSize.SMALL, 0L))
+        assertEquals(listOf("sensor.h"), repository.items("s1").first().single().unassigned)
     }
 
     @Test
