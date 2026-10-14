@@ -81,9 +81,17 @@ internal fun RenameDialog(tile: Tile, onSave: (String?) -> Unit, onDismiss: () -
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                 ) {
-                    TextButton(onClick = { onSave(null) }) { Text(stringResource(R.string.rename_default)) }
+                    // Cancel keeps its width on narrow screens; the long label gives way and wraps instead.
+                    TextButton(onClick = { onSave(null) }, modifier = Modifier.weight(1f, fill = false)) {
+                        Text(stringResource(R.string.rename_default))
+                    }
                     TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.rename_cancel), color = HaacColors.OnSurfaceVariantStrong)
+                        Text(
+                            stringResource(R.string.rename_cancel),
+                            color = HaacColors.OnSurfaceVariantStrong,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
                     }
                 }
             }

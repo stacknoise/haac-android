@@ -121,7 +121,7 @@ private fun TypeTabs(type: WhenType, onType: (WhenType) -> Unit) {
     }
 }
 
-/** Two big boxes for hour and minute with chevrons above and below (hour ±1, minute ±5). */
+/** Two big boxes for hour and minute with chevrons above and below (hour ±1, minute ±1). */
 @Composable
 private fun TimeSteppers(time: LocalTime, onTime: (LocalTime) -> Unit) {
     Row(
@@ -141,8 +141,8 @@ private fun TimeSteppers(time: LocalTime, onTime: (LocalTime) -> Unit) {
         )
         Stepper(
             value = "%02d".format(time.minute),
-            up = R.string.schedules_minute_up to { onTime(time.plusMinutesWrapped(ScheduleDraft.STEP)) },
-            down = R.string.schedules_minute_down to { onTime(time.plusMinutesWrapped(-ScheduleDraft.STEP)) },
+            up = R.string.schedules_minute_up to { onTime(time.plusMinutesWrapped(ScheduleDraft.MINUTE_STEP)) },
+            down = R.string.schedules_minute_down to { onTime(time.plusMinutesWrapped(-ScheduleDraft.MINUTE_STEP)) },
         )
     }
 }

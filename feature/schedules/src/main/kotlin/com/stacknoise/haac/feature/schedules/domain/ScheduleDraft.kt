@@ -56,8 +56,11 @@ data class ScheduleDraft(
         /** Largest offset of a sun event in minutes, before or after. */
         const val MAX_OFFSET = 180
 
-        /** Offset and minute step of the steppers. */
-        const val STEP = 5
+        /** Step of the offset stepper in minutes. */
+        const val OFFSET_STEP = 5
+
+        /** Step of the minute stepper in minutes. */
+        const val MINUTE_STEP = 1
 
         /** The time a new schedule starts with. */
         val DEFAULT_TIME: LocalTime = LocalTime.of(7, 0)
@@ -91,9 +94,9 @@ fun LocalTime.plusHoursWrapped(hours: Int): LocalTime = withHour(Math.floorMod(h
 fun LocalTime.plusMinutesWrapped(minutes: Int): LocalTime =
     withMinute(Math.floorMod(minute + minutes, MinutesPerHour))
 
-/** [offset] moved by [steps] steps of [ScheduleDraft.STEP] minutes, kept within the bridge's limit. */
+/** [offset] moved by [steps] steps of [ScheduleDraft.OFFSET_STEP] minutes, kept within the bridge's limit. */
 fun stepOffset(offset: Int, steps: Int): Int =
-    (offset + steps * ScheduleDraft.STEP).coerceIn(-ScheduleDraft.MAX_OFFSET, ScheduleDraft.MAX_OFFSET)
+    (offset + steps * ScheduleDraft.OFFSET_STEP).coerceIn(-ScheduleDraft.MAX_OFFSET, ScheduleDraft.MAX_OFFSET)
 
 private const val HoursPerDay = 24
 private const val MinutesPerHour = 60
