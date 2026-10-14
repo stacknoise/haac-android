@@ -24,8 +24,8 @@ class ScheduleDraftTest {
     fun `steppers wrap around the clock and keep the other part`() {
         assertEquals(LocalTime.of(0, 30), LocalTime.of(23, 30).plusHoursWrapped(1))
         assertEquals(LocalTime.of(23, 30), LocalTime.of(0, 30).plusHoursWrapped(-1))
-        assertEquals(LocalTime.of(6, 0), LocalTime.of(6, 55).plusMinutesWrapped(5))
-        assertEquals(LocalTime.of(6, 55), LocalTime.of(6, 0).plusMinutesWrapped(-5))
+        assertEquals(LocalTime.of(6, 0), LocalTime.of(6, 59).plusMinutesWrapped(ScheduleDraft.MINUTE_STEP))
+        assertEquals(LocalTime.of(6, 59), LocalTime.of(6, 0).plusMinutesWrapped(-ScheduleDraft.MINUTE_STEP))
     }
 
     @Test
