@@ -117,7 +117,7 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
                     when {
                         tile.withdrawn -> sheet = RoomSheet.Withdrawn(tile)
                         tile.control is EntityControl.Toggle -> viewModel.onToggle(tile)
-                        else -> navigation.onOpenEntity(tile.entityId)
+                        else -> Unit
                     }
                 },
                 onLongClick = { tile ->
