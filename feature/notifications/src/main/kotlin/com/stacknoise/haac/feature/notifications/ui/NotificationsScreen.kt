@@ -76,7 +76,7 @@ fun NotificationsScreen(
             onErrorAction = { item -> item.error?.let { onErrorAction(it.action, item.serverId) } },
             onAddToRoom = { item ->
                 viewModel.onResolve(item)
-                onAddToRoom(item.entities.map { it.entityId })
+                onAddToRoom(item.unassigned)
             },
             onRemoveTiles = viewModel::onRemoveTiles,
             onDelete = viewModel::onDelete,

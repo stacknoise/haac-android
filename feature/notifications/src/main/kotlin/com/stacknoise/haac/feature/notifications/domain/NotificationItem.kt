@@ -13,7 +13,8 @@ data class EntityLabel(val entityId: String, val name: String)
  * One entry of the notification list as the screen shows it (concept 9.1, 17.4). [entities] are set for
  * [NotificationType.ADDED] and [NotificationType.REMOVED] (for the schedule types they hold the schedule names),
  * [error] for [NotificationType.ERROR] and the schedule types, [detail] is the pause reason of
- * [NotificationType.SCHEDULE_PAUSED] (concept 19.7).
+ * [NotificationType.SCHEDULE_PAUSED] (concept 19.7). [unassigned] are the ids of an [NotificationType.ADDED]
+ * entry's entities that are still shared and in no room; *Add to room* stays available while any are left.
  */
 data class NotificationItem(
     val id: Long,
@@ -27,7 +28,11 @@ data class NotificationItem(
     val bridgeCode: String? = null,
     val serverId: String? = null,
     val detail: String? = null,
-)
+    val unassigned: List<String> = emptyList(),
+) {
+    /** Whether *Add to room* is offered: new entities are in no room yet, also after the entry was dismissed. */
+    val canAssign: Boolean get() = type == NotificationType.ADDED && unassigned.isNotEmpty()
+}
 
 /** The entries of one day, newest first. */
 data class NotificationDay(val date: LocalDate, val items: List<NotificationItem>)
