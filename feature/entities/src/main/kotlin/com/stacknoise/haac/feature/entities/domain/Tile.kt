@@ -52,4 +52,10 @@ data class Tile(
 ) {
     /** True if HA reports a usable state and the entity is still shared; only then controls work. */
     val active: Boolean get() = available && !withdrawn
+
+    /**
+     * True if a tap on the tile body does something: a withdrawn tile opens its sheet, a switch toggles. Every other
+     * tile reacts to a long press only, so it must not announce a tap action to a screen reader (concept 8.1, M-05).
+     */
+    val tappable: Boolean get() = withdrawn || control is EntityControl.Toggle
 }

@@ -53,6 +53,7 @@
     <string name="detail_swing">Swing</string>
     <string name="detail_swing_horizontal">Horizontal swing</string>
     <string name="tile_details">Details</string>
+    <string name="tile_open_menu">Open the tile menu</string>
 
     <!-- History of the detail screen (concept 8.1 – 8.4). -->
     <string name="history_title">History</string>

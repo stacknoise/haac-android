@@ -52,6 +52,7 @@
     <string name="detail_preset">Voreinstellung</string>
     <string name="detail_swing">Schwenken</string>
     <string name="detail_swing_horizontal">Horizontales Schwenken</string>
+    <string name="tile_open_menu">Kachelmenü öffnen</string>
     <string name="tile_details">Details</string>
 
     <!-- History of the detail screen (concept 8.1 – 8.4). -->

@@ -53,7 +53,6 @@ import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.feature.entities.R
-import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.RoomGroup
 import kotlinx.coroutines.flow.Flow
 
@@ -114,11 +113,7 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
         } else {
             val actions = TileActions(
                 onClick = { tile ->
-                    when {
-                        tile.withdrawn -> sheet = RoomSheet.Withdrawn(tile)
-                        tile.control is EntityControl.Toggle -> viewModel.onToggle(tile)
-                        else -> Unit
-                    }
+                    if (tile.withdrawn) sheet = RoomSheet.Withdrawn(tile) else viewModel.onToggle(tile)
                 },
                 onLongClick = { tile ->
                     sheet = if (tile.withdrawn) RoomSheet.Withdrawn(tile) else RoomSheet.Menu(tile)
