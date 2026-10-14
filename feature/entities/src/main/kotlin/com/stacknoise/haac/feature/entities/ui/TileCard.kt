@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,8 +29,11 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.onLongClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -71,7 +75,7 @@ internal fun TileCard(tile: Tile, enabled: Boolean, actions: TileActions, modifi
         modifier = modifier
             .clip(shape)
             .then(frame)
-            .combinedClickable(onClick = { actions.onClick(tile) }, onLongClick = { actions.onLongClick(tile) })
+            .tileGestures(tile, actions, stringResource(R.string.tile_open_menu))
             .padding(18.dp),
     ) {
         when {
@@ -80,6 +84,27 @@ internal fun TileCard(tile: Tile, enabled: Boolean, actions: TileActions, modifi
             else -> PlainContent(tile, on, enabled, actions)
         }
     }
+}
+
+/**
+ * Tap and long press of a tile. A tile whose tap does nothing gets no click semantics, so TalkBack does not announce
+ * "double-tap to activate"; it offers the long press as a named action instead (concept 8.1, M-05).
+ */
+@OptIn(ExperimentalFoundationApi::class)
+private fun Modifier.tileGestures(tile: Tile, actions: TileActions, menuLabel: String): Modifier {
+    if (tile.tappable) {
+        return combinedClickable(
+            onClick = { actions.onClick(tile) },
+            onLongClick = { actions.onLongClick(tile) },
+        )
+    }
+    return pointerInput(tile) { detectTapGestures(onLongPress = { actions.onLongClick(tile) }) }
+        .semantics {
+            onLongClick(menuLabel) {
+                actions.onLongClick(tile)
+                true
+            }
+        }
 }
 
 /** Icon (with the toggle of a switch), then value or name and state (switch, sensor, other domains). */
