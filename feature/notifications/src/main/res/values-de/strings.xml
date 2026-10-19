@@ -33,6 +33,27 @@
     <string name="notifications_pause_no_entities">keines der Geräte ist mehr für dich freigegeben</string>
     <string name="notifications_pause_sun_unavailable">die Sonnenposition ist nicht verfügbar</string>
     <string name="notifications_pause_other">der Server hat ihn pausiert</string>
+    <string name="notifications_open_schedule">Zeitplan öffnen</string>
+    <plurals name="notifications_run_ok">
+        <item quantity="one">%1$s wurde ausgeführt</item>
+        <item quantity="other">%1$s wurde %2$d× ausgeführt</item>
+    </plurals>
+    <plurals name="notifications_run_partial">
+        <item quantity="one">%1$s nur teilweise ausgeführt</item>
+        <item quantity="other">%1$s %2$d× nur teilweise ausgeführt</item>
+    </plurals>
+    <plurals name="notifications_run_failed">
+        <item quantity="one">%1$s ist fehlgeschlagen</item>
+        <item quantity="other">%1$s ist %2$d× fehlgeschlagen</item>
+    </plurals>
+    <plurals name="notifications_run_missed">
+        <item quantity="one">%1$s wurde nicht ausgeführt</item>
+        <item quantity="other">%1$s wurde %2$d× nicht ausgeführt</item>
+    </plurals>
+    <string name="notifications_run_last">zuletzt %1$s</string>
+    <string name="notifications_run_incomplete">Nicht jedes Gerät hat reagiert.</string>
+    <string name="notifications_run_missed_text">Home Assistant war zu der Zeit nicht erreichbar.</string>
+    <string name="notifications_run_removed">Der einmalige Zeitplan wurde entfernt.</string>
     <string name="notifications_times">×%1$d</string>
     <string name="notifications_delete">Löschen</string>
     <string name="notifications_cancel">Abbrechen</string>

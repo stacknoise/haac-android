@@ -39,6 +39,9 @@ class DemoWorld internal constructor(
     private val listeners = CopyOnWriteArraySet<DemoWorldListener>()
     private var data: DemoWorldData? = null
 
+    /** The run log of the demo bridge (concept 19.11); it hears the schedule changes before any bridge does. */
+    internal val runLog = DemoRunLog(this).also { listeners += it }
+
     /** Runs [block] with the world locked. */
     fun <T> locked(block: () -> T): T = synchronized(lock, block)
 

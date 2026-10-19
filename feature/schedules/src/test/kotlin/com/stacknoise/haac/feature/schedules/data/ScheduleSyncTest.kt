@@ -1,6 +1,10 @@
 package com.stacknoise.haac.feature.schedules.data
 
+import com.stacknoise.haac.core.common.sync.RunResult
 import com.stacknoise.haac.core.common.sync.ScheduleChangeReporter
+import com.stacknoise.haac.core.common.sync.ScheduleRun
+import com.stacknoise.haac.core.database.server.RunCursor
+import com.stacknoise.haac.core.database.server.RunCursorDao
 import com.stacknoise.haac.core.database.schedule.ScheduleEntity
 import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
@@ -41,13 +45,17 @@ class ScheduleSyncTest {
         var scope = "own"
         var listed = listOf(descriptor("a", "Morning light"), descriptor("b", "Evening"))
         var failure: HaacException? = null
+        var runsReply = """{"log_id":"log1","last_seq":0,"entries":[]}"""
         val requests = mutableListOf<String>()
+        val runFields = mutableListOf<JsonObject>()
         val events = Channel<JsonObject>(Channel.UNLIMITED)
 
         override suspend fun request(type: String, fields: JsonObject): JsonElement {
             requests += type
             failure?.let { throw it }
+            if (type == "haac_bridge/schedules/runs") runFields += fields
             return when (type) {
+                "haac_bridge/schedules/runs" -> parse(runsReply)
                 "haac_bridge/schedules/revision" -> parse("""{"revision":"$revision","scope":"$scope"}""")
                 else -> parse(
                     """{"revision":"$revision","scope":"$scope","schedules":[${listed.joinToString(",")}]}""",
@@ -77,9 +85,24 @@ class ScheduleSyncTest {
         override suspend fun paused(serverId: String, name: String, reason: String) {
             paused += name to reason
         }
+
+        override suspend fun ran(serverId: String, logId: String, lastSeq: Long, runs: List<ScheduleRun>) {
+            cursor = logId to lastSeq
+            ran += runs
+            cursorWrites++
+        }
+    }
+    private val ran = mutableListOf<ScheduleRun>()
+    private var cursorWrites = 0
+    private var cursor: Pair<String, Long>? = null
+    private val cursors = object : RunCursorDao {
+        override suspend fun runCursor(id: String) = RunCursor(cursor?.first, cursor?.second)
+
+        override suspend fun setRunCursor(id: String, logId: String, seq: Long) = error("the reporter writes it")
     }
     private val sync = ScheduleSync(
         dao,
+        cursors,
         json,
         DefaultErrorFactory(),
         { error, _ -> reportedErrors += error.code },
@@ -201,5 +224,85 @@ class ScheduleSyncTest {
         runCurrent()
         assertEquals(listOf("Evening"), cache.values.map { it.name })
         assertEquals(listOf(listOf("Morning light")), removed)
+    }
+
+    private fun entry(seq: Int, id: String, notify: Boolean = true, removed: Boolean = false, result: String = "ok") =
+        """{"seq":$seq,"schedule_id":"$id","name":"N$id","at":"2026-10-03T06:45:00+02:00","result":"$result",""" +
+            """"trigger":"plan","removed":$removed,"notify":$notify}"""
+
+    private fun runs(logId: String, last: Int, vararg entries: String) =
+        """{"log_id":"$logId","last_seq":$last,"entries":[${entries.joinToString(",")}]}"""
+
+    @Test
+    fun `without the runs feature the run log is not read`() = runTest {
+        follow()
+        assertEquals(false, channel.requests.contains("haac_bridge/schedules/runs"))
+        assertEquals(0, cursorWrites)
+    }
+
+    @Test
+    fun `the first sync only sets the run cursor and sends no cursor fields`() = runTest {
+        channel.features = setOf("schedules", "schedule_runs")
+        channel.runsReply = runs("log1", 4, entry(3, "a"), entry(4, "b"))
+        follow()
+        assertEquals(emptyList<ScheduleRun>(), ran)
+        assertEquals("log1" to 4L, cursor)
+        assertEquals(JsonObject(emptyMap()), channel.runFields.single())
+    }
+
+    @Test
+    fun `later syncs ask after the cursor and announce only runs with notify`() = runTest {
+        channel.features = setOf("schedules", "schedule_runs")
+        cursor = "log1" to 4L
+        channel.runsReply = runs(
+            "log1", 7,
+            entry(5, "a"),
+            entry(6, "b", notify = false),
+            entry(7, "a", result = "partial"),
+        )
+        follow()
+        val asked = buildJsonObject {
+            put("log_id", "log1")
+            put("after_seq", 4)
+        }
+        assertEquals(asked, channel.runFields.single())
+        assertEquals(listOf("a" to RunResult.OK, "a" to RunResult.PARTIAL), ran.map { it.scheduleId to it.result })
+        assertEquals(1791002700000, ran.first().at)
+        assertEquals("log1" to 7L, cursor)
+    }
+
+    @Test
+    fun `a new log id only sets the cursor`() = runTest {
+        channel.features = setOf("schedules", "schedule_runs")
+        cursor = "old" to 9L
+        channel.runsReply = runs("new", 2, entry(1, "a"), entry(2, "a"))
+        follow()
+        assertEquals(emptyList<ScheduleRun>(), ran)
+        assertEquals("new" to 2L, cursor)
+    }
+
+    @Test
+    fun `a schedule removed by its last run is not reported as gone`() = runTest {
+        channel.features = setOf("schedules", "schedule_runs")
+        follow()
+        cursor = "log1" to 0L
+        channel.revision = "r2"
+        channel.listed = listOf(descriptor("a", "Morning light"))
+        channel.runsReply = runs("log1", 1, entry(1, "b", notify = false, removed = true))
+        channel.push("""{"schedules_changed":{"revision":"r2"}}""")
+        runCurrent()
+        assertEquals(listOf("a"), cache.keys.toList())
+        assertEquals(emptyList<List<String>>(), removed)
+        assertEquals("log1" to 1L, cursor)
+    }
+
+    @Test
+    fun `a failing run log keeps the cache and the cursor`() = runTest {
+        channel.features = setOf("schedules", "schedule_runs")
+        channel.runsReply = """{"unexpected":true}"""
+        follow()
+        assertEquals(0, cache.size)
+        assertEquals(0, cursorWrites)
+        assertEquals(1, reportedErrors.size)
     }
 }

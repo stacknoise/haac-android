@@ -29,7 +29,7 @@ class ScheduleDiffTest {
     fun `an empty cache announces nothing, even a paused schedule`() {
         val change = ScheduleDiff.compute(emptyList(), listOf(row("a", reason = "no_entities", at = 5)))
         assertEquals(listOf("a"), change.rows.map { it.scheduleId })
-        assertEquals(emptyList<String>(), change.removedNames)
+        assertEquals(emptyList<String>(), change.removedNames(emptySet()))
         assertEquals(emptyList<PausedSchedule>(), change.paused)
     }
 
@@ -40,7 +40,14 @@ class ScheduleDiffTest {
             listOf(row("c")),
         )
         assertEquals(listOf("a", "b"), change.removedIds)
-        assertEquals(listOf("Morning light"), change.removedNames)
+        assertEquals(listOf("Morning light"), change.removedNames(emptySet()))
+    }
+
+    @Test
+    fun `a schedule whose last run deleted it is not announced as removed`() {
+        val change = ScheduleDiff.compute(listOf(row("a", "Once"), row("b", "Gone"), row("c")), listOf(row("c")))
+        assertEquals(listOf("a", "b"), change.removedIds)
+        assertEquals(listOf("Gone"), change.removedNames(setOf("a")))
     }
 
     @Test
