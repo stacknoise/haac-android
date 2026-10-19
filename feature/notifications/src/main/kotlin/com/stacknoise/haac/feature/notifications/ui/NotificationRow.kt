@@ -31,7 +31,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import com.stacknoise.haac.core.common.sync.RunResult
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
@@ -71,30 +70,12 @@ internal fun NotificationRow(item: NotificationItem, actions: NotificationAction
 /** Icon in a rounded box; unread entries use the accent container, errors the error colour. */
 @Composable
 private fun EntryIcon(item: NotificationItem) {
-    val colors = MaterialTheme.colorScheme
-    val result = item.run?.result
-    val icon = when {
-        item.type == NotificationType.ADDED -> R.drawable.ic_notifications_added
-        result == RunResult.OK -> R.drawable.ic_notifications_clock
-        else -> R.drawable.ic_notifications_warning
-    }
-    val tint = when {
-        item.type == NotificationType.ERROR || result == RunResult.FAILED || result == RunResult.MISSED -> colors.error
-        result == RunResult.PARTIAL -> HaacColors.ChartYellow
-        item.unread -> colors.primary
-        else -> colors.onSurfaceVariant
-    }
-    val box = when {
-        result == RunResult.PARTIAL -> tint.copy(alpha = RunTintAlpha)
-        result == RunResult.FAILED || result == RunResult.MISSED -> HaacColors.DangerContainer
-        item.unread -> colors.primaryContainer
-        else -> HaacColors.SurfaceMuted
-    }
+    val style = entryIconStyle(item)
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.size(40.dp).background(box, HaacShapes.Medium),
+        modifier = Modifier.size(40.dp).background(style.background, HaacShapes.Medium),
     ) {
-        Icon(painterResource(icon), contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
+        Icon(painterResource(style.icon), contentDescription = null, tint = style.tint, modifier = Modifier.size(22.dp))
     }
 }
 
@@ -142,14 +123,14 @@ private fun EntryActions(item: NotificationItem, actions: NotificationActions) {
                 val label = item.error?.action?.takeIf { it != ErrorAction.NONE }?.label
                 if (label != null) ActionButton(stringResource(label), primary = true) { actions.onErrorAction(item) }
             }
-            NotificationType.SCHEDULE_RUN -> if (item.run?.exists == true && !item.resolved) {
+            NotificationType.SCHEDULE_RUN -> if (item.canOpenSchedule) {
                 ActionButton(stringResource(R.string.notifications_open_schedule), primary = true) {
                     actions.onOpenSchedule(item)
                 }
             }
             NotificationType.SCHEDULE_REMOVED, NotificationType.SCHEDULE_PAUSED -> Unit
         }
-        if (!item.resolved && !(item.type == NotificationType.SCHEDULE_RUN && item.run?.exists == true)) {
+        if (item.canDismiss) {
             val resolve = when (item.type) {
                 NotificationType.REMOVED -> R.string.notifications_keep
                 else -> R.string.notifications_dismiss
@@ -177,19 +158,6 @@ private fun title(item: NotificationItem): String = when (item.type) {
         pluralStringResource(R.plurals.notifications_schedule_removed, item.count, item.count)
     NotificationType.SCHEDULE_PAUSED -> stringResource(R.string.notifications_schedule_paused)
     NotificationType.SCHEDULE_RUN -> runTitle(item)
-}
-
-/** "Morning light ran", "ran only partly", "failed" or "did not run" (missed), with the count of runs (19.11). */
-@Composable
-private fun runTitle(item: NotificationItem): String {
-    val name = item.entities.firstOrNull()?.name.orEmpty()
-    val plural = when (item.run?.result) {
-        RunResult.OK -> R.plurals.notifications_run_ok
-        RunResult.PARTIAL -> R.plurals.notifications_run_partial
-        RunResult.FAILED -> R.plurals.notifications_run_failed
-        else -> R.plurals.notifications_run_missed
-    }
-    return pluralStringResource(plural, item.count, name, item.count)
 }
 
 /** Text of an entry: name and `entity_id`, the names of several entities, or the error code (mono). */
@@ -220,35 +188,6 @@ private fun text(item: NotificationItem): AnnotatedString {
     }
 }
 
-/**
- * The line under a run title (concept 19.11): the time of the run (of the last one if several), what went wrong
- * and "The one-off schedule was removed"; the code HAAC-SCH-007 in mono on its own line for partial and failed runs.
- */
-@Composable
-private fun runText(item: NotificationItem): AnnotatedString {
-    val run = item.run
-    val time = timeOf(item.createdAt)
-    val head = if (item.count > 1) stringResource(R.string.notifications_run_last, time) else time
-    val reason = when (run?.result) {
-        RunResult.PARTIAL, RunResult.FAILED -> R.string.notifications_run_incomplete
-        RunResult.MISSED -> R.string.notifications_run_missed_text
-        else -> null
-    }
-    val parts = listOfNotNull(
-        head,
-        reason?.let { stringResource(it) },
-        stringResource(R.string.notifications_run_removed).takeIf { run?.removed == true },
-    )
-    val code = item.error?.code
-    return buildAnnotatedString {
-        append(parts.joinToString(" · "))
-        if (code != null) {
-            append("\n")
-            withStyle(SpanStyle(fontFamily = MonoFontFamily)) { append(code) }
-        }
-    }
-}
-
 /** The reason of a pause in words (concept 19.6); an unknown reason from a newer bridge reads generically. */
 @Composable
 private fun pauseReason(reason: String?): String = stringResource(
@@ -266,9 +205,6 @@ private fun mono(before: String, code: String, after: String) = buildAnnotatedSt
     withStyle(SpanStyle(fontFamily = MonoFontFamily)) { append(code) }
     append(after)
 }
-
-/** Opacity of the amber tint behind the icon of a partial run. */
-private const val RunTintAlpha = 0.18f
 
 /** Secondary text colour. */
 @Composable

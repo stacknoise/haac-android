@@ -42,6 +42,12 @@ data class NotificationItem(
 ) {
     /** Whether *Add to room* is offered: new entities are in no room yet, also after the entry was dismissed. */
     val canAssign: Boolean get() = type == NotificationType.ADDED && unassigned.isNotEmpty()
+
+    /** Whether *Open schedule* is offered: an open run entry whose schedule still exists (concept 19.11). */
+    val canOpenSchedule: Boolean get() = run?.exists == true && !resolved
+
+    /** Whether *Dismiss* or *Keep* is offered: open entries, but a run entry with *Open schedule* resolves by it. */
+    val canDismiss: Boolean get() = !resolved && !(type == NotificationType.SCHEDULE_RUN && run?.exists == true)
 }
 
 /** The entries of one day, newest first. */
