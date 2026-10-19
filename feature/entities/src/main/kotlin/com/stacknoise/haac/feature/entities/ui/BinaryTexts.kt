@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -14,7 +15,6 @@ import com.stacknoise.haac.feature.entities.domain.EntityDomains
 import com.stacknoise.haac.feature.entities.domain.HistoryChart
 import com.stacknoise.haac.feature.entities.domain.binaryStats
 import com.stacknoise.haac.feature.entities.domain.durationText
-import java.util.Locale
 
 /** The word for [state] in a timeline: the class words of a binary sensor for `on` and `off`, else the state name. */
 @Composable
@@ -28,7 +28,7 @@ internal fun binaryLabel(binary: BinaryClass?, state: String): String = when {
 @Composable
 internal fun BinarySummaryLine(chart: HistoryChart.Timeline, binary: BinaryClass) {
     val stats = binaryStats(chart.segments)
-    val word = stringResource(binary.on).lowercase(Locale.getDefault())
+    val word = stringResource(binary.on).lowercase(LocalLocale.current.platformLocale)
     Text(
         pluralStringResource(
             R.plurals.binary_summary,
