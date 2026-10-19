@@ -1,6 +1,7 @@
 package com.stacknoise.haac.feature.schedules.domain
 
 import com.stacknoise.haac.core.database.schedule.ScheduleEntity
+import java.time.LocalDate
 import java.time.LocalTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -70,11 +71,51 @@ class ScheduleItemTest {
 
     @Test
     fun `weekdays are classified for the summary`() {
-        assertEquals(Repeat.EVERY_DAY, repeatOf((0..6).toList()))
-        assertEquals(Repeat.WEEKDAYS, repeatOf(listOf(4, 3, 2, 1, 0)))
-        assertEquals(Repeat.WEEKEND, repeatOf(listOf(5, 6)))
-        assertEquals(Repeat.NONE, repeatOf(emptyList()))
-        assertEquals(Repeat.CUSTOM, repeatOf(listOf(0, 2, 4)))
+        assertEquals(DayPattern.EVERY_DAY, dayPatternOf((0..6).toList()))
+        assertEquals(DayPattern.WEEKDAYS, dayPatternOf(listOf(4, 3, 2, 1, 0)))
+        assertEquals(DayPattern.WEEKEND, dayPatternOf(listOf(5, 6)))
+        assertEquals(DayPattern.NONE, dayPatternOf(emptyList()))
+        assertEquals(DayPattern.CUSTOM, dayPatternOf(listOf(0, 2, 4)))
+    }
+
+    @Test
+    fun `a row without a repeat rule is weekly every week, without notify and not expired`() {
+        val item = row().toItem()
+        assertEquals(RepeatRule(RepeatFreq.WEEKLY, 1), item.repeat)
+        assertFalse(item.notify)
+        assertFalse(item.expired)
+        assertEquals(emptyList<Long>(), item.nextRuns)
+    }
+
+    @Test
+    fun `the repeat rule, notify, expired and next runs of a row are typed`() {
+        val monthly = row().copy(
+            repeatFreq = "monthly",
+            repeatInterval = 2,
+            startDate = "2026-10-15",
+            endDate = "2026-12-31",
+            notify = true,
+            expired = true,
+            nextRuns = """["2026-10-15T06:45:00+02:00","broken"]""",
+        ).toItem()
+        val rule = RepeatRule(RepeatFreq.MONTHLY, 2, LocalDate.of(2026, 10, 15), LocalDate.of(2026, 12, 31))
+        assertEquals(rule, monthly.repeat)
+        assertTrue(monthly.notify)
+        assertTrue(monthly.expired)
+        assertEquals(listOf(1_792_039_500_000L), monthly.nextRuns)
+    }
+
+    @Test
+    fun `an unknown frequency from a newer bridge reads as weekly and bad dates as none`() {
+        val item = row().copy(repeatFreq = "fortnightly", startDate = "soon", endDate = "").toItem()
+        assertEquals(RepeatRule(RepeatFreq.WEEKLY, 1, null, null), item.repeat)
+    }
+
+    @Test
+    fun `the next runs of the bridge are used, those in the past dropped`() {
+        val item = row(nextRun = 5_000).toItem().copy(nextRuns = listOf(1_000L, 5_000L, 9_000L, 12_000L, 20_000L))
+        assertEquals(listOf(5_000L, 9_000L, 12_000L), nextRuns(item, now = 2_000))
+        assertEquals(listOf(20_000L), nextRuns(item, now = 15_000))
     }
 
     @Test

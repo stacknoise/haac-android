@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -41,12 +40,15 @@ import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.core.common.ui.theme.haacTextFieldColors
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.feature.schedules.R
+import com.stacknoise.haac.feature.schedules.domain.RepeatRule
+import com.stacknoise.haac.feature.schedules.domain.ScheduleDraft
 import com.stacknoise.haac.feature.schedules.domain.WhenType
+import java.time.LocalDate
 
 /**
- * The editor of a schedule (M-12, M-18, concept 19.7): name, time, weekdays, action and entities with a live summary.
- * It opens the *Run at* sheet (M-13) and the entity picker (M-14). *Save* is online-only; [onClose] leaves the editor,
- * also after a successful save.
+ * The editor of a schedule (M-12, M-18, M-23, M-24, concept 19.7, 19.10): name, time, date rule, action and entities
+ * with a live summary. It opens the *Run at* sheet (M-13), the date sheet and the entity picker (M-14). *Save* is
+ * online-only; [onClose] leaves the editor, also after a successful save.
  */
 @Composable
 fun ScheduleEditorScreen(onClose: () -> Unit, viewModel: ScheduleEditorViewModel = hiltViewModel()) {
@@ -113,11 +115,15 @@ private fun TopBar(isNew: Boolean, canSave: Boolean, onClose: () -> Unit, onSave
     }
 }
 
+/** Which date the date sheet edits: the start of a repeating schedule or the date of a one-off one, or the end. */
+private enum class DateTarget { START, END }
+
 /** All sections, scrolling: name, time, repeat, action, entities and the note that it runs on the server. */
 @Composable
 private fun EditorBody(state: ScheduleEditorUiState, viewModel: ScheduleEditorViewModel, onPick: () -> Unit) {
     val draft = state.form.draft
     var sheet by rememberSaveable { mutableStateOf(false) }
+    var dateTarget by rememberSaveable { mutableStateOf<DateTarget?>(null) }
     val names = draft.entityIds.map { state.candidates.nameOf(it) }
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -144,9 +150,12 @@ private fun EditorBody(state: ScheduleEditorUiState, viewModel: ScheduleEditorVi
             onChange = { sheet = true },
         )
         EditorLabel(R.string.schedules_repeat_label)
-        WeekdayButtons(draft.days, viewModel::onDay)
-        PresetChips(draft.days, viewModel::onDays)
-        SummaryCard(summary(state, names))
+        if (state.features.repeat) {
+            RepeatSection(draft, viewModel) { dateTarget = it }
+        } else {
+            WeekdaySection(draft.days, viewModel)
+        }
+        SummaryCard(summary(state, names), firstRun(state))
         EditorLabel(R.string.schedules_action_label)
         ActionSegments(draft.action, viewModel::onAction)
         EditorLabel(R.string.schedules_entities_label)
@@ -155,6 +164,7 @@ private fun EditorBody(state: ScheduleEditorUiState, viewModel: ScheduleEditorVi
             EntityRow(name, locked = !state.ownEntities, onRemove = { viewModel.onRemoveEntity(id) })
         }
         if (state.ownEntities) AddEntitiesTile(onPick)
+        if (state.showNotify) NotifyRow(draft.notify, viewModel::onNotify)
         Text(
             stringResource(R.string.schedules_runs_on_server),
             style = MaterialTheme.typography.bodyMedium,
@@ -174,23 +184,89 @@ private fun EditorBody(state: ScheduleEditorUiState, viewModel: ScheduleEditorVi
             onDismiss = { sheet = false },
         )
     }
+    dateTarget?.let { target -> EditorDateSheet(target, draft.repeat, viewModel) { dateTarget = null } }
 }
+
+/** The weekday buttons and presets of a bridge without date rules. */
+@Composable
+private fun WeekdaySection(days: Set<Int>, viewModel: ScheduleEditorViewModel) {
+    WeekdayButtons(days, viewModel::onDay)
+    PresetChips(days, viewModel::onDays)
+}
+
+/**
+ * The date rule (M-23, M-24): *Once* with its date, or *Repeat* with the frequency, the interval, the weekdays of a
+ * weekly rule and the rows *From* and *Ends*. [onDate] opens the date sheet for a date.
+ */
+@Composable
+private fun RepeatSection(draft: ScheduleDraft, viewModel: ScheduleEditorViewModel, onDate: (DateTarget) -> Unit) {
+    val rule = draft.repeat
+    val today = remember { LocalDate.now() }
+    ModeSegments(rule.once, viewModel::onOnce)
+    if (rule.once) {
+        val text = stringResource(R.string.schedules_run_on_row, fullDate(rule.startDate ?: today))
+        DateRow(text, stringResource(R.string.schedules_change)) { onDate(DateTarget.START) }
+        return
+    }
+    FreqChips(rule.freq, viewModel::onFreq)
+    if (rule.freq.hasInterval) IntervalRow(rule, viewModel::onInterval)
+    if (draft.weekly) WeekdaySection(draft.days, viewModel)
+    val from = stringResource(R.string.schedules_from_row, shortDate(rule.startDate ?: today))
+    DateRow(from, stringResource(R.string.schedules_change)) { onDate(DateTarget.START) }
+    val end = rule.endDate
+    val endText = end?.let { stringResource(R.string.schedules_ends_row, shortDate(it)) }
+        ?: stringResource(R.string.schedules_ends_never)
+    val endAction = stringResource(if (end == null) R.string.schedules_set else R.string.schedules_change)
+    DateRow(endText, endAction) { onDate(DateTarget.END) }
+}
+
+/** The date sheet for [target]: the date of a one-off schedule, the start or the end of a repeating one. */
+@Composable
+private fun EditorDateSheet(
+    target: DateTarget,
+    rule: RepeatRule,
+    viewModel: ScheduleEditorViewModel,
+    onClose: () -> Unit,
+) {
+    val today = remember { LocalDate.now() }
+    val start = rule.startDate ?: today
+    if (target == DateTarget.END) {
+        val min = maxOf(start, today)
+        DateSheet(
+            spec = DateSheetSpec(R.string.schedules_date_end, R.string.schedules_date_end_hint, min, null),
+            initial = rule.endDate ?: min,
+            onConfirm = { viewModel.onEndDate(it); onClose() },
+            onDismiss = onClose,
+            onClear = { viewModel.onEndDate(null); onClose() },
+        )
+        return
+    }
+    val spec = if (rule.once) {
+        val last = today.plusDays(OnceRange)
+        DateSheetSpec(R.string.schedules_date_run_on, R.string.schedules_date_once_hint, today, last)
+    } else {
+        DateSheetSpec(R.string.schedules_date_start, null, today, null)
+    }
+    DateSheet(spec, start, onConfirm = { viewModel.onStartDate(it); onClose() }, onDismiss = onClose)
+}
+
+/** How far ahead the bridge accepts the date of a one-off schedule, in days (concept 19.10). */
+private const val OnceRange = 366L
 
 /** The live summary: "Every weekday at 06:45 · Lamp turns on", or what is still missing. */
 @Composable
 private fun summary(state: ScheduleEditorUiState, names: List<String>): String {
     val draft = state.form.draft
-    val incomplete = draft.days.isEmpty() || (state.ownEntities && names.isEmpty())
+    val incomplete = !draft.daysValid || !draft.repeat.valid || (state.ownEntities && names.isEmpty())
     if (incomplete) return stringResource(R.string.schedules_summary_none)
-    val repeat = repeatText(draft.days.toList())
-    val target = targetText(names, draft.action)
-    return if (draft.whenType == WhenType.TIME) {
-        stringResource(R.string.schedules_summary_time, repeat, draft.time.toString(), target)
-    } else {
-        val sun = offsetText(draft.whenType, draft.offsetMin).replaceFirstChar { it.lowercase() }
-        stringResource(R.string.schedules_summary_sun, repeat, sun, target)
-    }
+    val phrase = whenPhrase(draft.whenType, draft.time, draft.offsetMin)
+    return repeatSummary(draft.repeat, draft.days.toList(), phrase) + " · " + targetText(names, draft.action)
 }
+
+/** "First run: Thu, 22 Oct" from the preview of the bridge, or null while there is none. */
+@Composable
+private fun firstRun(state: ScheduleEditorUiState): String? =
+    state.form.preview.firstOrNull()?.let { stringResource(R.string.schedules_first_run, shortDate(dateOf(it))) }
 
 /** The schedule changed on the server while it was edited (HAAC-SCH-004): reload it and keep the edits on top. */
 @Composable

@@ -86,9 +86,15 @@ internal fun LockedHint() {
     }
 }
 
-/** The *Enabled* switch card. */
+/** The *Enabled* switch card, with *Show in notifications* below it if [notify] is given (M-25, concept 19.11). */
 @Composable
-internal fun EnabledCard(enabled: Boolean, editable: Boolean, onChange: (Boolean) -> Unit) {
+internal fun EnabledCard(
+    enabled: Boolean,
+    editable: Boolean,
+    onChange: (Boolean) -> Unit,
+    notify: Boolean? = null,
+    onNotify: (Boolean) -> Unit = {},
+) {
     HaacCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -103,13 +109,23 @@ internal fun EnabledCard(enabled: Boolean, editable: Boolean, onChange: (Boolean
             }
             Switch(checked = enabled, onCheckedChange = onChange, enabled = editable, colors = haacSwitchColors())
         }
+        if (notify != null) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
+                Text(
+                    stringResource(R.string.schedules_notify_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                Switch(checked = notify, onCheckedChange = onNotify, enabled = editable, colors = haacSwitchColors())
+            }
+        }
     }
 }
 
-/** *NEXT RUNS*: up to three rows in one card. */
+/** *NEXT RUN* or *NEXT RUNS*: up to three rows with the date left and the time right in one card (M-25). */
 @Composable
 internal fun NextRuns(runs: List<Long>) {
-    Label(R.string.schedules_next_runs)
+    Label(if (runs.size == 1) R.string.schedules_next_run else R.string.schedules_next_runs)
     HaacCard(contentPadding = PaddingValues(horizontal = 16.dp)) {
         if (runs.isEmpty()) {
             Text(
@@ -120,11 +136,11 @@ internal fun NextRuns(runs: List<Long>) {
         }
         runs.forEachIndexed { index, millis ->
             if (index > 0) HorizontalDivider(color = HaacColors.Outline)
-            Text(
-                dayAndClock(millis),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
-            )
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp)) {
+                val style = MaterialTheme.typography.titleSmall
+                Text(shortDate(dateOf(millis)), style = style, modifier = Modifier.weight(1f))
+                Text(clockOf(millis), style = style)
+            }
         }
     }
 }

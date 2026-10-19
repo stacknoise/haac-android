@@ -5,17 +5,20 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.stacknoise.haac.feature.schedules.R
 import com.stacknoise.haac.feature.schedules.data.ScheduleView
-import com.stacknoise.haac.feature.schedules.domain.Repeat
+import com.stacknoise.haac.feature.schedules.domain.DayPattern
 import com.stacknoise.haac.feature.schedules.domain.ScheduleAction
 import com.stacknoise.haac.feature.schedules.domain.ScheduleItem
+import com.stacknoise.haac.feature.schedules.domain.WeekDays
 import com.stacknoise.haac.feature.schedules.domain.WhenType
-import com.stacknoise.haac.feature.schedules.domain.repeatOf
+import com.stacknoise.haac.feature.schedules.domain.dayPatternOf
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.format.TextStyle
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 /** Monday and Friday as day numbers (0 = Monday). */
@@ -30,10 +33,15 @@ internal fun dayName(day: Int, style: TextStyle = TextStyle.SHORT): String =
 internal fun clockOf(millis: Long): String = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
     .format(Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()))
 
-/** The day of [millis] abbreviated and its clock time, e.g. Fri 06:45. */
+/**
+ * The day of [millis] and its clock time: the weekday abbreviated within the next week, e.g. Fri 06:45, else the
+ * date, e.g. Mon, 26 Oct 06:45.
+ */
 internal fun dayAndClock(millis: Long): String {
-    val day = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).dayOfWeek
-    return day.getDisplayName(TextStyle.SHORT, Locale.getDefault()) + " " + clockOf(millis)
+    val date = dateOf(millis)
+    val near = ChronoUnit.DAYS.between(LocalDate.now(), date) < WeekDays.COUNT
+    val day = if (near) date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()) else shortDate(date)
+    return day + " " + clockOf(millis)
 }
 
 /** The time shown big: the fixed time, or for a sun event the time of its next run, else the event's name. */
@@ -65,21 +73,21 @@ internal fun offsetText(type: WhenType, offsetMin: Int): String {
 
 /** The weekdays short, for the card: "Every day", "Mon – Fri", "Sat, Sun", "Mon, Wed". */
 @Composable
-internal fun shortDays(days: List<Int>): String = when (repeatOf(days)) {
-    Repeat.EVERY_DAY -> stringResource(R.string.schedules_short_every_day)
-    Repeat.NONE -> stringResource(R.string.schedules_short_none)
-    Repeat.WEEKDAYS -> stringResource(R.string.schedules_short_weekdays, dayName(Monday), dayName(Friday))
+internal fun shortDays(days: List<Int>): String = when (dayPatternOf(days)) {
+    DayPattern.EVERY_DAY -> stringResource(R.string.schedules_short_every_day)
+    DayPattern.NONE -> stringResource(R.string.schedules_short_none)
+    DayPattern.WEEKDAYS -> stringResource(R.string.schedules_short_weekdays, dayName(Monday), dayName(Friday))
     else -> days.sorted().joinToString(", ") { dayName(it) }
 }
 
 /** The weekdays in words, for the detail screen: "Every weekday", "Every weekend", "Mon, Wed, Fri". */
 @Composable
-internal fun repeatText(days: List<Int>): String = when (repeatOf(days)) {
-    Repeat.EVERY_DAY -> stringResource(R.string.schedules_repeat_every_day)
-    Repeat.WEEKDAYS -> stringResource(R.string.schedules_repeat_weekdays)
-    Repeat.WEEKEND -> stringResource(R.string.schedules_repeat_weekend)
-    Repeat.NONE -> stringResource(R.string.schedules_repeat_none)
-    Repeat.CUSTOM -> days.sorted().joinToString(", ") { dayName(it) }
+internal fun repeatText(days: List<Int>): String = when (dayPatternOf(days)) {
+    DayPattern.EVERY_DAY -> stringResource(R.string.schedules_repeat_every_day)
+    DayPattern.WEEKDAYS -> stringResource(R.string.schedules_repeat_weekdays)
+    DayPattern.WEEKEND -> stringResource(R.string.schedules_repeat_weekend)
+    DayPattern.NONE -> stringResource(R.string.schedules_repeat_none)
+    DayPattern.CUSTOM -> days.sorted().joinToString(", ") { dayName(it) }
 }
 
 /** What the schedule does to an entity: "turns on", "turns off", "toggles". */
