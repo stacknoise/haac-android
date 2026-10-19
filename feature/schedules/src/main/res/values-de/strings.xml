@@ -113,11 +113,20 @@
     <string name="schedules_freq_yearly">Jährlich</string>
     <string name="schedules_interval_less">Kürzeres Intervall</string>
     <string name="schedules_interval_more">Längeres Intervall</string>
-    <string name="schedules_every_n_days">Alle %1$d Tage</string>
+    <plurals name="schedules_every_n_days">
+        <item quantity="one">Jeden Tag</item>
+        <item quantity="other">Alle %1$d Tage</item>
+    </plurals>
     <string name="schedules_every_week">Jede Woche</string>
-    <string name="schedules_every_n_weeks">Alle %1$d Wochen</string>
+    <plurals name="schedules_every_n_weeks">
+        <item quantity="one">Jede Woche</item>
+        <item quantity="other">Alle %1$d Wochen</item>
+    </plurals>
     <string name="schedules_every_month">Jeden Monat</string>
-    <string name="schedules_every_n_months">Alle %1$d Monate</string>
+    <plurals name="schedules_every_n_months">
+        <item quantity="one">Jeden Monat</item>
+        <item quantity="other">Alle %1$d Monate</item>
+    </plurals>
     <string name="schedules_every_year">Jedes Jahr</string>
     <string name="schedules_at_time">um %1$s Uhr</string>
     <string name="schedules_and">und</string>

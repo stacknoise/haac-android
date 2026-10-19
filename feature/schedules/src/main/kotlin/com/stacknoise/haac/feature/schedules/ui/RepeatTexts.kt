@@ -2,6 +2,7 @@ package com.stacknoise.haac.feature.schedules.ui
 
 import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.stacknoise.haac.feature.schedules.R
 import com.stacknoise.haac.feature.schedules.domain.Ordinal
@@ -70,17 +71,17 @@ internal fun intervalLabel(freq: RepeatFreq, interval: Int): String = when (freq
     RepeatFreq.DAILY -> if (interval == 1) {
         stringResource(R.string.schedules_repeat_every_day)
     } else {
-        stringResource(R.string.schedules_every_n_days, interval)
+        pluralStringResource(R.plurals.schedules_every_n_days, interval, interval)
     }
     RepeatFreq.WEEKLY -> if (interval == 1) {
         stringResource(R.string.schedules_every_week)
     } else {
-        stringResource(R.string.schedules_every_n_weeks, interval)
+        pluralStringResource(R.plurals.schedules_every_n_weeks, interval, interval)
     }
     RepeatFreq.MONTHLY -> if (interval == 1) {
         stringResource(R.string.schedules_every_month)
     } else {
-        stringResource(R.string.schedules_every_n_months, interval)
+        pluralStringResource(R.plurals.schedules_every_n_months, interval, interval)
     }
     RepeatFreq.YEARLY -> stringResource(R.string.schedules_every_year)
 }
