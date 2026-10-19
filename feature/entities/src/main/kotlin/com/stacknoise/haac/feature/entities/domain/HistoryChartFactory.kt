@@ -17,8 +17,8 @@ interface HistoryChartFactory {
 }
 
 /**
- * [HistoryChartFactory] of v1: switches and text sensors as a timeline; measurements as a line, beyond two days
- * from hourly statistics (beyond 31 days daily) with min/max; counters as bars per hour, beyond two days per day;
+ * [HistoryChartFactory] of v1: switches, binary sensors and text sensors as a timeline; measurements as a line,
+ * beyond two days from hourly statistics (beyond 31 days daily) with min/max; counters as bars per hour, beyond two days per day;
  * climate entities as current vs. target temperature with heating and cooling phases.
  */
 class DefaultHistoryChartFactory @Inject constructor() : HistoryChartFactory {
@@ -31,7 +31,7 @@ class DefaultHistoryChartFactory @Inject constructor() : HistoryChartFactory {
         } else {
             HistoryQuery.States(attributes = false)
         }
-        ChartKind.NUMBER, ChartKind.TIMELINE -> HistoryQuery.States(attributes = false)
+        ChartKind.NUMBER, ChartKind.TIMELINE, ChartKind.BINARY -> HistoryQuery.States(attributes = false)
     }
 
     /** Builds the chart that fits [query]. */
@@ -50,6 +50,7 @@ class DefaultHistoryChartFactory @Inject constructor() : HistoryChartFactory {
                 when (kindOf(entity)) {
                     ChartKind.CLIMATE -> climateLine(states, window)
                     ChartKind.TIMELINE -> timeline(states, window)
+                    ChartKind.BINARY -> timeline(states, window, binaryClass(entity.deviceClass))
                     else -> valueLine(states, window, entity.unit)
                 }
             }
@@ -58,6 +59,7 @@ class DefaultHistoryChartFactory @Inject constructor() : HistoryChartFactory {
     /** How [entity] is drawn: by domain, then `state_class`, then whether it has a unit. */
     private fun kindOf(entity: ExposedEntity): ChartKind = when {
         entity.domain == EntityDomains.CLIMATE -> ChartKind.CLIMATE
+        entity.domain == EntityDomains.BINARY_SENSOR -> ChartKind.BINARY
         entity.domain != EntityDomains.SENSOR -> ChartKind.TIMELINE
         entity.stateClass in COUNTERS -> ChartKind.COUNTER
         entity.stateClass == "measurement" -> ChartKind.MEASUREMENT
@@ -70,7 +72,7 @@ class DefaultHistoryChartFactory @Inject constructor() : HistoryChartFactory {
         if (window.length > hoursUpTo) StatisticPeriod.DAY else StatisticPeriod.HOUR
 
     /** The chart forms of v1. */
-    private enum class ChartKind { CLIMATE, COUNTER, MEASUREMENT, NUMBER, TIMELINE }
+    private enum class ChartKind { CLIMATE, COUNTER, MEASUREMENT, NUMBER, TIMELINE, BINARY }
 
     /** Thresholds and statistic types. */
     private companion object {

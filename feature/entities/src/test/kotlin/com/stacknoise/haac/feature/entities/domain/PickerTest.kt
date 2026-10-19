@@ -33,13 +33,14 @@ class PickerTest {
         entry("switch.coffee", "Coffee machine", "kitchen"),
         entry("switch.lamp", "Floor lamp", "living"),
         entry("climate.r", "Radiator"),
+        entry("binary_sensor.door", "Door"),
     )
 
     private fun ids(filter: String) = pickerRows(entries, "living", places, "switch", filter).map { it.entry.entityId }
 
     @Test
-    fun `tabs follow switch, sensor, climate, then other domains`() {
-        assertEquals(listOf("switch", "sensor", "climate", "light"), pickerDomains(entries))
+    fun `tabs follow switch, sensor, binary sensor, climate, then other domains`() {
+        assertEquals(listOf("switch", "sensor", "binary_sensor", "climate", "light"), pickerDomains(entries))
     }
 
     @Test

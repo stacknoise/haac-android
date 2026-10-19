@@ -95,7 +95,10 @@ class DemoWorld internal constructor(
         store.save(json.encodeToString(DemoWorldData.serializer(), new))
     }
 
-    /** The saved data, or the default data (saved at once, so timestamps stay) if there is none or it is damaged. */
+    /**
+     * The saved data plus the default entities it lacks, or the default data (saved at once, so timestamps stay) if
+     * there is none or it is damaged.
+     */
     private fun read(): DemoWorldData {
         val saved = store.load()?.let {
             try {
@@ -106,6 +109,8 @@ class DemoWorld internal constructor(
                 null
             }
         }
-        return saved ?: DemoWorldData.initial(clock.millis(), DemoTimes.iso(clock.millis())).also(::save)
+        val merged = saved?.let { DemoWorldData.withDefaultEntities(it, clock.millis()) }
+        if (merged != null && merged != saved) save(merged)
+        return merged ?: DemoWorldData.initial(clock.millis(), DemoTimes.iso(clock.millis())).also(::save)
     }
 }

@@ -28,12 +28,18 @@ private val DemoRooms = listOf(
             DemoWorldData.SOCKET to TileSize.SMALL,
             DemoWorldData.THERMOSTAT to TileSize.LARGE,
             DemoWorldData.TEMPERATURE to TileSize.SMALL,
+            DemoWorldData.FRONT_DOOR to TileSize.SMALL,
+            DemoWorldData.HALLWAY_MOTION to TileSize.WIDE,
         ),
     ),
     DemoRoom(
         "demo-room-kitchen",
         "Kitchen",
-        listOf(DemoWorldData.KITCHEN_LIGHT to TileSize.SMALL, DemoWorldData.ENERGY to TileSize.WIDE),
+        listOf(
+            DemoWorldData.KITCHEN_LIGHT to TileSize.SMALL,
+            DemoWorldData.ENERGY to TileSize.WIDE,
+            DemoWorldData.SMOKE_DETECTOR to TileSize.SMALL,
+        ),
     ),
     DemoRoom("demo-room-bedroom", "Bedroom", listOf(DemoWorldData.BEDROOM_LAMP to TileSize.SMALL)),
 )

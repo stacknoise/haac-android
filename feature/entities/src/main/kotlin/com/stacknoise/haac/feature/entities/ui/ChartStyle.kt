@@ -30,13 +30,18 @@ internal fun phaseColor(kind: PhaseKind, palette: ChartPalette): Color =
 /**
  * Colours of timeline [states] in order of first appearance: `on` green, `off` [neutral], `unavailable` and
  * `unknown` transparent (a gap), others in categorical order; beyond four they share [neutral]. The colours are
- * those of [palette].
+ * those of [palette]; [onColor] is `on` of an alarm class (concept 8.6).
  */
-internal fun stateColors(states: List<String>, neutral: Color, palette: ChartPalette): Map<String, Color> {
+internal fun stateColors(
+    states: List<String>,
+    neutral: Color,
+    palette: ChartPalette,
+    onColor: Color = palette.green,
+): Map<String, Color> {
     val fixed = setOf(EntityDomains.ON, EntityDomains.OFF) + EntityDomains.UNAVAILABLE
     val others = states.distinct().filter { it !in fixed }
     return buildMap {
-        put(EntityDomains.ON, palette.green)
+        put(EntityDomains.ON, onColor)
         put(EntityDomains.OFF, neutral)
         EntityDomains.UNAVAILABLE.forEach { put(it, Color.Transparent) }
         others.forEachIndexed { index, state -> put(state, palette.categorical.getOrElse(index) { neutral }) }

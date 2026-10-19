@@ -97,10 +97,13 @@ data class DemoWorldData(
         const val ENERGY = "sensor.demo_energy"
         const val MORNING_LIGHT = "demo-morning-light"
         const val THERMOSTAT = "climate.demo_thermostat"
+        const val FRONT_DOOR = "binary_sensor.demo_front_door"
+        const val HALLWAY_MOTION = "binary_sensor.demo_hallway_motion"
+        const val SMOKE_DETECTOR = "binary_sensor.demo_smoke_detector"
 
-        /** Switches, sensors, thermostat, a floor with three areas and "Morning light", all created at [now]. */
+        /** All demo entities, a floor with three areas and "Morning light", created at [now]. */
         fun initial(now: Long, nowIso: String): DemoWorldData = DemoWorldData(
-            entities = switches(now) + sensors(now) + thermostat(now),
+            entities = switches(now) + sensors(now) + binarySensors(now) + thermostat(now),
             floors = listOf(DemoFloor("ground_floor", "Ground floor", 0)),
             areas = listOf(
                 DemoArea(LIVING_ROOM, "Living room", "ground_floor"),
@@ -122,6 +125,23 @@ data class DemoWorldData(
                     updatedAt = nowIso,
                 ),
             ),
+        )
+
+        /**
+         * [saved] plus the default entities it lacks (a demo saved before an entity type existed, concept 20.3);
+         * the file has no version, so the entities are compared by ID.
+         */
+        fun withDefaultEntities(saved: DemoWorldData, now: Long): DemoWorldData {
+            val known = saved.entities.map { it.entityId }.toSet()
+            val missing = binarySensors(now).filter { it.entityId !in known }
+            return if (missing.isEmpty()) saved else saved.copy(entities = saved.entities + missing)
+        }
+
+        /** A door that is closed, a motion sensor that sees someone and a smoke detector that is clear. */
+        private fun binarySensors(now: Long): List<DemoEntity> = listOf(
+            DemoEntity(FRONT_DOOR, "Front door", "off", now, now, LIVING_ROOM, deviceClass = "door"),
+            DemoEntity(HALLWAY_MOTION, "Hallway motion", "on", now, now, LIVING_ROOM, deviceClass = "motion"),
+            DemoEntity(SMOKE_DETECTOR, "Smoke detector", "off", now, now, KITCHEN, deviceClass = "smoke"),
         )
 
         /** Four switches, two of them on. */

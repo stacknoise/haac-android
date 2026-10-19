@@ -6,6 +6,7 @@ import com.stacknoise.haac.core.database.assignment.TileSize
 import com.stacknoise.haac.core.database.entity.EntityStatus
 import com.stacknoise.haac.core.database.entity.ExposedEntity
 import com.stacknoise.haac.feature.entities.R
+import com.stacknoise.haac.feature.entities.domain.EntityDomains.BINARY_SENSOR
 import com.stacknoise.haac.feature.entities.domain.EntityDomains.CLIMATE
 import com.stacknoise.haac.feature.entities.domain.EntityDomains.OFF
 import com.stacknoise.haac.feature.entities.domain.EntityDomains.ON
@@ -35,15 +36,16 @@ interface TileFactory {
 /** The text resources of one domain: the tab [name] and the plural of the picked [count] (M-04). */
 data class DomainLabels(@param:StringRes val name: Int, @param:PluralsRes val count: Int)
 
-/** [TileFactory] for switch, sensor and climate (concept 1.2, 8). */
+/** [TileFactory] for switch, sensor, binary sensor and climate (concept 1.2, 8). */
 class DefaultTileFactory @Inject constructor() : TileFactory {
     /** Climate tiles hold the dial, everything else fits 1×1. */
     override fun defaultSize(domain: String): TileSize = if (domain == CLIMATE) TileSize.LARGE else TileSize.SMALL
 
-    /** Switch, sensor and climate have texts; any other domain has none. */
+    /** Switch, sensor, binary sensor and climate have texts; any other domain has none. */
     override fun labels(domain: String): DomainLabels? = when (domain) {
         SWITCH -> DomainLabels(R.string.add_domain_switch, R.plurals.add_switches)
         SENSOR -> DomainLabels(R.string.add_domain_sensor, R.plurals.add_sensors)
+        BINARY_SENSOR -> DomainLabels(R.string.add_domain_binary, R.plurals.add_binary_sensors)
         CLIMATE -> DomainLabels(R.string.add_domain_climate, R.plurals.add_climates)
         else -> null
     }
@@ -54,6 +56,7 @@ class DefaultTileFactory @Inject constructor() : TileFactory {
         val content = when (entity.domain) {
             SWITCH -> TileContent.Switch(if (raw == ON || raw == OFF) raw == ON else null)
             SENSOR -> sensor(entity, raw.orEmpty())
+            BINARY_SENSOR -> binaryContent(entity.deviceClass, raw, state?.lastChanged)
             CLIMATE -> climate(state?.attributes)
             else -> TileContent.Other(raw.orEmpty())
         }
@@ -73,6 +76,7 @@ class DefaultTileFactory @Inject constructor() : TileFactory {
     private fun icon(domain: String, deviceClass: String?): TileIcon = when (domain) {
         SWITCH -> if (deviceClass == "outlet") TileIcon.OUTLET else TileIcon.SWITCH
         CLIMATE -> TileIcon.CLIMATE
+        BINARY_SENSOR -> binaryClass(deviceClass).icon
         else -> SENSOR_ICONS[deviceClass] ?: TileIcon.SENSOR
     }
 

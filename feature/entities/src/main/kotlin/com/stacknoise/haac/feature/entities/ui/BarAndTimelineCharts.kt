@@ -13,6 +13,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.stacknoise.haac.feature.entities.domain.BinaryLevel
 import com.stacknoise.haac.feature.entities.domain.HistoryChart
 import com.stacknoise.haac.feature.entities.domain.barAt
 import com.stacknoise.haac.feature.entities.domain.segmentAt
@@ -62,14 +63,16 @@ internal fun BarChart(chart: HistoryChart.Bars) {
 internal fun TimelineChart(chart: HistoryChart.Timeline) {
     var selected by remember(chart) { mutableStateOf<Long?>(null) }
     val palette = chartPalette()
-    val colors = stateColors(chart.segments.map { it.state }, MaterialTheme.colorScheme.surfaceVariant, palette)
+    val onColor = if (chart.binary?.level == BinaryLevel.ALARM) palette.magenta else palette.green
+    val neutral = MaterialTheme.colorScheme.surfaceVariant
+    val colors = stateColors(chart.segments.map { it.state }, neutral, palette, onColor)
     val length = chart.end - chart.start
     Column {
         val segment = selected?.let { chart.segments.segmentAt(it) }
         Text(
             segment?.let {
                 val from = chartTime(it.start, length, withHour = true)
-                "${modeLabel(it.state)} · $from – ${chartTime(it.end, length, withHour = true)}"
+                "${binaryLabel(chart.binary, it.state)} · $from – ${chartTime(it.end, length, withHour = true)}"
             }.orEmpty(),
             style = MaterialTheme.typography.bodyMedium,
             maxLines = 1,
@@ -83,8 +86,9 @@ internal fun TimelineChart(chart: HistoryChart.Timeline) {
             }
         }
         ChartLegend(chart.segments.map { it.state }.distinct().mapNotNull { state ->
-            colors[state]?.takeIf { it != Color.Transparent }?.let { modeLabel(state) to it }
+            colors[state]?.takeIf { it != Color.Transparent }?.let { binaryLabel(chart.binary, state) to it }
         })
+        chart.binary?.let { BinarySummaryLine(chart, it) }
     }
 }
 

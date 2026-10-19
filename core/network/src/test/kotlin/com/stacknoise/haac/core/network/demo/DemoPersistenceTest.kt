@@ -1,5 +1,6 @@
 package com.stacknoise.haac.core.network.demo
 
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -48,17 +49,32 @@ class DemoPersistenceTest {
     }
 
     @Test
+    fun `a file saved before binary sensors existed gets them added and keeps its states`() {
+        val first = DemoHarness(store)
+        first.request("haac_bridge/call_service", TurnOffSocket)
+        val old = store.saved!!
+        val serializer = DemoWorldData.serializer()
+        val data = Json.decodeFromString(serializer, old)
+        val without = data.copy(entities = data.entities.filterNot { it.domain == "binary_sensor" })
+        store.save(Json.encodeToString(serializer, without))
+        val second = states(DemoHarness(store))
+        assertEquals(10, second.size)
+        assertEquals("off", second["switch.demo_socket"])
+        assertEquals("on", second["binary_sensor.demo_hallway_motion"])
+    }
+
+    @Test
     fun `a damaged file leads to the default data`() {
         store.save("{ this is not json")
         val demo = DemoHarness(store)
-        assertEquals(7, states(demo).size)
+        assertEquals(10, states(demo).size)
         assertEquals("on", states(demo)["switch.demo_socket"])
     }
 
     @Test
     fun `a file with the wrong structure leads to the default data`() {
         store.save("""{"entities":"none"}""")
-        assertEquals(7, states(DemoHarness(store)).size)
+        assertEquals(10, states(DemoHarness(store)).size)
     }
 
     @Test

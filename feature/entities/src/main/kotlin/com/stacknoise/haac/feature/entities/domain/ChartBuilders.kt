@@ -27,14 +27,18 @@ internal fun climateLine(states: List<RecordedState>, window: HistoryWindow): Hi
 }
 
 /** States as segments from each change to the next; repeated states are merged (switches, enums). */
-internal fun timeline(states: List<RecordedState>, window: HistoryWindow): HistoryChart.Timeline {
+internal fun timeline(
+    states: List<RecordedState>,
+    window: HistoryWindow,
+    binary: BinaryClass? = null,
+): HistoryChart.Timeline {
     val changes = states.filterIndexed { index, state -> index == 0 || state.state != states[index - 1].state }
     val segments = changes.mapIndexedNotNull { index, state ->
         val start = state.at.coerceAtLeast(window.start)
         val end = (changes.getOrNull(index + 1)?.at ?: window.end).coerceAtMost(window.end)
         if (end > start) Segment(start, end, state.state) else null
     }
-    return HistoryChart.Timeline(window.start, window.end, segments)
+    return HistoryChart.Timeline(window.start, window.end, segments, binary)
 }
 
 /** Mean per period as a line with the min/max band (long ranges of measurements, concept 8.3). */
