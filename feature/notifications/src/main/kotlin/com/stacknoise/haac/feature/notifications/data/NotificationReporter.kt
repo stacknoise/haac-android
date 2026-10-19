@@ -3,6 +3,7 @@ package com.stacknoise.haac.feature.notifications.data
 import com.stacknoise.haac.core.common.dispatch.IoDispatcher
 import com.stacknoise.haac.core.common.sync.EntityChangeReporter
 import com.stacknoise.haac.core.common.sync.ScheduleChangeReporter
+import com.stacknoise.haac.core.common.sync.ScheduleRun
 import com.stacknoise.haac.core.error.ErrorReporter
 import com.stacknoise.haac.core.error.HaacException
 import javax.inject.Inject
@@ -12,7 +13,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-/** Writes errors (concept 17.4) and sync changes (9.1, 19.7) into the notification list. */
+/** Writes errors (concept 17.4) and sync changes (9.1, 19.7, 19.11) into the notification list. */
 @Singleton
 class NotificationReporter internal constructor(
     private val repository: NotificationRepository,
@@ -45,4 +46,8 @@ class NotificationReporter internal constructor(
     /** Adds the entry of a paused schedule. */
     override suspend fun paused(serverId: String, name: String, reason: String) =
         repository.addSchedulePaused(serverId, name, reason)
+
+    /** Adds the run entries of a sync and moves the run log cursor in the same transaction. */
+    override suspend fun ran(serverId: String, logId: String, lastSeq: Long, runs: List<ScheduleRun>) =
+        repository.addScheduleRuns(serverId, logId, lastSeq, runs)
 }

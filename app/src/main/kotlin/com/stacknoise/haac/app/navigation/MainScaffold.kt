@@ -147,6 +147,7 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
                         }
                     },
                     onAddToRoom = { ids -> navController.navigate(EntityRoutes.assign(ids)) },
+                    onOpenSchedule = { id -> navController.navigate(ScheduleRoutes.detail(id)) },
                 )
             }
         }

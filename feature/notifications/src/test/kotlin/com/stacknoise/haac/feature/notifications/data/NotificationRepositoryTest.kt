@@ -1,5 +1,8 @@
 package com.stacknoise.haac.feature.notifications.data
 
+import com.stacknoise.haac.core.common.sync.RunResult
+import com.stacknoise.haac.core.common.sync.ScheduleRun
+import com.stacknoise.haac.core.database.DatabaseTransactions
 import com.stacknoise.haac.core.database.assignment.EntityAlias
 import com.stacknoise.haac.core.database.assignment.EntityAliasDao
 import com.stacknoise.haac.core.database.assignment.RoomAssignment
@@ -10,6 +13,10 @@ import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.database.notification.NotificationDao
 import com.stacknoise.haac.core.database.notification.NotificationEntity
 import com.stacknoise.haac.core.database.notification.NotificationType
+import com.stacknoise.haac.core.database.schedule.ScheduleDao
+import com.stacknoise.haac.core.database.schedule.ScheduleEntity
+import com.stacknoise.haac.core.database.server.RunCursor
+import com.stacknoise.haac.core.database.server.RunCursorDao
 import com.stacknoise.haac.core.error.BridgeException
 import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
@@ -140,8 +147,107 @@ class NotificationRepositoryTest {
         override suspend fun clear(serverId: String, entityId: String) = error("not used")
     }
 
+    private val cachedSchedules = MutableStateFlow<List<ScheduleEntity>>(emptyList())
+    private val scheduleDao = object : ScheduleDao {
+        override suspend fun all(serverId: String): List<ScheduleEntity> = error("not used")
+
+        override fun observe(serverId: String): Flow<List<ScheduleEntity>> = cachedSchedules
+
+        override fun observe(serverId: String, scheduleId: String): Flow<ScheduleEntity?> = error("not used")
+
+        override suspend fun upsert(rows: List<ScheduleEntity>) = error("not used")
+
+        override suspend fun delete(serverId: String, scheduleIds: List<String>) = error("not used")
+
+        override suspend fun applySync(serverId: String, rows: List<ScheduleEntity>, removed: List<String>) =
+            error("not used")
+    }
+
+    private val cursor = mutableMapOf<String, Pair<String, Long>>()
+    private val cursors = object : RunCursorDao {
+        override suspend fun runCursor(id: String): RunCursor? = cursor[id]?.let { RunCursor(it.first, it.second) }
+
+        override suspend fun setRunCursor(id: String, logId: String, seq: Long) {
+            cursor[id] = logId to seq
+        }
+    }
+
+    private val transactions = object : DatabaseTransactions {
+        override suspend fun <T> run(block: suspend () -> T): T = block()
+    }
+
     private var now = 1_000_000L
-    private val repository = NotificationRepository(dao, entities, aliases, assignments, DefaultErrorFactory()) { now }
+    private val repository = NotificationRepository(
+        dao, entities, aliases, assignments, scheduleDao, cursors, transactions, DefaultErrorFactory(),
+    ) { now }
+
+    private fun run(id: String, result: RunResult, at: Long, removed: Boolean = false) =
+        ScheduleRun(id, "Schedule $id", at, result, removed)
+
+    @Test
+    fun `runs of one schedule and result make one entry with a count, the newest run gives time and name`() = runTest {
+        repository.addScheduleRuns(
+            "s1", "log", 7,
+            listOf(run("a", RunResult.OK, 100), run("a", RunResult.OK, 300), run("a", RunResult.FAILED, 200)),
+        )
+
+        val items = repository.items("s1").first().sortedBy { it.createdAt }
+        assertEquals(listOf(200L, 300L), items.map { it.createdAt })
+        val ok = items.single { it.run?.result == RunResult.OK }
+        assertEquals(2, ok.count)
+        assertEquals(null, ok.error)
+        assertEquals(listOf("Schedule a"), ok.entities.map { it.name })
+        val failed = items.single { it.run?.result == RunResult.FAILED }
+        assertEquals(ErrorCode.SCH_RUN_INCOMPLETE, failed.error)
+        assertEquals(NotificationType.SCHEDULE_RUN, failed.type)
+    }
+
+    @Test
+    fun `the cursor is written with the entries, and alone when there are none`() = runTest {
+        repository.addScheduleRuns("s1", "log", 3, emptyList())
+        assertEquals("log" to 3L, cursor["s1"])
+        assertEquals(0, table.value.size)
+
+        repository.addScheduleRuns("s1", "log", 5, listOf(run("a", RunResult.PARTIAL, 100)))
+        assertEquals("log" to 5L, cursor["s1"])
+        assertEquals(ErrorCode.SCH_RUN_INCOMPLETE.code, table.value.single().errorCode)
+    }
+
+    @Test
+    fun `a run entry can open its schedule only while the schedule is cached, and shows that the run removed it`() =
+        runTest {
+            repository.addScheduleRuns(
+                "s1", "log", 2,
+                listOf(run("gone", RunResult.OK, 100, removed = true), run("here", RunResult.MISSED, 200)),
+            )
+            cachedSchedules.value = listOf(
+                ScheduleEntity(
+                    "s1", "here", "u1", own = true, name = "Here", enabled = true, whenType = "time", days = 1,
+                    action = "turn_on", entityIds = "[]", createdAt = 1, updatedAt = "x", syncedAt = 1,
+                ),
+            )
+
+            val items = repository.items("s1").first()
+            val gone = items.single { it.run?.scheduleId == "gone" }.run!!
+            assertEquals(true, gone.removed)
+            assertEquals(false, gone.exists)
+            val here = items.single { it.run?.scheduleId == "here" }
+            assertEquals(true, here.run!!.exists)
+            assertEquals(null, here.error)
+        }
+
+    @Test
+    fun `a damaged run detail reads as a failed run of no schedule`() = runTest {
+        table.value = listOf(
+            NotificationEntity(
+                id = 9, serverId = "s1", type = NotificationType.SCHEDULE_RUN, createdAt = 5, detail = "{oops",
+            ),
+        )
+        val run = repository.items("s1").first().single().run!!
+        assertEquals(null, run.scheduleId)
+        assertEquals(RunResult.FAILED, run.result)
+        assertEquals(false, run.exists)
+    }
 
     @Test
     fun `a local entity name replaces the HA name in the entries`() = runTest {
