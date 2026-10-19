@@ -3,6 +3,7 @@ package com.stacknoise.haac.core.network.demo
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.put
@@ -62,7 +63,9 @@ internal class DemoScheduleCommands(
         val outcome = if (current == null) {
             notFound()
         } else {
-            schedules.update(message, current, message.text("updated_at"), snapshot.entities)
+            schedules.update(message, current, message.text("updated_at"), snapshot.entities).then {
+                unblocked(it.copy(offReason = if ("enabled" in message) null else current.offReason), message, snapshot)
+            }
         }
         when (outcome) {
             is DemoOutcome.Failed -> emit(DemoReplies.failure(id, outcome))
@@ -88,6 +91,10 @@ internal class DemoScheduleCommands(
             emit(DemoReplies.failure(id, notFound()))
             return
         }
+        if (blockedBy(current, snapshot.disabled).isNotEmpty()) {
+            emit(DemoReplies.failure(id, blocked()))
+            return
+        }
         val (run, switched) = schedules.run(current, snapshot.entities)
         emit(DemoReplies.result(id))
         world.setEntities(switched.filter { it !in snapshot.entities })
@@ -98,12 +105,26 @@ internal class DemoScheduleCommands(
     private fun find(message: JsonObject): DemoSchedule? =
         message.text("schedule_id")?.let { wanted -> world.snapshot().schedules.firstOrNull { it.id == wanted } }
 
+    /** [updated], or HAB-SCH-008 if the update switches it on while one of its entities is deactivated (7.5). */
+    private fun unblocked(
+        updated: DemoSchedule,
+        message: JsonObject,
+        snapshot: DemoWorldData,
+    ): DemoOutcome<DemoSchedule> {
+        val enabling = (message["enabled"] as? JsonPrimitive)?.booleanOrNull == true
+        val stays = blockedBy(updated, snapshot.disabled).isNotEmpty()
+        return if (enabling && stays) blocked() else DemoOutcome.Ok(updated)
+    }
+
+    /** HAB-SCH-008: the schedule contains an entity the user deactivated (concept 7.5). */
+    private fun blocked() = DemoOutcome.Failed(DemoCodes.SCH_BLOCKED, "Activate the deactivated entity first")
+
     /** HAB-SCH-003. */
     private fun notFound() = DemoOutcome.Failed(DemoCodes.SCH_NOT_FOUND, "The schedule does not exist")
 
     /** [schedule] as the bridge sends it, with its next run. */
     private fun descriptor(schedule: DemoSchedule): JsonObject =
-        DemoScheduleWire.descriptor(schedule, schedules.nextRun(schedule))
+        DemoScheduleWire.descriptor(schedule, schedules.nextRun(schedule), world.snapshot().disabled)
 
     /** The string [key], or null. */
     private fun JsonObject.text(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull

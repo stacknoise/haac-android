@@ -3,6 +3,7 @@ package com.stacknoise.haac.core.network.demo
 import com.stacknoise.haac.core.network.http.text
 import com.stacknoise.haac.core.network.websocket.messageId
 import java.util.concurrent.ConcurrentHashMap
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -18,6 +19,7 @@ class DemoBridge(private val world: DemoWorld, private val emit: (JsonObject) ->
     private val schedules = DemoSchedules(world.clock)
     private val queries = DemoQueryCommands(world, DemoHistory(world.clock), emit)
     private val scheduleCommands = DemoScheduleCommands(world, schedules, emit)
+    private val deactivation = DemoDisabled(world, emit)
     private val entitySubscriptions = ConcurrentHashMap.newKeySet<Int>()
     private val scheduleSubscriptions = ConcurrentHashMap.newKeySet<Int>()
 
@@ -58,6 +60,14 @@ class DemoBridge(private val world: DemoWorld, private val emit: (JsonObject) ->
         scheduleSubscriptions.forEach { emit(DemoReplies.event(it, payload)) }
     }
 
+    /** Every state subscription gets `disabled_changed` with the full list of deactivated entities (concept 7.5). */
+    override fun disabledChanged(disabled: List<String>) {
+        val payload = buildJsonObject {
+            put("disabled_changed", buildJsonObject { put("disabled", JsonArray(disabled.map(::JsonPrimitive))) })
+        }
+        entitySubscriptions.forEach { emit(DemoReplies.event(it, payload)) }
+    }
+
     /** Routes the command [type] to its handler; an unknown one is `unknown_command`, as in HA. */
     private fun dispatch(id: Int, type: String, message: JsonObject) {
         when (type) {
@@ -69,11 +79,17 @@ class DemoBridge(private val world: DemoWorld, private val emit: (JsonObject) ->
             }
             "unsubscribe_events" -> unsubscribe(id, message)
             "haac_bridge/call_service" -> callService(id, message)
-            else -> if (!queries.handle(type, id, message) && !scheduleCommands.handle(type, id, message)) {
+            else -> if (!handledElsewhere(type, id, message)) {
                 emit(DemoReplies.error(id, "unknown_command", "Unknown command."))
             }
         }
     }
+
+    /** True if the queries, the schedule commands or the deactivation answered [type]. */
+    private fun handledElsewhere(type: String, id: Int, message: JsonObject): Boolean =
+        queries.handle(type, id, message) ||
+            scheduleCommands.handle(type, id, message) ||
+            deactivation.handle(type, id, message)
 
     /** Registers the subscription, answers with an empty result and sends the states of all entities as `a`. */
     private fun subscribeEntities(id: Int) {
@@ -95,7 +111,8 @@ class DemoBridge(private val world: DemoWorld, private val emit: (JsonObject) ->
 
     /**
      * `call_service`: HAB-WS-001 for missing fields or target keys in `service_data`, HAB-ENT-001 for an unknown
-     * entity, HAB-SVC-002 or -003 from [DemoServices]; otherwise the empty result, then the state event.
+     * entity, HAB-ENT-002 for a deactivated one, HAB-SVC-002 or -003 from [DemoServices]; otherwise the empty
+     * result, then the state event.
      */
     private fun callService(id: Int, message: JsonObject) {
         val entityId = message.text("entity_id")
@@ -108,6 +125,10 @@ class DemoBridge(private val world: DemoWorld, private val emit: (JsonObject) ->
         val entity = world.snapshot().entities.firstOrNull { it.entityId == entityId }
         if (entity == null) {
             emit(DemoReplies.error(id, DemoCodes.ENT_NOT_FOUND, "$entityId does not exist"))
+            return
+        }
+        if (entityId in world.snapshot().disabled) {
+            emit(DemoReplies.error(id, DemoCodes.ENT_DISABLED, "$entityId is deactivated"))
             return
         }
         when (val outcome = DemoServices.call(entity, service, data, world.clock.millis())) {
