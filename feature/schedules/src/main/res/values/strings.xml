@@ -107,4 +107,7 @@
     <string name="schedules_conflict_text">This schedule was changed on the server while you edited it. Reload it to keep your changes on top of the new version.</string>
     <string name="schedules_reload">Reload</string>
     <string name="schedules_keep_editing">Keep editing</string>
+    <string name="schedules_pick_deactivated">Deactivated</string>
+    <string name="schedules_blocked">Device deactivated</string>
+    <string name="schedules_blocked_hint">Activate %1$s first. Then you can switch the schedule on.</string>
 </resources>

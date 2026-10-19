@@ -48,6 +48,7 @@ import com.stacknoise.haac.core.common.ui.theme.haacSwitchColors
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.disable.ui.DeactivatedChip
 import com.stacknoise.haac.feature.entities.disable.ui.DisabledAlpha
+import com.stacknoise.haac.feature.entities.disable.ui.DisabledRow
 import com.stacknoise.haac.feature.entities.disable.ui.LockBadge
 import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.Tile
@@ -157,20 +158,6 @@ private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: Til
             }
         }
         if (tile.disabled) DisabledRow(tile, on)
-    }
-}
-
-/** *Deactivated* and, for a switch, its greyed-out switch in the state HA reports (concept 7.5, M-19). */
-@Composable
-private fun DisabledRow(tile: Tile, on: Boolean) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-        DeactivatedChip()
-        Spacer(Modifier.weight(1f))
-        if (tile.content is TileContent.Switch) {
-            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
-                Switch(checked = on, onCheckedChange = null, enabled = false, colors = haacSwitchColors())
-            }
-        }
     }
 }
 

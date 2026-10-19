@@ -256,7 +256,11 @@ internal fun DisableButton(disabled: Boolean, onClick: () -> Unit) {
         val icon = if (disabled) R.drawable.ic_entities_unlock else R.drawable.ic_entities_lock
         Icon(painterResource(icon), contentDescription = null, Modifier.size(20.dp))
         val label = if (disabled) R.string.disable_menu_activate else R.string.disable_menu_deactivate
-        Text(stringResource(label), color = HaacColors.OnSurfaceVariantStrong, modifier = Modifier.padding(start = 8.dp))
+        Text(
+            stringResource(label),
+            color = HaacColors.OnSurfaceVariantStrong,
+            modifier = Modifier.padding(start = 8.dp),
+        )
     }
 }
 

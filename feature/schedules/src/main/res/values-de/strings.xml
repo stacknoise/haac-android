@@ -107,4 +107,7 @@
     <string name="schedules_conflict_text">Dieser Zeitplan wurde auf dem Server geändert, während du ihn bearbeitet hast. Lade ihn neu, um deine Änderungen auf die neue Version zu übernehmen.</string>
     <string name="schedules_reload">Neu laden</string>
     <string name="schedules_keep_editing">Weiter bearbeiten</string>
+    <string name="schedules_pick_deactivated">Deaktiviert</string>
+    <string name="schedules_blocked">Gerät deaktiviert</string>
+    <string name="schedules_blocked_hint">Aktiviere zuerst %1$s. Danach kannst du den Zeitplan einschalten.</string>
 </resources>

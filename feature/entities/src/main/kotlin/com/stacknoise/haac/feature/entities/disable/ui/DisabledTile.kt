@@ -4,22 +4,31 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
+import com.stacknoise.haac.core.common.ui.theme.haacSwitchColors
 import com.stacknoise.haac.feature.entities.R
+import com.stacknoise.haac.feature.entities.domain.Tile
+import com.stacknoise.haac.feature.entities.domain.TileContent
 
 /** Opacity of the content of a deactivated tile (concept 7.5, M-19). */
 internal const val DisabledAlpha = 0.55f
@@ -66,6 +75,20 @@ internal fun DeactivatedChip(modifier: Modifier = Modifier) {
             maxLines = 1,
             modifier = Modifier.padding(start = 6.dp),
         )
+    }
+}
+
+/** *Deactivated* and, for a switch, its greyed-out switch in the state HA reports (concept 7.5, M-19). */
+@Composable
+internal fun DisabledRow(tile: Tile, on: Boolean) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+        DeactivatedChip()
+        Spacer(Modifier.weight(1f))
+        if (tile.content is TileContent.Switch) {
+            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+                Switch(checked = on, onCheckedChange = null, enabled = false, colors = haacSwitchColors())
+            }
+        }
     }
 }
 
