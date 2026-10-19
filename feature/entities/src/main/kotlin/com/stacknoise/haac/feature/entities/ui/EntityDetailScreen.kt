@@ -16,6 +16,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -38,6 +39,9 @@ import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.ControlRequest
 import com.stacknoise.haac.feature.entities.domain.EntityDetail
+import com.stacknoise.haac.feature.entities.guard.GuardConfirmDialog
+import com.stacknoise.haac.feature.entities.guard.GuardSettingsSheet
+import com.stacknoise.haac.feature.entities.guard.guardable
 
 /**
  * The detail screen of one entity (concept 8.1, 15.4): name and `entity_id`, current state, readings, the
@@ -48,6 +52,7 @@ fun EntityDetailScreen(onClose: () -> Unit, viewModel: EntityDetailViewModel = h
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var renaming by rememberSaveable { mutableStateOf(false) }
+    var guarding by rememberSaveable { mutableStateOf(false) }
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier
@@ -58,12 +63,22 @@ fun EntityDetailScreen(onClose: () -> Unit, viewModel: EntityDetailViewModel = h
             TopRow(canRename = state.detail != null, onClose = onClose, onRename = { renaming = true })
             state.error?.let { ErrorMessage(it) }
             if (state.missing) Note(stringResource(R.string.detail_missing))
-            state.detail?.let { DetailBody(it, state.connected, viewModel::onControl) }
+            state.detail?.let { DetailBody(it, state.connected, viewModel::onControl) { guarding = true } }
         }
         SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter))
     }
     FailureSnackbar(viewModel.failed, snackbar)
     val detail = state.detail
+    val prompt by viewModel.guardPrompt.collectAsStateWithLifecycle()
+    prompt?.let { GuardConfirmDialog(it, onConfirm = viewModel::onGuardConfirm, onDismiss = viewModel::onGuardDismiss) }
+    if (guarding && detail != null) {
+        GuardSettingsSheet(
+            name = detail.tile.name,
+            guard = state.guard,
+            onChange = viewModel::onGuardChange,
+            onDismiss = { guarding = false },
+        )
+    }
     if (renaming && detail != null) {
         RenameDialog(
             tile = detail.tile,
@@ -98,6 +113,7 @@ private fun DetailBody(
     detail: EntityDetail,
     connected: Boolean,
     onControl: (ControlRequest?) -> Unit,
+    onGuard: () -> Unit,
 ) {
     val tile = detail.tile
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -121,6 +137,16 @@ private fun DetailBody(
         Section(R.string.detail_controls)
         if (!connected) Note(stringResource(R.string.detail_offline))
         DetailControls(detail.controls, enabled = connected, onControl = onControl)
+    }
+    if (tile.guardable) {
+        OutlinedButton(onClick = onGuard, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+            Icon(
+                painterResource(R.drawable.ic_entities_shield),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+            Text(stringResource(R.string.guard_menu), modifier = Modifier.padding(start = 8.dp))
+        }
     }
     if (!tile.withdrawn) {
         Section(R.string.history_title)

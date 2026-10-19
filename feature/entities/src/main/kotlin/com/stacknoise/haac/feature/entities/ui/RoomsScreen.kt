@@ -54,6 +54,9 @@ import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.RoomGroup
+import com.stacknoise.haac.feature.entities.guard.GuardConfirmDialog
+import com.stacknoise.haac.feature.entities.guard.GuardSettingsSheet
+import com.stacknoise.haac.feature.entities.guard.SwitchGuard
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -125,13 +128,18 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
             RoomGrid(state.tiles, state.connected, actions, if (state.stale) grid.alpha(StaleAlpha) else grid)
         }
     }
-    sheet?.let { open -> Sheets(open, viewModel, navigation.onOpenEntity, onChange = { sheet = it }) }
+    sheet?.let { open ->
+        Sheets(open, state.guards, viewModel, navigation.onOpenEntity, onChange = { sheet = it })
+    }
+    val prompt by viewModel.guardPrompt.collectAsStateWithLifecycle()
+    prompt?.let { GuardConfirmDialog(it, onConfirm = viewModel::onGuardConfirm, onDismiss = viewModel::onGuardDismiss) }
 }
 
 /** The open sheet or rename dialog; [onChange] switches to another one or closes it (null). */
 @Composable
 private fun Sheets(
     open: RoomSheet,
+    guards: Map<String, SwitchGuard>,
     viewModel: RoomsViewModel,
     onOpenEntity: (String) -> Unit,
     onChange: (RoomSheet?) -> Unit,
@@ -147,6 +155,15 @@ private fun Sheets(
         )
         return
     }
+    if (open is RoomSheet.Guard) {
+        GuardSettingsSheet(
+            name = open.tile.name,
+            guard = guards[open.tile.entityId],
+            onChange = { viewModel.onGuardChange(open.tile.entityId, it) },
+            onDismiss = { onChange(null) },
+        )
+        return
+    }
     RoomSheetContent(
         open,
         SheetActions(
@@ -155,6 +172,7 @@ private fun Sheets(
                 onOpenEntity(it.entityId)
             },
             onRename = { onChange(RoomSheet.Rename(it)) },
+            onGuard = { onChange(RoomSheet.Guard(it)) },
             onRemoveHere = {
                 viewModel.onRemoveHere(it)
                 onChange(null)

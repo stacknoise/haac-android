@@ -49,6 +49,7 @@ import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.Tile
 import com.stacknoise.haac.feature.entities.domain.TileContent
 import com.stacknoise.haac.feature.entities.domain.TileIcon
+import com.stacknoise.haac.feature.entities.guard.GuardShield
 
 
 /**
@@ -114,6 +115,7 @@ private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: Til
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             IconBox(tile.icon, on)
             Spacer(Modifier.weight(1f))
+            if (tile.guarded) GuardShield()
             if (tile.content is TileContent.Switch) {
                 // The whole tile is the touch target, so the switch need not reserve 48 dp of height (concept 8.2).
                 CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {

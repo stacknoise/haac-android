@@ -21,6 +21,7 @@ import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.Tile
+import com.stacknoise.haac.feature.entities.guard.guardable
 
 /** Which sheet or dialog of the room grid is open. */
 internal sealed interface RoomSheet {
@@ -35,12 +36,16 @@ internal sealed interface RoomSheet {
 
     /** The rename dialog (M-07). */
     data class Rename(val tile: Tile) : RoomSheet
+
+    /** The switch guard settings (M-28, concept 8.5). */
+    data class Guard(val tile: Tile) : RoomSheet
 }
 
 /** Callbacks of the sheets; each closes the sheet. */
 internal class SheetActions(
     val onDetails: (Tile) -> Unit,
     val onRename: (Tile) -> Unit,
+    val onGuard: (Tile) -> Unit,
     val onRemoveHere: (List<String>) -> Unit,
     val onRemoveEverywhere: (List<String>) -> Unit,
     val onDismiss: () -> Unit,
@@ -50,7 +55,7 @@ internal class SheetActions(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun RoomSheetContent(sheet: RoomSheet, actions: SheetActions) {
-    if (sheet is RoomSheet.Rename) return
+    if (sheet is RoomSheet.Rename || sheet is RoomSheet.Guard) return
     ModalBottomSheet(onDismissRequest = actions.onDismiss) {
         Column(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
             when (sheet) {
@@ -58,6 +63,7 @@ internal fun RoomSheetContent(sheet: RoomSheet, actions: SheetActions) {
                     Heading(sheet.tile.name, sheet.tile.entityId)
                     SheetButton(R.string.tile_details) { actions.onDetails(sheet.tile) }
                     SheetButton(R.string.tile_rename) { actions.onRename(sheet.tile) }
+                    if (sheet.tile.guardable) SheetButton(R.string.guard_menu) { actions.onGuard(sheet.tile) }
                     SheetButton(R.string.tile_remove_here) { actions.onRemoveHere(listOf(sheet.tile.entityId)) }
                 }
                 is RoomSheet.Withdrawn -> {
@@ -73,7 +79,7 @@ internal fun RoomSheetContent(sheet: RoomSheet, actions: SheetActions) {
                     val ids = sheet.tiles.map { it.entityId }
                     RemoveButtons(ids, R.string.review_remove_here, R.string.review_remove_everywhere, actions)
                 }
-                is RoomSheet.Rename -> Unit
+                is RoomSheet.Rename, is RoomSheet.Guard -> Unit
             }
         }
     }

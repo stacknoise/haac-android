@@ -18,6 +18,11 @@ import com.stacknoise.haac.feature.entities.domain.Tile
 import com.stacknoise.haac.feature.entities.domain.groupOf
 import com.stacknoise.haac.feature.entities.domain.roomGroups
 import com.stacknoise.haac.feature.entities.domain.roomOrFirst
+import com.stacknoise.haac.feature.entities.guard.GuardGate
+import com.stacknoise.haac.feature.entities.guard.GuardPrompt
+import com.stacknoise.haac.feature.entities.guard.SwitchGuard
+import com.stacknoise.haac.feature.entities.guard.SwitchGuards
+import com.stacknoise.haac.feature.entities.guard.withGuards
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,13 +39,15 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
- * What the room grid shows; [groups] is null until the places are read, empty without rooms. Controls work only
- * while [connected]; [stale] marks the cached states after a longer outage (concept 14.1).
+ * What the room grid shows; [groups] is null until the places are read, empty without rooms. [guards] are the switch
+ * guards of the instance (concept 8.5), already applied to [tiles]. Controls work only while [connected]; [stale]
+ * marks the cached states after a longer outage (concept 14.1).
  */
 data class RoomsUiState(
     val groups: List<RoomGroup>? = null,
     val room: Room? = null,
     val tiles: List<Tile> = emptyList(),
+    val guards: Map<String, SwitchGuard> = emptyMap(),
     val error: ErrorCode? = null,
     val connected: Boolean = false,
     val stale: Boolean = false,
@@ -59,6 +66,7 @@ class RoomsViewModel @Inject constructor(
     catalog: EntityCatalog,
     private val writer: AssignmentWriter,
     private val controller: EntityController,
+    private val switchGuards: SwitchGuards,
 ) : ViewModel() {
     private val serverId = active.activeServerId.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     private val failure = MutableStateFlow<ErrorCode?>(null)
@@ -80,18 +88,50 @@ class RoomsViewModel @Inject constructor(
             }
         }
 
+    /** The switch guards of the active instance (concept 8.5). */
+    private val guards: StateFlow<Map<String, SwitchGuard>> = active.activeServerId
+        .flatMapLatest { id ->
+            if (id == null) flowOf(emptyMap()) else switchGuards.observe(id).reportErrors(emptyMap())
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
+
+    /** The tiles with their guards applied, and the guards. */
+    private val guardedTiles: Flow<Pair<List<Tile>, Map<String, SwitchGuard>>> =
+        combine(tiles, guards) { shown, set -> shown.withGuards(set) to set }
+
     /** Whether the connection is open and whether the cached states count as stale (concept 14.1). */
     private val link: Flow<Pair<Boolean, Boolean>> =
         combine(controller.connected, controller.stale) { connected, stale -> connected to stale }
 
     /** The current screen state. */
     val state: StateFlow<RoomsUiState> =
-        combine(groups, room, tiles, failure, link) { list, current, shown, error, (connected, stale) ->
-            RoomsUiState(list, current, shown, error, connected, stale)
+        combine(groups, room, guardedTiles, failure, link) { list, current, (shown, set), error, (up, stale) ->
+            RoomsUiState(list, current, shown, set, error, up, stale)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), RoomsUiState())
 
     /** Failed service calls, shown as a snackbar with the code (concept 14.1, 17.4). */
     val failed: Flow<HaacException> = controller.failed
+
+    /** Sends go through the switch guard first (concept 8.5); a guarded one waits for the dialog. */
+    private val gate = GuardGate { entityId, request ->
+        val id = serverId.value
+        if (id != null && state.value.connected) controller.send(id, entityId, request)
+    }
+
+    /** The open switch guard dialog, or null (M-27). */
+    val guardPrompt: StateFlow<GuardPrompt?> = gate.prompt
+
+    /** The user flipped the switch in the guard dialog: sends the command. */
+    fun onGuardConfirm() = gate.confirm()
+
+    /** The guard dialog was cancelled, timed out or dismissed: no command. */
+    fun onGuardDismiss() = gate.dismiss()
+
+    /** Turns the guard of [entityId] on with [guard]'s direction or, for null, off (concept 8.5, M-28). */
+    fun onGuardChange(entityId: String, guard: SwitchGuard?) {
+        val id = serverId.value ?: return
+        write { switchGuards.set(id, entityId, guard) }
+    }
 
     /** Tap on a switch tile or its toggle: turns it to the other state (concept 8.2). */
     fun onToggle(tile: Tile) {
@@ -107,8 +147,7 @@ class RoomsViewModel @Inject constructor(
 
     /** Sends [request] for [tile] while connected. */
     private fun onControl(tile: Tile, request: ControlRequest) {
-        val id = serverId.value ?: return
-        if (state.value.connected) controller.send(id, tile.entityId, request)
+        if (state.value.connected) gate.submit(tile, guards.value[tile.entityId], request)
     }
 
     /** Shows room [roomId] (chips, level menu). */
