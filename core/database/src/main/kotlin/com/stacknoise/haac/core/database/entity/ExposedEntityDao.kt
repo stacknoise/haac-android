@@ -7,6 +7,7 @@ import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
 /** Access to the `exposed_entity` table and the sync columns of `server` (concept 9.1, 12). */
+@Suppress("TooManyFunctions") // A DAO has one small function per operation (app review K-09).
 @Dao
 interface ExposedEntityDao {
     /** Every cached entity of instance [serverId], active and withdrawn. */

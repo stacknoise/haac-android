@@ -7,6 +7,7 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 /** Access to the `server` table (concept 12). */
+@Suppress("TooManyFunctions") // A DAO has one small function per operation (app review K-09).
 @Dao
 interface ServerDao {
     /** Adds a new instance. */
