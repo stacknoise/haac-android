@@ -70,23 +70,12 @@ internal fun NotificationRow(item: NotificationItem, actions: NotificationAction
 /** Icon in a rounded box; unread entries use the accent container, errors the error colour. */
 @Composable
 private fun EntryIcon(item: NotificationItem) {
-    val colors = MaterialTheme.colorScheme
-    val icon = when (item.type) {
-        NotificationType.ADDED -> R.drawable.ic_notifications_added
-        else -> R.drawable.ic_notifications_warning
-    }
-    val tint = when {
-        item.type == NotificationType.ERROR -> colors.error
-        item.unread -> colors.primary
-        else -> colors.onSurfaceVariant
-    }
+    val style = entryIconStyle(item)
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(40.dp)
-            .background(if (item.unread) colors.primaryContainer else HaacColors.SurfaceMuted, HaacShapes.Medium),
+        modifier = Modifier.size(40.dp).background(style.background, HaacShapes.Medium),
     ) {
-        Icon(painterResource(icon), contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
+        Icon(painterResource(style.icon), contentDescription = null, tint = style.tint, modifier = Modifier.size(22.dp))
     }
 }
 
@@ -106,7 +95,8 @@ private fun UnreadDot(unread: Boolean) {
 
 /**
  * *Dismiss* or *Keep*, after the entry's own action: *Add to room* or *Review N entities* for new entities,
- * *Remove tile* for removed ones (concept 9.1), the error's action for errors (17.4).
+ * *Remove tile* for removed ones (concept 9.1), the error's action for errors (17.4). A run entry offers *Open
+ * schedule* while the schedule exists and only *Dismiss* after that (19.11).
  */
 @Composable
 private fun EntryActions(item: NotificationItem, actions: NotificationActions) {
@@ -133,9 +123,14 @@ private fun EntryActions(item: NotificationItem, actions: NotificationActions) {
                 val label = item.error?.action?.takeIf { it != ErrorAction.NONE }?.label
                 if (label != null) ActionButton(stringResource(label), primary = true) { actions.onErrorAction(item) }
             }
+            NotificationType.SCHEDULE_RUN -> if (item.canOpenSchedule) {
+                ActionButton(stringResource(R.string.notifications_open_schedule), primary = true) {
+                    actions.onOpenSchedule(item)
+                }
+            }
             NotificationType.SCHEDULE_REMOVED, NotificationType.SCHEDULE_PAUSED -> Unit
         }
-        if (!item.resolved) {
+        if (item.canDismiss) {
             val resolve = when (item.type) {
                 NotificationType.REMOVED -> R.string.notifications_keep
                 else -> R.string.notifications_dismiss
@@ -162,6 +157,7 @@ private fun title(item: NotificationItem): String = when (item.type) {
     NotificationType.SCHEDULE_REMOVED ->
         pluralStringResource(R.plurals.notifications_schedule_removed, item.count, item.count)
     NotificationType.SCHEDULE_PAUSED -> stringResource(R.string.notifications_schedule_paused)
+    NotificationType.SCHEDULE_RUN -> runTitle(item)
 }
 
 /** Text of an entry: name and `entity_id`, the names of several entities, or the error code (mono). */
@@ -188,6 +184,7 @@ private fun text(item: NotificationItem): AnnotatedString {
             item.error?.code.orEmpty(),
             "",
         )
+        NotificationType.SCHEDULE_RUN -> runText(item)
     }
 }
 

@@ -3,6 +3,9 @@ package com.stacknoise.haac.feature.notifications.data
 import com.stacknoise.haac.core.database.assignment.EntityAlias
 import com.stacknoise.haac.core.database.assignment.EntityAliasDao
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
+import com.stacknoise.haac.core.common.sync.RunResult
+import com.stacknoise.haac.core.common.sync.ScheduleRun
+import com.stacknoise.haac.core.database.DatabaseTransactions
 import com.stacknoise.haac.core.database.entity.EntityStatus
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.database.entity.byEntityId
@@ -10,12 +13,15 @@ import com.stacknoise.haac.core.database.entity.displayName
 import com.stacknoise.haac.core.database.notification.NotificationDao
 import com.stacknoise.haac.core.database.notification.NotificationEntity
 import com.stacknoise.haac.core.database.notification.NotificationType
+import com.stacknoise.haac.core.database.schedule.ScheduleDao
+import com.stacknoise.haac.core.database.server.RunCursorDao
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.core.error.database
 import com.stacknoise.haac.feature.notifications.domain.EntityLabel
 import com.stacknoise.haac.feature.notifications.domain.NotificationItem
+import com.stacknoise.haac.feature.notifications.domain.RunInfo
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +30,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
@@ -40,13 +47,16 @@ class DeletedNotifications internal constructor(internal val rows: List<Notifica
  * The notification list (concept 9.1, 17.4): entity changes of a sync, errors grouped by code within 10
  * minutes, entries purged after 30 days. Writes are serialised, so a repeated error never creates two entries.
  */
-@Suppress("TooManyFunctions") // one small function per list operation
+@Suppress("TooManyFunctions", "LongParameterList") // one function per list operation; DAOs are injected
 @Singleton
 class NotificationRepository internal constructor(
     private val notifications: NotificationDao,
     private val entities: ExposedEntityDao,
     private val aliases: EntityAliasDao,
     private val assignments: RoomAssignmentDao,
+    private val scheduleRows: ScheduleDao,
+    private val cursors: RunCursorDao,
+    private val transactions: DatabaseTransactions,
     private val errors: ErrorFactory,
     private val clock: () -> Long,
 ) {
@@ -57,8 +67,14 @@ class NotificationRepository internal constructor(
         entities: ExposedEntityDao,
         aliases: EntityAliasDao,
         assignments: RoomAssignmentDao,
+        scheduleRows: ScheduleDao,
+        cursors: RunCursorDao,
+        transactions: DatabaseTransactions,
         errors: ErrorFactory,
-    ) : this(notifications, entities, aliases, assignments, errors, System::currentTimeMillis)
+    ) : this(
+        notifications, entities, aliases, assignments, scheduleRows, cursors, transactions, errors,
+        System::currentTimeMillis,
+    )
 
     private val writes = Mutex()
 
@@ -105,6 +121,33 @@ class NotificationRepository internal constructor(
         notifications.insert(entry)
     }
 
+    /**
+     * One entry per schedule and result for the [runs] of instance [serverId], and the cursor [logId] and
+     * [lastSeq], written in one transaction (concept 19.11). An empty list only moves the cursor.
+     */
+    suspend fun addScheduleRuns(serverId: String, logId: String, lastSeq: Long, runs: List<ScheduleRun>) = write {
+        transactions.run {
+            val groups = runs.groupBy { it.scheduleId to it.result }.values
+            groups.forEach { notifications.insert(runEntry(serverId, it)) }
+            cursors.setRunCursor(serverId, logId, lastSeq)
+        }
+    }
+
+    /** The entry for [group], the runs of one schedule with one result: the newest run gives name and time. */
+    private fun runEntry(serverId: String, group: List<ScheduleRun>): NotificationEntity {
+        val last = group.maxBy { it.at }
+        val detail = RunDetail(last.scheduleId, last.result.name, group.any { it.removed })
+        return NotificationEntity(
+            serverId = serverId,
+            type = NotificationType.SCHEDULE_RUN,
+            errorCode = ErrorCode.SCH_RUN_INCOMPLETE.code.takeIf { last.result.incomplete() },
+            count = group.size,
+            entityIds = encode(listOf(last.name)),
+            createdAt = last.at,
+            detail = Json.encodeToString(RunDetail.serializer(), detail),
+        )
+    }
+
     /** An error entry, or one more occurrence of the same code of [serverId] within 10 minutes (concept 17.4). */
     suspend fun addError(error: HaacException, serverId: String?) = write { now ->
         val recent = notifications.recentError(serverId, error.code.code, now - GROUP_MS)
@@ -127,11 +170,21 @@ class NotificationRepository internal constructor(
      * name if the user gave one, else the name from the bridge or HA (concept 7.3).
      */
     fun items(serverId: String?): Flow<List<NotificationItem>> =
-        combine(notifications.observe(serverId), localNames(serverId), placedIds(serverId)) { rows, local, placed ->
+        combine(
+            notifications.observe(serverId),
+            localNames(serverId),
+            placedIds(serverId),
+            scheduleIds(serverId),
+        ) { rows, local, placed, existing ->
             val names = entityNames(serverId, local)
             val shared = sharedIds(serverId)
-            rows.map { it.toItem(names, shared - placed) }
+            rows.map { it.toItem(names, shared - placed, existing) }
         }
+
+    /** The ids of the cached schedules of [serverId], which a run entry can open; none for the global entries. */
+    private fun scheduleIds(serverId: String?): Flow<Set<String>> =
+        serverId?.let { id -> scheduleRows.observe(id).map { rows -> rows.map { it.scheduleId }.toSet() } }
+            ?: flowOf(emptySet())
 
     /** The local names of instance [serverId]; none for the global entries. */
     private fun localNames(serverId: String?): Flow<List<EntityAlias>> =
@@ -202,7 +255,8 @@ class NotificationRepository internal constructor(
     }
 
     /** The screen's view of a row; unknown error codes (newer app data) show as HAAC-APP-000. */
-    private fun NotificationEntity.toItem(names: Map<String, String>, free: Set<String>) = NotificationItem(
+    private fun NotificationEntity.toItem(names: Map<String, String>, free: Set<String>, schedules: Set<String>) =
+        NotificationItem(
         id = id,
         type = type,
         createdAt = createdAt,
@@ -215,7 +269,29 @@ class NotificationRepository internal constructor(
         bridgeCode = bridgeCode,
         serverId = serverId,
         unassigned = if (type == NotificationType.ADDED) decode(entityIds).filter { it in free } else emptyList(),
+        run = if (type == NotificationType.SCHEDULE_RUN) runInfo(detail, schedules) else null,
     )
+
+    /** The run behind a *schedule run* entry; a damaged or unknown [detail] reads as a failed run of no schedule. */
+    private fun runInfo(detail: String?, schedules: Set<String>): RunInfo {
+        val parsed = detail?.let {
+            try {
+                Json.decodeFromString(RunDetail.serializer(), it)
+            } catch (_: IllegalArgumentException) {
+                null
+            }
+        }
+        val result = RunResult.entries.firstOrNull { it.name == parsed?.result } ?: RunResult.FAILED
+        val id = parsed?.scheduleId
+        return RunInfo(id, result, parsed?.removed ?: false, id != null && id in schedules)
+    }
+
+    /** True for the results that show HAAC-SCH-007 (concept 19.11). */
+    private fun RunResult.incomplete() = this == RunResult.PARTIAL || this == RunResult.FAILED
+
+    /** The JSON in column `detail` of a *schedule run* entry (concept 19.11). */
+    @Serializable
+    private class RunDetail(val scheduleId: String, val result: String, val removed: Boolean)
 
     /** Time limits (concept 9.1, 17.4) and the JSON of column `entity_ids`. */
     private companion object {

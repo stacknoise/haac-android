@@ -28,7 +28,7 @@ object DemoInstance {
     /** The HA user id that owns the demo schedules. */
     const val USER_ID = "demo-user"
 
-    /** The `haac_bridge/info` of the demo: API version 1 with the features `schedules` and `entity_disable`. */
+    /** The `haac_bridge/info` of the demo: API version 1 with the features `schedules`, `schedule_runs`, `entity_disable`. */
     val info = BridgeInfo(
         bridgeVersion = "demo",
         apiVersion = 1,
@@ -36,7 +36,7 @@ object DemoInstance {
         haVersion = "demo",
         instanceId = INSTANCE_ID,
         urls = BridgeUrls(),
-        features = listOf("schedules", "entity_disable"),
+        features = listOf("schedules", "schedule_runs", "entity_disable"),
     )
 
     /** True for the server ID of the demo. */

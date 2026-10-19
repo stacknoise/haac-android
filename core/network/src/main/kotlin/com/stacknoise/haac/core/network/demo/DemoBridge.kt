@@ -85,11 +85,10 @@ class DemoBridge(private val world: DemoWorld, private val emit: (JsonObject) ->
         }
     }
 
-    /** True if the queries, the schedule commands or the deactivation answered [type]. */
+    /** True if the query, schedule, deactivation or run log handler answered [type]. */
     private fun handledElsewhere(type: String, id: Int, message: JsonObject): Boolean =
-        queries.handle(type, id, message) ||
-            scheduleCommands.handle(type, id, message) ||
-            deactivation.handle(type, id, message)
+        queries.handle(type, id, message) || scheduleCommands.handle(type, id, message) ||
+            deactivation.handle(type, id, message) || world.runLog.handle(type, id, message, emit)
 
     /** Registers the subscription, answers with an empty result and sends the states of all entities as `a`. */
     private fun subscribeEntities(id: Int) {
