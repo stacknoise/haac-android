@@ -27,8 +27,7 @@ internal class DemoRun(
  * The run log of the demo bridge (concept 19.11, 20.2). Demo schedules do not fire by themselves, so the log is
  * filled by *Run now*: it hears about every change of the schedules and records each `last_run` that is new since
  * the log was created, as a manual run. It lives in memory, so after an app restart it has a new `log_id` and the
- * app only sets its cursor. TODO(A5): record `notify` from the schedule once A3's demo rules carry the field; until
- * then every demo run is recorded with `notify = true`, so the entries of M-26 can be seen.
+ * app only sets its cursor. Each entry carries the `notify` field of its schedule at the time of the run.
  */
 internal class DemoRunLog(private val world: DemoWorld) : DemoWorldListener {
     private val logId = UUID.randomUUID().toString()
@@ -67,7 +66,7 @@ internal class DemoRunLog(private val world: DemoWorld) : DemoWorldListener {
         result = last.result,
         code = last.code,
         removed = false,
-        notify = true,
+        notify = schedule.notify,
     )
 
     /** The result of `schedules/runs`: the log id, its newest sequence number and the entries after [after]. */

@@ -29,8 +29,19 @@ class DemoRunLogTest {
         assertEquals(log.str("log_id"), runs().str("log_id"))
     }
 
+    /** Turns the notify switch of [id] on or off through `schedules/update`. */
+    private fun setNotify(id: String, notify: Boolean) {
+        val schedule = demo.ask("haac_bridge/schedules/list")["schedules"]!!.jsonArray
+            .map { it.jsonObject }.first { it.str("id") == id }
+        demo.request(
+            "haac_bridge/schedules/update",
+            """{"schedule_id":"$id","updated_at":"${schedule.str("updated_at")}","notify":$notify}""",
+        )
+    }
+
     @Test
     fun `run now writes a manual entry with the schedule name and notify`() {
+        setNotify(morning, true)
         runNow()
         val log = runs()
         assertEquals("1", log.str("last_seq"))
@@ -41,6 +52,13 @@ class DemoRunLogTest {
         assertEquals("manual", entry.str("trigger"))
         assertEquals("false", entry.str("removed"))
         assertEquals("true", entry.str("notify"))
+    }
+
+    @Test
+    fun `an entry takes notify from the schedule, which is off by default`() {
+        runNow()
+        val entry = runs()["entries"]!!.jsonArray.single().jsonObject
+        assertEquals("false", entry.str("notify"))
     }
 
     @Test
