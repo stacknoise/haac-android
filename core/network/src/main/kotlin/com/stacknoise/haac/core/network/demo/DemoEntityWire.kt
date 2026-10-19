@@ -33,8 +33,11 @@ internal object DemoEntityWire {
         entity.attributes.forEach { (key, value) -> put(key, value) }
     }
 
-    /** One entry of `haac_bridge/entities/list`; [area] is the name of the entity's area. */
-    fun descriptor(entity: DemoEntity, area: String?): JsonObject = buildJsonObject {
+    /**
+     * One entry of `haac_bridge/entities/list`; [area] is the name of the entity's area and [disabled] the user's
+     * deactivation (concept 7.5).
+     */
+    fun descriptor(entity: DemoEntity, area: String?, disabled: Boolean = false): JsonObject = buildJsonObject {
         put("entity_id", entity.entityId)
         put("domain", entity.domain)
         put("name", entity.name)
@@ -49,7 +52,7 @@ internal object DemoEntityWire {
         put("unit_of_measurement", entity.unit)
         put("state_class", entity.stateClass)
         put("display_precision", entity.displayPrecision)
-        put("disabled", false)
+        put("disabled", disabled)
     }
 
     /** The full state of an `a` event: `s`, `a`, `lc` and, if it differs, `lu` (Unix seconds). */

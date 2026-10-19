@@ -51,7 +51,10 @@ data class DemoRepeat(
     val endDate: String? = null,
 )
 
-/** A schedule of the demo user (concept 19.2); the times are ISO strings as the bridge sends them. */
+/**
+ * A schedule of the demo user (concept 19.2); the times are ISO strings as the bridge sends them. [offReason] is
+ * `entity_disabled` while it is off because the user deactivated one of its entities (concept 7.5).
+ */
 @Serializable
 data class DemoSchedule(
     val id: String,
@@ -68,15 +71,17 @@ data class DemoSchedule(
     val lastRun: DemoLastRun? = null,
     val repeat: DemoRepeat = DemoRepeat(),
     val notify: Boolean = false,
+    val offReason: String? = null,
 )
 
-/** Everything `demo-world.json` holds (concept 20.5). */
+/** Everything `demo-world.json` holds (concept 20.5); [disabled] are the entities the demo user deactivated (7.5). */
 @Serializable
 data class DemoWorldData(
     val entities: List<DemoEntity>,
     val floors: List<DemoFloor>,
     val areas: List<DemoArea>,
     val schedules: List<DemoSchedule>,
+    val disabled: List<String> = emptyList(),
 ) {
     /** The IDs the demo refers to and the data it starts with (concept 20.3). */
     @Suppress("MagicNumber") // the sample data reads best as literals

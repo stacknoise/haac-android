@@ -73,8 +73,9 @@ data class Tile(
     val guarded: Boolean get() = mode == TileMode.GUARDED
 
     /**
-     * True if a tap on the tile body does something: a withdrawn tile opens its sheet, a switch toggles. Every other
-     * tile reacts to a long press only, so it must not announce a tap action to a screen reader (concept 8.1, M-05).
+     * True if a tap on the tile body does something: a withdrawn or deactivated tile opens its sheet, a switch
+     * toggles. Every other tile reacts to a long press only, so it must not announce a tap action to a screen
+     * reader (concept 7.5, 8.1, M-05).
      */
-    val tappable: Boolean get() = withdrawn || control is EntityControl.Toggle
+    val tappable: Boolean get() = withdrawn || disabled || control is EntityControl.Toggle
 }

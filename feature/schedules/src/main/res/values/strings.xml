@@ -160,4 +160,7 @@
     <string name="schedules_once_removed">Removed automatically after it runs.</string>
     <string name="schedules_expired">No run left. Pick a new date to use it again.</string>
     <string name="schedules_next_run">NEXT RUN</string>
+    <string name="schedules_pick_deactivated">Deactivated</string>
+    <string name="schedules_blocked">Device deactivated</string>
+    <string name="schedules_blocked_hint">Activate %1$s first. Then you can switch the schedule on.</string>
 </resources>

@@ -13,7 +13,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 
 /** A schedule with the display names of its entities, in the order of the schedule (concept 7.3, 19.7). */
-data class ScheduleView(val item: ScheduleItem, val entityNames: List<String>)
+data class ScheduleView(val item: ScheduleItem, val entityNames: List<String>) {
+    /** The display names of the deactivated entities that block the schedule (concept 7.5). */
+    val blockedNames: List<String>
+        get() = item.blockedBy.map { id -> entityNames.getOrNull(item.entityIds.indexOf(id)) ?: id }
+}
 
 /** Reads the cached schedules of an instance for the screens (concept 19.7); the cache is filled by [ScheduleSync]. */
 @Singleton

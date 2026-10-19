@@ -160,4 +160,7 @@
     <string name="schedules_once_removed">Wird nach der Ausführung automatisch entfernt.</string>
     <string name="schedules_expired">Kein Lauf mehr übrig. Wähle ein neues Datum, um ihn wieder zu nutzen.</string>
     <string name="schedules_next_run">NÄCHSTER LAUF</string>
+    <string name="schedules_pick_deactivated">Deaktiviert</string>
+    <string name="schedules_blocked">Gerät deaktiviert</string>
+    <string name="schedules_blocked_hint">Aktiviere zuerst %1$s. Danach kannst du den Zeitplan einschalten.</string>
 </resources>

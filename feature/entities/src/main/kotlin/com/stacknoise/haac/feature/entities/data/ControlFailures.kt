@@ -35,8 +35,13 @@ class ControlFailures internal constructor(private val reporter: ErrorReporter, 
         if (error.code in RECHECK) recheck()
     }
 
-    /** Codes that mean the exposure may have changed (HAB-SVC-001, HAB-SVC-002, HAB-ENT-001). */
+    /** Codes that mean the exposure may have changed (HAB-SVC-001, HAB-SVC-002, HAB-ENT-001, HAB-ENT-002). */
     private companion object {
-        val RECHECK = setOf(ErrorCode.BRG_NOT_ALLOWED, ErrorCode.BRG_ACTION_NOT_AVAILABLE, ErrorCode.ENT_NOT_FOUND)
+        val RECHECK = setOf(
+            ErrorCode.BRG_NOT_ALLOWED,
+            ErrorCode.BRG_ACTION_NOT_AVAILABLE,
+            ErrorCode.ENT_NOT_FOUND,
+            ErrorCode.ENT_DISABLED,
+        )
     }
 }

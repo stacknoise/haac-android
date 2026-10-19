@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
@@ -45,6 +46,10 @@ import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.haacSwitchColors
 import com.stacknoise.haac.feature.entities.R
+import com.stacknoise.haac.feature.entities.disable.ui.DeactivatedChip
+import com.stacknoise.haac.feature.entities.disable.ui.DisabledAlpha
+import com.stacknoise.haac.feature.entities.disable.ui.DisabledRow
+import com.stacknoise.haac.feature.entities.disable.ui.LockBadge
 import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.Tile
 import com.stacknoise.haac.feature.entities.domain.TileContent
@@ -72,6 +77,8 @@ internal fun TileCard(tile: Tile, enabled: Boolean, actions: TileActions, modifi
             .background(colors.surface, shape)
             .border(1.dp, colors.outlineVariant, shape)
     }
+    // A deactivated entity cannot be switched, with or without a connection (concept 7.5).
+    val usable = enabled && !tile.disabled
     Box(
         modifier = modifier
             .clip(shape)
@@ -79,11 +86,15 @@ internal fun TileCard(tile: Tile, enabled: Boolean, actions: TileActions, modifi
             .tileGestures(tile, actions, stringResource(R.string.tile_open_menu))
             .padding(18.dp),
     ) {
-        when {
-            tile.withdrawn -> WithdrawnContent(tile)
-            tile.content is TileContent.Climate -> ClimateTile(tile, tile.content, enabled, actions)
-            else -> PlainContent(tile, on, enabled, actions)
+        val muted = Modifier.fillMaxSize().let { if (tile.disabled) it.alpha(DisabledAlpha) else it }
+        Box(modifier = muted) {
+            when {
+                tile.withdrawn -> WithdrawnContent(tile)
+                tile.content is TileContent.Climate -> ClimateTile(tile, tile.content, usable, actions)
+                else -> PlainContent(tile, on, usable, actions)
+            }
         }
+        if (tile.disabled) LockBadge(Modifier.align(Alignment.TopEnd))
     }
 }
 
@@ -116,7 +127,8 @@ private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: Til
             IconBox(tile.icon, on)
             Spacer(Modifier.weight(1f))
             if (tile.guarded) GuardShield()
-            if (tile.content is TileContent.Switch) {
+            // A deactivated tile shows its switch next to the *Deactivated* label instead (M-19).
+            if (tile.content is TileContent.Switch && !tile.disabled) {
                 // The whole tile is the touch target, so the switch need not reserve 48 dp of height (concept 8.2).
                 CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
                     Switch(
@@ -138,13 +150,16 @@ private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: Til
             TileName(tile.name, secondary = true)
         } else {
             TileName(tile.name)
-            Text(
-                stateText(tile),
-                style = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp),
-                color = if (on) HaacColors.Accent else secondaryColor(),
-                maxLines = 1,
-            )
+            if (!(tile.disabled && tile.content is TileContent.Switch)) {
+                Text(
+                    stateText(tile),
+                    style = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp),
+                    color = if (on) HaacColors.Accent else secondaryColor(),
+                    maxLines = 1,
+                )
+            }
         }
+        if (tile.disabled) DisabledRow(tile, on)
     }
 }
 

@@ -12,11 +12,13 @@ internal object DemoCodes {
     const val SVC_NOT_AVAILABLE = "HAB-SVC-002"
     const val SVC_FAILED = "HAB-SVC-003"
     const val ENT_NOT_FOUND = "HAB-ENT-001"
+    const val ENT_DISABLED = "HAB-ENT-002"
     const val SCH_INVALID = "HAB-SCH-001"
     const val SCH_NOT_FOUND = "HAB-SCH-003"
     const val SCH_CONFLICT = "HAB-SCH-004"
     const val SCH_LIMIT = "HAB-SCH-005"
     const val SCH_DATE_PAST = "HAB-SCH-009"
+    const val SCH_BLOCKED = "HAB-SCH-008"
     const val WS_INVALID_REQUEST = "HAB-WS-001"
 }
 

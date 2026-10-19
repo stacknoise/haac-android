@@ -1,6 +1,7 @@
 package com.stacknoise.haac.feature.schedules.domain
 
 import com.stacknoise.haac.core.database.schedule.ScheduleEntity
+import com.stacknoise.haac.feature.schedules.data.ScheduleView
 import java.time.LocalDate
 import java.time.LocalTime
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,6 +17,8 @@ class ScheduleItemTest {
         nextRun: Long? = null,
         paused: String? = null,
         enabled: Boolean = true,
+        blockedBy: String = "[]",
+        offReason: String? = null,
     ) = ScheduleEntity(
         serverId = "s1",
         scheduleId = "a",
@@ -39,6 +42,8 @@ class ScheduleItemTest {
         lastRunCode = "HAB-SCH-002",
         nextRun = nextRun,
         syncedAt = 10,
+        blockedBy = blockedBy,
+        offReason = offReason,
     )
 
     @Test
@@ -51,6 +56,16 @@ class ScheduleItemTest {
         assertEquals(listOf("switch.a", "switch.b"), item.entityIds)
         assertFalse(item.lastRun?.ok ?: true)
         assertFalse(item.muted)
+    }
+
+    @Test
+    fun `a deactivated entity blocks the schedule and its name is shown`() {
+        val item = row(enabled = false, blockedBy = """["switch.b"]""", offReason = "entity_disabled").toItem()
+        assertTrue(item.blocked)
+        assertEquals(listOf("switch.b"), item.blockedBy)
+        assertEquals("entity_disabled", item.offReason)
+        assertEquals(listOf("Fan"), ScheduleView(item, listOf("Lamp", "Fan")).blockedNames)
+        assertFalse(row().toItem().blocked)
     }
 
     @Test

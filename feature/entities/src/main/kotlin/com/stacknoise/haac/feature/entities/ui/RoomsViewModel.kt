@@ -125,12 +125,14 @@ class RoomsViewModel @Inject constructor(
 
     /** Tap on a switch tile or its toggle: turns it to the other state (concept 8.2). */
     fun onToggle(tile: Tile) {
+        if (tile.disabled) return
         val toggle = tile.control as? EntityControl.Toggle ?: return
         onControl(tile, toggle.flipped())
     }
 
     /** − or + of a climate tile (concept 8.4). */
     fun onStep(tile: Tile, up: Boolean) {
+        if (tile.disabled) return
         val temperature = tile.control as? EntityControl.TargetTemperature ?: return
         temperature.stepped(up)?.let { onControl(tile, it) }
     }

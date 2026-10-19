@@ -51,6 +51,8 @@ data class LastRun(val at: Long, val result: String, val code: String?) {
  * [pausedReason] is set while the server has paused the schedule; [nextRun] is empty while it is off or paused.
  * [repeat] is the date rule (concept 19.10), [notify] the opt-in for run notifications (19.11), [expired] tells that
  * a one-off or ending schedule has no run left and [nextRuns] are the next three runs the bridge computed.
+ * [blockedBy] are the entities of the schedule that the user deactivated: while there is one, the schedule cannot
+ * be switched on (concept 7.5); [offReason] is `entity_disabled` if a deactivation switched it off.
  */
 data class ScheduleItem(
     val id: String,
@@ -72,9 +74,14 @@ data class ScheduleItem(
     val notify: Boolean = false,
     val expired: Boolean = false,
     val nextRuns: List<Long> = emptyList(),
+    val blockedBy: List<String> = emptyList(),
+    val offReason: String? = null,
 ) {
     /** True while the server has paused the schedule (concept 19.6). */
     val paused: Boolean get() = pausedReason != null
+
+    /** True while an entity of the schedule is deactivated, so it cannot run or be switched on (concept 7.5). */
+    val blocked: Boolean get() = blockedBy.isNotEmpty()
 
     /** True if the schedule is off or paused, so the card is muted (design 3b). */
     val muted: Boolean get() = !enabled || paused
@@ -101,6 +108,8 @@ fun ScheduleEntity.toItem(): ScheduleItem = ScheduleItem(
     notify = notify,
     expired = expired,
     nextRuns = decodeIds(nextRuns).mapNotNull(::isoEpochMillis),
+    blockedBy = decodeIds(blockedBy),
+    offReason = offReason,
 )
 
 /** `HH:MM` as a time of day, or null if it is malformed. */

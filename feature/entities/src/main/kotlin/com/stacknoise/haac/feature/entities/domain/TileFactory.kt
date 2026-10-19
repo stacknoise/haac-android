@@ -65,6 +65,7 @@ class DefaultTileFactory @Inject constructor() : TileFactory {
             content = content,
             available = raw != null && raw !in UNAVAILABLE,
             withdrawn = entity.status == EntityStatus.WITHDRAWN,
+            mode = if (entity.disabled && entity.status == EntityStatus.ACTIVE) TileMode.DISABLED else TileMode.NORMAL,
         )
     }
 

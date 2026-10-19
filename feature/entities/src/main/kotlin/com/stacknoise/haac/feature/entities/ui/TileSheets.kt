@@ -37,6 +37,9 @@ internal sealed interface RoomSheet {
     /** The rename dialog (M-07). */
     data class Rename(val tile: Tile) : RoomSheet
 
+    /** The dialog *Deactivate?* of an active tile or the sheet of a deactivated one (concept 7.5, M-20, M-21). */
+    data class Disable(val tile: Tile) : RoomSheet
+
     /** The switch guard settings (M-28, concept 8.5). */
     data class Guard(val tile: Tile) : RoomSheet
 }
@@ -48,6 +51,7 @@ internal class SheetActions(
     val onGuard: (Tile) -> Unit,
     val onRemoveHere: (List<String>) -> Unit,
     val onRemoveEverywhere: (List<String>) -> Unit,
+    val onDisable: (Tile) -> Unit,
     val onDismiss: () -> Unit,
 )
 
@@ -55,7 +59,7 @@ internal class SheetActions(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun RoomSheetContent(sheet: RoomSheet, actions: SheetActions) {
-    if (sheet is RoomSheet.Rename || sheet is RoomSheet.Guard) return
+    if (sheet is RoomSheet.Rename || sheet is RoomSheet.Disable || sheet is RoomSheet.Guard) return
     ModalBottomSheet(onDismissRequest = actions.onDismiss) {
         Column(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
             when (sheet) {
@@ -63,6 +67,12 @@ internal fun RoomSheetContent(sheet: RoomSheet, actions: SheetActions) {
                     Heading(sheet.tile.name, sheet.tile.entityId)
                     SheetButton(R.string.tile_details) { actions.onDetails(sheet.tile) }
                     SheetButton(R.string.tile_rename) { actions.onRename(sheet.tile) }
+                    // Only what can be switched can be deactivated; a deactivated tile can always be activated.
+                    if (sheet.tile.control != null || sheet.tile.disabled) {
+                        val disabled = sheet.tile.disabled
+                        val label = if (disabled) R.string.disable_menu_activate else R.string.disable_menu_deactivate
+                        SheetButton(label) { actions.onDisable(sheet.tile) }
+                    }
                     if (sheet.tile.guardable) SheetButton(R.string.guard_menu) { actions.onGuard(sheet.tile) }
                     SheetButton(R.string.tile_remove_here) { actions.onRemoveHere(listOf(sheet.tile.entityId)) }
                 }
@@ -79,7 +89,7 @@ internal fun RoomSheetContent(sheet: RoomSheet, actions: SheetActions) {
                     val ids = sheet.tiles.map { it.entityId }
                     RemoveButtons(ids, R.string.review_remove_here, R.string.review_remove_everywhere, actions)
                 }
-                is RoomSheet.Rename, is RoomSheet.Guard -> Unit
+                is RoomSheet.Rename, is RoomSheet.Disable, is RoomSheet.Guard -> Unit
             }
         }
     }
@@ -129,3 +139,27 @@ private fun SheetButton(@StringRes text: Int, color: Color = Color.Unspecified, 
         Text(stringResource(text), color = if (color == Color.Unspecified) HaacColors.OnSurfaceVariantStrong else color)
     }
 }
+
+/** The actions of the long-press menu on [viewModel]; [onChange] opens another sheet or closes it (null). */
+internal fun sheetActions(
+    viewModel: RoomsViewModel,
+    onOpenEntity: (String) -> Unit,
+    onChange: (RoomSheet?) -> Unit,
+) = SheetActions(
+    onDetails = {
+        onChange(null)
+        onOpenEntity(it.entityId)
+    },
+    onRename = { onChange(RoomSheet.Rename(it)) },
+    onGuard = { onChange(RoomSheet.Guard(it)) },
+    onRemoveHere = {
+        viewModel.onRemoveHere(it)
+        onChange(null)
+    },
+    onRemoveEverywhere = {
+        viewModel.onRemoveEverywhere(it)
+        onChange(null)
+    },
+    onDisable = { onChange(RoomSheet.Disable(it)) },
+    onDismiss = { onChange(null) },
+)

@@ -91,7 +91,7 @@ internal fun EntityPicker(
                 ) {
                     items(shown, key = { it.entityId }) { candidate ->
                         val on = candidate.entityId in chosen
-                        PickerTile(candidate, on, enabled = on || !full) {
+                        PickerTile(candidate, on, enabled = on || (!full && !candidate.disabled)) {
                             chosen = if (on) chosen - candidate.entityId else chosen + candidate.entityId
                         }
                     }
@@ -152,22 +152,33 @@ private fun RoomChips(candidates: Candidates, room: String?, onRoom: (String?) -
 @Composable
 private fun PickerTile(candidate: Candidate, on: Boolean, enabled: Boolean, onClick: () -> Unit) {
     val shape = HaacShapes.Tile
+    // A deactivated entity cannot be added; one that is already in the schedule can still be taken out (concept 7.5).
+    val locked = candidate.disabled && !on
+    val tileColor = when {
+        on -> HaacColors.AccentTint
+        locked -> HaacColors.SurfaceMuted
+        else -> HaacColors.Surface
+    }
     Column(
         verticalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .height(160.dp)
-            .background(if (on) HaacColors.AccentTint else HaacColors.Surface, shape)
+            .background(tileColor, shape)
             .border(if (on) 1.5.dp else 1.dp, if (on) HaacColors.AccentBorder else HaacColors.Outline, shape)
             .clickable(enabled = enabled, onClick = onClick)
             .semantics { role = Role.Checkbox; selected = on }
             .padding(16.dp),
     ) {
-        CheckBadge(on)
+        if (locked) GlyphIcon(R.drawable.ic_schedules_lock, HaacColors.OnSurfaceVariant, 28.dp) else CheckBadge(on)
         Column {
             val title = MaterialTheme.typography.titleLarge
             Text(candidate.name, style = title, maxLines = 2, overflow = TextOverflow.Ellipsis)
             val rooms = candidate.rooms.joinToString(", ") { it.name }
-            val line = if (candidate.active) rooms else stringResource(R.string.schedules_pick_withdrawn)
+            val line = when {
+                locked -> stringResource(R.string.schedules_pick_deactivated)
+                candidate.active -> rooms
+                else -> stringResource(R.string.schedules_pick_withdrawn)
+            }
             if (line.isNotEmpty()) {
                 Text(
                     line,

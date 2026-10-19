@@ -63,4 +63,10 @@ class ScheduleCandidatesTest {
         val result = candidatesOf(listOf(lamp), names(), rooms, placed)
         assertEquals(listOf("Kitchen"), result.entities.single().rooms.map { it.name })
     }
+
+    @Test
+    fun `a deactivated switch is marked so the picker can lock it`() {
+        val result = candidatesOf(listOf(lamp.copy(disabled = true), fan), names(), rooms, emptyList())
+        assertEquals(listOf(false, true), result.entities.map { it.disabled })
+    }
 }
