@@ -42,6 +42,15 @@ data class DemoArea(val id: String, val name: String, val floorId: String?)
 @Serializable
 data class DemoLastRun(val at: String, val result: String, val code: String? = null)
 
+/** The date rule of a demo schedule (concept 19.10); the dates are local `YYYY-MM-DD`. */
+@Serializable
+data class DemoRepeat(
+    val freq: String = "weekly",
+    val interval: Int = 1,
+    val startDate: String? = null,
+    val endDate: String? = null,
+)
+
 /** A schedule of the demo user (concept 19.2); the times are ISO strings as the bridge sends them. */
 @Serializable
 data class DemoSchedule(
@@ -57,6 +66,8 @@ data class DemoSchedule(
     val createdAt: String,
     val updatedAt: String,
     val lastRun: DemoLastRun? = null,
+    val repeat: DemoRepeat = DemoRepeat(),
+    val notify: Boolean = false,
 )
 
 /** Everything `demo-world.json` holds (concept 20.5). */

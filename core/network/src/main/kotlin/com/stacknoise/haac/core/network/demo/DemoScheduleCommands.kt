@@ -22,6 +22,7 @@ internal class DemoScheduleCommands(
             "haac_bridge/schedules/update" -> update(id, message)
             "haac_bridge/schedules/delete" -> delete(id, message)
             "haac_bridge/schedules/run_now" -> runNow(id, message)
+            "haac_bridge/schedules/preview" -> preview(id, message)
             else -> return false
         }
         return true
@@ -80,7 +81,21 @@ internal class DemoScheduleCommands(
         if (current != null) world.setSchedules(world.snapshot().schedules.filter { it.id != current.id })
     }
 
-    /** Switches the entities of a schedule once and sets its `last_run`; the plan does not change. */
+    /** The next runs of the draft in [message]: HAB-SCH-001 for an invalid one, HAB-SCH-009 if it cannot run. */
+    private fun preview(id: Int, message: JsonObject) {
+        when (val runs = schedules.preview(message)) {
+            is DemoOutcome.Failed -> emit(DemoReplies.failure(id, runs))
+            is DemoOutcome.Ok -> {
+                val reply = buildJsonObject { put("next_runs", JsonArray(runs.value.map(::JsonPrimitive))) }
+                emit(DemoReplies.result(id, reply))
+            }
+        }
+    }
+
+    /**
+     * Switches the entities of a schedule once and sets its `last_run`; the plan does not change. A one-off schedule
+     * is removed afterwards (concept 19.10).
+     */
     private fun runNow(id: Int, message: JsonObject) {
         val snapshot = world.snapshot()
         val current = find(message)
@@ -91,7 +106,12 @@ internal class DemoScheduleCommands(
         val (run, switched) = schedules.run(current, snapshot.entities)
         emit(DemoReplies.result(id))
         world.setEntities(switched.filter { it !in snapshot.entities })
-        world.setSchedules(snapshot.schedules.map { if (it.id == run.id) run else it })
+        val remaining = if (run.repeat.freq == DemoRecurrence.ONCE) {
+            snapshot.schedules.filter { it.id != run.id }
+        } else {
+            snapshot.schedules.map { if (it.id == run.id) run else it }
+        }
+        world.setSchedules(remaining)
     }
 
     /** The schedule `schedule_id` of [message], or null. */
@@ -103,7 +123,7 @@ internal class DemoScheduleCommands(
 
     /** [schedule] as the bridge sends it, with its next run. */
     private fun descriptor(schedule: DemoSchedule): JsonObject =
-        DemoScheduleWire.descriptor(schedule, schedules.nextRun(schedule))
+        DemoScheduleWire.descriptor(schedule, schedules.planned(schedule))
 
     /** The string [key], or null. */
     private fun JsonObject.text(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull

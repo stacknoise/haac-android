@@ -16,6 +16,7 @@ internal object DemoCodes {
     const val SCH_NOT_FOUND = "HAB-SCH-003"
     const val SCH_CONFLICT = "HAB-SCH-004"
     const val SCH_LIMIT = "HAB-SCH-005"
+    const val SCH_DATE_PAST = "HAB-SCH-009"
     const val WS_INVALID_REQUEST = "HAB-WS-001"
 }
 
