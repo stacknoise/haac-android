@@ -18,8 +18,8 @@ interface HistoryChartFactory {
 
 /**
  * [HistoryChartFactory] of v1: switches, binary sensors and text sensors as a timeline; measurements as a line,
- * beyond two days from hourly statistics (beyond 31 days daily) with min/max; counters as bars per hour, beyond two days per day;
- * climate entities as current vs. target temperature with heating and cooling phases.
+ * beyond two days from hourly statistics (beyond 31 days daily) with min/max; counters as bars per hour, beyond
+ * two days per day; climate entities as current vs. target temperature with heating and cooling phases.
  */
 class DefaultHistoryChartFactory @Inject constructor() : HistoryChartFactory {
     /** States for switches, climate, text and short ranges; statistics for counters and long ranges. */

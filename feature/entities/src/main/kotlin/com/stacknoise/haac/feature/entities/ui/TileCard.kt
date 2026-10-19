@@ -50,7 +50,6 @@ import com.stacknoise.haac.feature.entities.disable.ui.DeactivatedChip
 import com.stacknoise.haac.feature.entities.disable.ui.DisabledAlpha
 import com.stacknoise.haac.feature.entities.disable.ui.DisabledRow
 import com.stacknoise.haac.feature.entities.disable.ui.LockBadge
-import com.stacknoise.haac.core.database.assignment.TileSize
 import com.stacknoise.haac.feature.entities.domain.BinaryLevel
 import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.Tile
@@ -69,10 +68,8 @@ import com.stacknoise.haac.feature.entities.guard.GuardShield
 internal fun TileCard(tile: Tile, enabled: Boolean, actions: TileActions, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val shape = HaacShapes.Tile
-    val live = tile.available && !tile.withdrawn
-    val binary = (tile.content as? TileContent.Binary)?.level?.takeIf { live }
-    val alarm = binary == BinaryLevel.ALARM
-    val on = ((tile.content as? TileContent.Switch)?.on == true && live) || binary == BinaryLevel.ACTIVE
+    val alarm = tile.litLevel() == BinaryLevel.ALARM
+    val on = tile.lit()
     val frame = when {
         tile.withdrawn -> Modifier.dashedBorder(colors.outline)
         alarm -> Modifier
@@ -162,11 +159,7 @@ private fun PlainContent(tile: Tile, on: Boolean, alarm: Boolean, enabled: Boole
                 Text(
                     stateText(tile),
                     style = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp),
-                    color = when {
-                        alarm -> HaacColors.Danger
-                        on -> HaacColors.Accent
-                        else -> secondaryColor()
-                    },
+                    color = stateColor(on, alarm),
                     maxLines = 1,
                 )
                 BinarySince(tile)
@@ -254,19 +247,6 @@ internal fun stateText(tile: Tile): String {
         is TileContent.Binary -> stringResource(content.text)
         is TileContent.Other -> content.state
     }
-}
-
-/** The line *since 14:32* or *since 2 h* of a binary sensor tile larger than 1×1 (concept 8.6). */
-@Composable
-private fun BinarySince(tile: Tile) {
-    val since = (tile.content as? TileContent.Binary)?.since
-    if (since == null || !tile.available || tile.size == TileSize.SMALL) return
-    Text(
-        stringResource(R.string.binary_since, sinceText(since)),
-        style = MaterialTheme.typography.bodySmall,
-        color = secondaryColor(),
-        maxLines = 1,
-    )
 }
 
 /** Drawable of a [TileIcon]. */
