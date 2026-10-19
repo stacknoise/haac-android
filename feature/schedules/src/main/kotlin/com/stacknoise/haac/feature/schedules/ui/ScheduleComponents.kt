@@ -108,6 +108,7 @@ internal fun ScheduleCard(
                 )
                 if (showOwner && !item.own) OwnerLine(item.ownerName)
                 if (item.paused) PausedBadge(Modifier.padding(top = 6.dp))
+                if (item.blocked) BlockedBadge(Modifier.padding(top = 6.dp))
             }
         }
         Switch(
@@ -156,6 +157,28 @@ internal fun PausedBadge(modifier: Modifier = Modifier) {
             .padding(horizontal = 8.dp, vertical = 3.dp),
     )
 }
+
+/** *Device deactivated*: the user deactivated an entity of this schedule, so it cannot be switched on (concept 7.5). */
+@Composable
+internal fun BlockedBadge(modifier: Modifier = Modifier) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .background(HaacColors.ChartYellow.copy(alpha = BlockedAlpha), RoundedCornerShape(8.dp))
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+    ) {
+        GlyphIcon(R.drawable.ic_schedules_lock, HaacColors.ChartYellow, 14.dp)
+        Text(
+            stringResource(R.string.schedules_blocked),
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+            color = HaacColors.ChartYellow,
+            modifier = Modifier.padding(start = 4.dp),
+        )
+    }
+}
+
+/** Opacity of the warning colour behind the *Device deactivated* badge. */
+private const val BlockedAlpha = 0.16f
 
 /** The banner of the schedule that runs next: accent icon, the label NEXT UP and "Name · Fri 06:45" (design 3b). */
 @Composable

@@ -10,6 +10,9 @@ import com.stacknoise.haac.core.error.database
 import com.stacknoise.haac.core.network.connection.BridgeChannel
 import com.stacknoise.haac.core.network.http.decodeOrUnexpected
 import com.stacknoise.haac.core.network.http.text
+import com.stacknoise.haac.feature.entities.disable.data.DisabledSync
+import com.stacknoise.haac.feature.entities.disable.domain.EntityDisableFeature
+import com.stacknoise.haac.feature.entities.disable.domain.withDisabledTimes
 import com.stacknoise.haac.feature.entities.domain.EntityState
 import com.stacknoise.haac.feature.entities.domain.ExposureDiff
 import com.stacknoise.haac.feature.entities.domain.SyncResult
@@ -39,7 +42,8 @@ import kotlinx.serialization.json.JsonObject
  * and diff when the revision changed, then the live states of `haac_bridge/subscribe_entities` into [LiveStates].
  * The states reach the cache (`last_state`, for the offline display) in batches every few seconds and when the
  * connection ends, not with every event. All of it runs on the default dispatcher.
- * `exposure_changed` runs the revision check again. The sync never assigns entities to rooms (9.3). Changes
+ * `exposure_changed` runs the revision check again; `disabled_changed` and the entity list update the user's
+ * deactivations (7.5). The sync never assigns entities to rooms (9.3). Changes
  * and errors go to the notification list (M-09, 17.4).
  */
 @Singleton
@@ -50,6 +54,7 @@ class EntitySync internal constructor(
     private val reporter: ErrorReporter,
     private val changes: EntityChangeReporter,
     private val live: LiveStates,
+    private val disabled: DisabledSync,
     private val dispatcher: CoroutineDispatcher,
     private val flushMs: Long,
     private val clock: () -> Long,
@@ -63,8 +68,9 @@ class EntitySync internal constructor(
         reporter: ErrorReporter,
         changes: EntityChangeReporter,
         live: LiveStates,
+        disabled: DisabledSync,
         @DefaultDispatcher dispatcher: CoroutineDispatcher,
-    ) : this(entities, json, errors, reporter, changes, live, dispatcher, FLUSH_MS, System::currentTimeMillis)
+    ) : this(entities, json, errors, reporter, changes, live, disabled, dispatcher, FLUSH_MS, System::currentTimeMillis)
 
     private val _status = MutableStateFlow(SyncStatus())
     private val rechecks = Channel<Unit>(Channel.CONFLATED)
@@ -103,10 +109,11 @@ class EntitySync internal constructor(
             rechecks.tryReceive() // A request from before this sync is answered by it.
             merge(channel.subscribe(SUBSCRIBE), rechecks.receiveAsFlow().map { Recheck }).collect { event ->
                 val changed = (event[EXPOSURE_CHANGED] as? JsonObject)?.text("revision")
-                if (event === Recheck || (changed != null && changed != revision)) {
-                    revision = syncExposure(serverId, channel)
-                } else {
-                    applyStates(serverId, event)
+                when {
+                    event === Recheck || (changed != null && changed != revision) ->
+                        revision = syncExposure(serverId, channel)
+                    DISABLED_CHANGED in event -> disabled.fromPayload(serverId, event[DISABLED_CHANGED], clock())
+                    else -> applyStates(serverId, event)
                 }
             }
         } finally {
@@ -147,14 +154,18 @@ class EntitySync internal constructor(
         if (revision == errors.database { entities.revision(serverId) }) {
             errors.database { entities.markSynced(serverId, revision, now) }
             _status.value = SyncStatus(SyncResult(), now)
+            // The deactivation is no input of the revision, so a change made elsewhere is read from the list.
+            if (EntityDisableFeature in channel.features) disabled.refresh(serverId, channel, now)
             return revision
         }
         val list = json.decodeOrUnexpected(EntityList.serializer(), channel.request(LIST))
         live.putAll(serverId, list.entities.associate { it.entityId to it.entityState() })
-        val listed = list.entities.map { it.toRow(serverId, encode(it.entityState())) }
         val cached = errors.database { entities.all(serverId) }
+        val listed = withDisabledTimes(list.entities.map { it.toRow(serverId, encode(it.entityState())) }, cached)
         val change = ExposureDiff.compute(cached, listed, now)
         errors.database { entities.applySync(serverId, change.rows, list.revision, now) }
+        val marked = list.entities.filter { it.disabled }.map { it.entityId }
+        disabled.fromList(serverId, marked, listed.mapTo(HashSet()) { it.entityId }, now)
         _status.value = SyncStatus(change.result, now)
         // On the first sync every entity is new; the list would only repeat the picker.
         if (cached.isNotEmpty()) report(serverId, change.result)
@@ -194,6 +205,7 @@ class EntitySync internal constructor(
         const val ADDED = "a"
         const val CHANGED = "c"
         const val EXPOSURE_CHANGED = "exposure_changed"
+        const val DISABLED_CHANGED = "disabled_changed"
 
         /** How often changed states are written to the cache. */
         const val FLUSH_MS = 5_000L

@@ -57,7 +57,12 @@ internal class DemoQueryCommands(
         val areas = data.areas.associate { it.id to it.name }
         return buildJsonObject {
             put("revision", DemoEntityWire.revision(data.entities))
-            put("entities", JsonArray(data.entities.map { DemoEntityWire.descriptor(it, areas[it.areaId]) }))
+            put(
+                "entities",
+                JsonArray(
+                    data.entities.map { DemoEntityWire.descriptor(it, areas[it.areaId], it.entityId in data.disabled) },
+                ),
+            )
         }
     }
 

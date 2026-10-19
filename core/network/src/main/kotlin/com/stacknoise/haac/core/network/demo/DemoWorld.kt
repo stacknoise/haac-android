@@ -17,6 +17,9 @@ interface DemoWorldListener {
 
     /** A schedule was created, changed, deleted or run. */
     fun schedulesChanged()
+
+    /** The demo user's deactivated entities are now [disabled] (concept 7.5). */
+    fun disabledChanged(disabled: List<String>) = Unit
 }
 
 /**
@@ -62,6 +65,12 @@ class DemoWorld internal constructor(
     fun setSchedules(schedules: List<DemoSchedule>) = locked {
         save(snapshot().copy(schedules = schedules))
         listeners.forEach { it.schedulesChanged() }
+    }
+
+    /** Replaces the deactivated entities, saves and tells the listeners (concept 7.5). */
+    fun setDisabled(disabled: List<String>) = locked {
+        save(snapshot().copy(disabled = disabled))
+        listeners.forEach { it.disabledChanged(disabled) }
     }
 
     /** Deletes the saved state; the next access starts with the default data (concept 20.4). */

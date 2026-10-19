@@ -67,4 +67,17 @@ class TileFactoryTest {
         assertEquals(TileContent.Climate("21.5°", "20.8°", heating = true), tile.content)
         assertTrue(tile.withdrawn)
     }
+
+    @Test
+    fun `a deactivated entity is a disabled tile, a withdrawn one stays as in 7-4`() {
+        val row = entity("switch.plug").copy(disabled = true)
+        val tile = factory.create(row, EntityState("on"), "Plug", TileSize.SMALL)
+        assertEquals(TileMode.DISABLED, tile.mode)
+        assertTrue(tile.disabled)
+        assertTrue(tile.tappable)
+        val gone = row.copy(status = EntityStatus.WITHDRAWN)
+        val withdrawn = factory.create(gone, EntityState("on"), "Plug", TileSize.SMALL)
+        assertEquals(TileMode.NORMAL, withdrawn.mode)
+        assertEquals(TileMode.NORMAL, factory.create(entity("switch.x"), EntityState("on"), "X", TileSize.SMALL).mode)
+    }
 }

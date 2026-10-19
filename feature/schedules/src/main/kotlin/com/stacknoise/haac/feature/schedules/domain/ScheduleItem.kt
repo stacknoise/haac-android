@@ -49,6 +49,8 @@ data class LastRun(val at: Long, val result: String, val code: String?) {
  * One cached schedule as the screens use it (concept 19.2, 19.7). [days] are 0 (Monday) to 6 (Sunday), [time] is set
  * for fixed times and [offsetMin] for sun events. [updatedAt] is the bridge's own text, sent back with an edit.
  * [pausedReason] is set while the server has paused the schedule; [nextRun] is empty while it is off or paused.
+ * [blockedBy] are the entities of the schedule that the user deactivated: while there is one, the schedule cannot
+ * be switched on (concept 7.5); [offReason] is `entity_disabled` if a deactivation switched it off.
  */
 data class ScheduleItem(
     val id: String,
@@ -66,9 +68,14 @@ data class ScheduleItem(
     val pausedReason: String?,
     val lastRun: LastRun?,
     val nextRun: Long?,
+    val blockedBy: List<String> = emptyList(),
+    val offReason: String? = null,
 ) {
     /** True while the server has paused the schedule (concept 19.6). */
     val paused: Boolean get() = pausedReason != null
+
+    /** True while an entity of the schedule is deactivated, so it cannot run or be switched on (concept 7.5). */
+    val blocked: Boolean get() = blockedBy.isNotEmpty()
 
     /** True if the schedule is off or paused, so the card is muted (design 3b). */
     val muted: Boolean get() = !enabled || paused
@@ -91,6 +98,8 @@ fun ScheduleEntity.toItem(): ScheduleItem = ScheduleItem(
     pausedReason = pausedReason,
     lastRun = lastRunAt?.let { LastRun(it, lastRunResult.orEmpty(), lastRunCode) },
     nextRun = nextRun,
+    blockedBy = decodeIds(blockedBy),
+    offReason = offReason,
 )
 
 /** `HH:MM` as a time of day, or null if it is malformed. */

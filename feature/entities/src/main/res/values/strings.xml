@@ -145,6 +145,30 @@
     <string name="assign_gone">These entities are no longer shared.</string>
     <string name="rooms_stale">Offline: showing the last known states. Controls work again once the connection is back.</string>
 
+    <string name="tile_deactivated">Deactivated</string>
+    <string name="disable_menu_deactivate">Deactivate</string>
+    <string name="disable_menu_activate">Activate</string>
+    <string name="disable_dialog_title">Deactivate %1$s?</string>
+    <string name="disable_dialog_text">The tile stays in all rooms but can no longer be switched.</string>
+    <plurals name="disable_dialog_schedules">
+        <item quantity="one">%1$d schedule will be switched off:</item>
+        <item quantity="other">%1$d schedules will be switched off:</item>
+    </plurals>
+    <string name="disable_dialog_scope">Applies to your account on all devices. Other users are not affected.</string>
+    <string name="disable_cancel">Cancel</string>
+    <string name="disable_confirm">Deactivate</string>
+    <string name="disable_sheet_text">You deactivated this device. It can be switched neither here nor by schedules.</string>
+    <plurals name="disable_sheet_schedules">
+        <item quantity="one">%1$d schedule will be switched on again:</item>
+        <item quantity="other">%1$d schedules will be switched on again:</item>
+    </plurals>
+    <string name="disable_activate">Activate</string>
+    <string name="disable_offline">This needs a connection to the server.</string>
+    <plurals name="disable_reactivated">
+        <item quantity="one">%1$d schedule was switched on again</item>
+        <item quantity="other">%1$d schedules were switched on again</item>
+    </plurals>
+    <string name="detail_deactivated">This device is deactivated. History and attributes stay readable, but nothing can be switched.</string>
     <!-- Switch guard (concept 8.5, M-27, M-28). -->
     <string name="guard_menu">Switch guard</string>
     <string name="guard_title">Switch guard</string>

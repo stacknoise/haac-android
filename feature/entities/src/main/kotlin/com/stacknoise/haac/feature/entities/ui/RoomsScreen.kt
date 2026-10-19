@@ -53,6 +53,9 @@ import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.feature.entities.R
+import com.stacknoise.haac.feature.entities.disable.ui.DisableFlow
+import com.stacknoise.haac.feature.entities.disable.ui.DisableViewModel
+import com.stacknoise.haac.feature.entities.disable.ui.ReactivatedSnackbar
 import com.stacknoise.haac.feature.entities.domain.RoomGroup
 import com.stacknoise.haac.feature.entities.guard.GuardConfirmDialog
 import com.stacknoise.haac.feature.entities.guard.GuardSettingsSheet
@@ -65,13 +68,18 @@ import kotlinx.coroutines.flow.Flow
  * failed service calls show a snackbar with the code.
  */
 @Composable
-fun RoomsScreen(navigation: RoomsNavigation, viewModel: RoomsViewModel = hiltViewModel()) {
+fun RoomsScreen(
+    navigation: RoomsNavigation,
+    viewModel: RoomsViewModel = hiltViewModel(),
+    disable: DisableViewModel = hiltViewModel(),
+) {
     val snackbar = remember { SnackbarHostState() }
     Box(modifier = Modifier.fillMaxSize()) {
-        RoomsContent(navigation, viewModel)
+        RoomsContent(navigation, viewModel, disable)
         SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter))
     }
     FailureSnackbar(viewModel.failed, snackbar)
+    ReactivatedSnackbar(disable, snackbar)
 }
 
 /** Shows each of the [failed] service calls as a snackbar: message and code (concept 14.1, 17.4). */
@@ -89,7 +97,11 @@ internal fun FailureSnackbar(failed: Flow<HaacException>, snackbar: SnackbarHost
 
 /** Header, chips, banner and grid of the shown room. */
 @Composable
-private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel) {
+private fun RoomsContent(
+    navigation: RoomsNavigation,
+    viewModel: RoomsViewModel,
+    disable: DisableViewModel,
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var sheet by remember { mutableStateOf<RoomSheet?>(null) }
     val groups = state.groups ?: return
@@ -116,7 +128,11 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
         } else {
             val actions = TileActions(
                 onClick = { tile ->
-                    if (tile.withdrawn) sheet = RoomSheet.Withdrawn(tile) else viewModel.onToggle(tile)
+                    when {
+                        tile.withdrawn -> sheet = RoomSheet.Withdrawn(tile)
+                        tile.disabled -> sheet = RoomSheet.Disable(tile)
+                        else -> viewModel.onToggle(tile)
+                    }
                 },
                 onLongClick = { tile ->
                     sheet = if (tile.withdrawn) RoomSheet.Withdrawn(tile) else RoomSheet.Menu(tile)
@@ -129,7 +145,7 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
         }
     }
     sheet?.let { open ->
-        Sheets(open, state.guards, viewModel, navigation.onOpenEntity, onChange = { sheet = it })
+        Sheets(open, state.guards, viewModel, disable, navigation.onOpenEntity, onChange = { sheet = it })
     }
     val prompt by viewModel.gate.prompt.collectAsStateWithLifecycle()
     prompt?.let { GuardConfirmDialog(it, onConfirm = viewModel.gate::confirm, onDismiss = viewModel.gate::dismiss) }
@@ -141,11 +157,12 @@ private fun Sheets(
     open: RoomSheet,
     guards: Map<String, SwitchGuard>,
     viewModel: RoomsViewModel,
+    disable: DisableViewModel,
     onOpenEntity: (String) -> Unit,
     onChange: (RoomSheet?) -> Unit,
 ) {
-    if (open is RoomSheet.Rename) {
-        RenameDialog(
+    when (open) {
+        is RoomSheet.Rename -> RenameDialog(
             tile = open.tile,
             onSave = { alias ->
                 viewModel.onRename(open.tile.entityId, alias)
@@ -153,37 +170,23 @@ private fun Sheets(
             },
             onDismiss = { onChange(null) },
         )
-        return
-    }
-    if (open is RoomSheet.Guard) {
-        GuardSettingsSheet(
+        is RoomSheet.Disable -> DisableFlow(
+            tile = open.tile,
+            viewModel = disable,
+            onDetails = {
+                onChange(null)
+                onOpenEntity(open.tile.entityId)
+            },
+            onClose = { onChange(null) },
+        )
+        is RoomSheet.Guard -> GuardSettingsSheet(
             name = open.tile.name,
             guard = guards[open.tile.entityId],
             onChange = { viewModel.onGuardChange(open.tile.entityId, it) },
             onDismiss = { onChange(null) },
         )
-        return
+        else -> RoomSheetContent(open, sheetActions(viewModel, onOpenEntity, onChange))
     }
-    RoomSheetContent(
-        open,
-        SheetActions(
-            onDetails = {
-                onChange(null)
-                onOpenEntity(it.entityId)
-            },
-            onRename = { onChange(RoomSheet.Rename(it)) },
-            onGuard = { onChange(RoomSheet.Guard(it)) },
-            onRemoveHere = {
-                viewModel.onRemoveHere(it)
-                onChange(null)
-            },
-            onRemoveEverywhere = {
-                viewModel.onRemoveEverywhere(it)
-                onChange(null)
-            },
-            onDismiss = { onChange(null) },
-        ),
-    )
 }
 
 /** *Home · Level* with its menu, the header actions, *Add entities* and the room name as title. */

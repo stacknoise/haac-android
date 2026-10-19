@@ -15,9 +15,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.channels.BufferOverflow.DROP_OLDEST
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -68,6 +72,7 @@ class SchedulesViewModel @Inject constructor(
     private val serverId = active.activeServerId.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     private val filter = MutableStateFlow(ScheduleFilter.ALL)
     private val failure = MutableStateFlow<ErrorCode?>(null)
+    private val blockedHints = MutableSharedFlow<String>(extraBufferCapacity = 1, onBufferOverflow = DROP_OLDEST)
 
     private val schedules: Flow<List<ScheduleView>?> = active.activeServerId.flatMapLatest { id ->
         if (id == null) flowOf(null) else repository.views(id)
@@ -80,13 +85,21 @@ class SchedulesViewModel @Inject constructor(
         SchedulesUiState(list, shown, link.first, link.second, error)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), SchedulesUiState())
 
+    /** The names of the deactivated entities that stopped an attempt to switch a schedule on (concept 7.5, M-22). */
+    val blocked: SharedFlow<String> = blockedHints.asSharedFlow()
+
     /** Chooses which schedules are listed. */
     fun onFilter(value: ScheduleFilter) {
         filter.value = value
     }
 
-    /** The switch of a card: turns [view] on or off on the server; a failure is shown and reported. */
+    /** The switch of a card: turns [view] on or off on the server; a failure is shown and reported. A schedule with a
+     * deactivated entity is not sent but explained (concept 7.5). */
     fun onToggle(view: ScheduleView, enabled: Boolean) {
+        if (enabled && view.item.blocked) {
+            blockedHints.tryEmit(view.blockedNames.joinToString(", "))
+            return
+        }
         val id = serverId.value ?: return
         viewModelScope.launch { failure.value = failures.run(id) { commands.setEnabled(id, view.item, enabled) } }
     }

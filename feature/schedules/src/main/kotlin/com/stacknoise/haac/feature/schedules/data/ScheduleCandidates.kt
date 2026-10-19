@@ -19,8 +19,17 @@ import kotlinx.coroutines.flow.combine
 /** A room of the user, for the filter chips of the picker and the room line of a tile (concept 19.7). */
 data class RoomChip(val id: String, val name: String)
 
-/** An entity a schedule can switch, with the rooms the user placed it in (concept 19.2, M-14). */
-data class Candidate(val entityId: String, val name: String, val rooms: List<RoomChip>, val active: Boolean)
+/**
+ * An entity a schedule can switch, with the rooms the user placed it in (concept 19.2, M-14). A [disabled] one is
+ * deactivated by the user and cannot be added to a schedule (concept 7.5).
+ */
+data class Candidate(
+    val entityId: String,
+    val name: String,
+    val rooms: List<RoomChip>,
+    val active: Boolean,
+    val disabled: Boolean = false,
+)
 
 /** The entities and rooms the picker shows. */
 data class Candidates(val entities: List<Candidate> = emptyList(), val rooms: List<RoomChip> = emptyList()) {
@@ -66,7 +75,8 @@ internal fun candidatesOf(
     val roomsOf = placed.groupBy({ it.entityId }, { byId[it.roomId] }).mapValues { it.value.filterNotNull() }
     val list = rows.filter { it.domain == HaDomains.SWITCH }.map {
         val active = it.status == EntityStatus.ACTIVE
-        Candidate(it.entityId, it.displayName(aliases[it.entityId]), roomsOf[it.entityId].orEmpty(), active)
+        val name = it.displayName(aliases[it.entityId])
+        Candidate(it.entityId, name, roomsOf[it.entityId].orEmpty(), active, it.disabled)
     }
     return Candidates(list.sortedBy { it.name.lowercase() }, rooms)
 }

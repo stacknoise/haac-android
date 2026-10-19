@@ -13,8 +13,13 @@ internal object DemoScheduleWire {
     /** The scope of the schedules the demo user sees: only the own ones, as every non-admin user. */
     const val SCOPE = "own"
 
-    /** One entry of `schedules/list`, `create` and `update` replies; the demo user owns every schedule. */
-    fun descriptor(schedule: DemoSchedule, nextRun: String?): JsonObject = buildJsonObject {
+    /** One entry of `schedules/list`, `create` and `update` replies; the demo user owns every schedule; [disabled]
+     * are the deactivated entities that block it (concept 7.5). */
+    fun descriptor(
+        schedule: DemoSchedule,
+        nextRun: String?,
+        disabled: List<String> = emptyList(),
+    ): JsonObject = buildJsonObject {
         put("id", schedule.id)
         put("owner", DemoInstance.USER_ID)
         put("owner_name", DemoInstance.DISPLAY_NAME)
@@ -31,8 +36,8 @@ internal object DemoScheduleWire {
         put("next_run", nextRun)
         put("repeat", weekly())
         put("notify", false)
-        put("off_reason", JsonNull)
-        put("blocked_by", JsonArray(emptyList()))
+        put("off_reason", schedule.offReason)
+        put("blocked_by", JsonArray(blockedBy(schedule, disabled).map(::JsonPrimitive)))
         put("expired", false)
         put("next_runs", JsonArray(listOfNotNull(nextRun).map(::JsonPrimitive)))
     }
