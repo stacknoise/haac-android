@@ -23,3 +23,21 @@ class TileTest {
         assertFalse(tile(TileContent.Switch(null)).tappable)
     }
 }
+
+/** The shared tile state of concept 7.5 and 8.5. */
+class TileModeTest {
+    private val base = Tile("x.y", "Name", TileIcon.SWITCH, TileSize.SMALL, TileContent.Switch(true))
+
+    @Test
+    fun `a tile is normal until a guard or a deactivation says otherwise`() {
+        assertFalse(base.disabled)
+        assertFalse(base.guarded)
+        assertTrue(base.copy(mode = TileMode.GUARDED).guarded)
+        assertTrue(base.copy(mode = TileMode.DISABLED).disabled)
+    }
+
+    @Test
+    fun `a deactivated tile is not guarded, so it opens no dialog`() {
+        assertFalse(base.copy(mode = TileMode.DISABLED).guarded)
+    }
+}

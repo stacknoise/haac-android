@@ -40,6 +40,21 @@ interface ExposedEntityDao {
         markSynced(serverId, revision, at)
     }
 
+    /** Marks [ids] of instance [id] deactivated since [at] (7.5); a time already set stays. */
+    @Query(MarkDisabledSql)
+    suspend fun markDisabled(id: String, ids: List<String>, at: Long)
+
+    /** Clears the deactivation of every entity of instance [id] except [keep]. */
+    @Query(ClearDisabledSql)
+    suspend fun clearDisabledExcept(id: String, keep: List<String>)
+
+    /** Makes [disabledIds] the deactivated entities of [serverId], the bridge's full list (concept 7.5, 11.2). */
+    @Transaction
+    suspend fun applyDisabled(serverId: String, disabledIds: List<String>, at: Long) {
+        clearDisabledExcept(serverId, disabledIds)
+        if (disabledIds.isNotEmpty()) markDisabled(serverId, disabledIds, at)
+    }
+
     /** The last known state of [entityId] as JSON, or null. */
     @Query("SELECT last_state FROM exposed_entity WHERE server_id = :serverId AND entity_id = :entityId")
     suspend fun state(serverId: String, entityId: String): String?
@@ -54,3 +69,11 @@ interface ExposedEntityDao {
         states.forEach { (entityId, state) -> setState(serverId, entityId, state) }
     }
 }
+
+/** Sets `disabled`; the time of a row that is already deactivated stays. */
+private const val MarkDisabledSql = "UPDATE exposed_entity SET disabled = 1, disabled_at = IFNULL(disabled_at, :at) " +
+    "WHERE server_id = :id AND entity_id IN (:ids)"
+
+/** Clears `disabled` of every row of the instance that is not in `keep`. */
+private const val ClearDisabledSql = "UPDATE exposed_entity SET disabled = 0, disabled_at = NULL " +
+    "WHERE server_id = :id AND entity_id NOT IN (:keep)"

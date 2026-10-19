@@ -8,6 +8,8 @@ import com.stacknoise.haac.core.database.assignment.RoomAssignment
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
 import com.stacknoise.haac.core.database.entity.ExposedEntity
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
+import com.stacknoise.haac.core.database.guard.EntityGuard
+import com.stacknoise.haac.core.database.guard.EntityGuardDao
 import com.stacknoise.haac.core.database.layout.FloorDao
 import com.stacknoise.haac.core.database.layout.FloorEntity
 import com.stacknoise.haac.core.database.layout.HomeDao
@@ -33,8 +35,9 @@ import com.stacknoise.haac.core.database.server.ServerEntity
         RoomAssignment::class,
         EntityAlias::class,
         ScheduleEntity::class,
+        EntityGuard::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 /**
@@ -71,4 +74,7 @@ abstract class HaacDatabase : RoomDatabase() {
 
     /** The `schedule` table (concept 19.7). */
     abstract fun scheduleDao(): ScheduleDao
+
+    /** The `entity_guard` table (concept 8.5). */
+    abstract fun entityGuardDao(): EntityGuardDao
 }

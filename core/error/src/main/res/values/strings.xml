@@ -28,6 +28,7 @@
     <string name="error_brg_history_unavailable">History is not available on this server.</string>
     <string name="error_ent_not_found">This device no longer exists in Home Assistant.</string>
     <string name="error_ent_action_not_supported">This device does not support this action.</string>
+    <string name="error_ent_disabled">This device is deactivated. Activate it first.</string>
     <string name="error_db_save_failed">Your changes could not be saved. Please try again.</string>
     <string name="error_lay_place_missing">This home, level or room no longer exists. Please check your places.</string>
     <string name="error_lay_name_missing">Please enter a name.</string>
@@ -38,6 +39,8 @@
     <string name="error_sch_limit">You have reached the limit of schedules. Delete one first.</string>
     <string name="error_sch_not_allowed">You are not allowed to change this schedule.</string>
     <string name="error_sch_run_incomplete">The last run could not switch every device.</string>
+    <string name="error_sch_blocked">This schedule uses a deactivated device. Activate the device first.</string>
+    <string name="error_sch_date_past">Pick a date and time in the future.</string>
     <string name="error_app_unexpected">Something went wrong.</string>
     <!-- Action buttons of ErrorAction (concept 17.4). -->
     <string name="error_action_retry">Try again</string>

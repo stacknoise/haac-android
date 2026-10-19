@@ -15,7 +15,20 @@ internal class ExposureRevision(val revision: String)
 @Serializable
 internal class EntityList(val revision: String, val entities: List<EntityDescriptor> = emptyList())
 
-/** One entity of `haac_bridge/entities/list` (concept 7.1, 11.3); sensor fields are null for other domains. */
+/**
+ * Answer of `haac_bridge/entities/set_disabled` (concept 7.5, 11.2): [disabled] is the caller's full list of
+ * deactivated entities, [schedulesChanged] the ids of the schedules switched off or on again by the change.
+ */
+@Serializable
+internal class SetDisabledReply(
+    val disabled: List<String> = emptyList(),
+    @SerialName("schedules_changed") val schedulesChanged: List<String> = emptyList(),
+)
+
+/**
+ * One entity of `haac_bridge/entities/list` (concept 7.1, 11.3); sensor fields are null for other domains.
+ * [disabled] is the caller's deactivation (7.5); bridges without the feature `entity_disable` omit it.
+ */
 @Serializable
 internal class EntityDescriptor(
     @SerialName("entity_id") val entityId: String,
@@ -32,6 +45,7 @@ internal class EntityDescriptor(
     @SerialName("unit_of_measurement") val unit: String? = null,
     @SerialName("state_class") val stateClass: String? = null,
     @SerialName("display_precision") val displayPrecision: Int? = null,
+    val disabled: Boolean = false,
 ) {
     /** The state part of the descriptor. */
     fun entityState(): EntityState =
@@ -53,6 +67,7 @@ internal class EntityDescriptor(
         area = area,
         supportedFeatures = supportedFeatures,
         lastState = lastState,
+        disabled = disabled,
     )
 
 }

@@ -49,6 +49,10 @@ interface ServerDao {
     @Query("DELETE FROM server WHERE id = :id")
     suspend fun delete(id: String)
 
+    /** Stores the cursor in the bridge's run log of instance [id] (concept 19.11). */
+    @Query("UPDATE server SET schedule_run_log_id = :logId, schedule_run_seq = :seq WHERE id = :id")
+    suspend fun setRunCursor(id: String, logId: String, seq: Long)
+
     /** Number of instances; used to pick the accent colour of a new one. */
     @Query("SELECT COUNT(*) FROM server")
     suspend fun count(): Int
