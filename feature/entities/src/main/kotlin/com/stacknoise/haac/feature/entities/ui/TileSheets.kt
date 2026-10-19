@@ -139,3 +139,27 @@ private fun SheetButton(@StringRes text: Int, color: Color = Color.Unspecified, 
         Text(stringResource(text), color = if (color == Color.Unspecified) HaacColors.OnSurfaceVariantStrong else color)
     }
 }
+
+/** The actions of the long-press menu on [viewModel]; [onChange] opens another sheet or closes it (null). */
+internal fun sheetActions(
+    viewModel: RoomsViewModel,
+    onOpenEntity: (String) -> Unit,
+    onChange: (RoomSheet?) -> Unit,
+) = SheetActions(
+    onDetails = {
+        onChange(null)
+        onOpenEntity(it.entityId)
+    },
+    onRename = { onChange(RoomSheet.Rename(it)) },
+    onGuard = { onChange(RoomSheet.Guard(it)) },
+    onRemoveHere = {
+        viewModel.onRemoveHere(it)
+        onChange(null)
+    },
+    onRemoveEverywhere = {
+        viewModel.onRemoveEverywhere(it)
+        onChange(null)
+    },
+    onDisable = { onChange(RoomSheet.Disable(it)) },
+    onDismiss = { onChange(null) },
+)

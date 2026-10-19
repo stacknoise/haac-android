@@ -61,7 +61,7 @@ internal class DemoScheduleCommands(
         val snapshot = world.snapshot()
         val current = find(message)
         val outcome = if (current == null) {
-            notFound()
+            NotFound
         } else {
             schedules.update(message, current, message.text("updated_at"), snapshot.entities).then {
                 unblocked(it.copy(offReason = if ("enabled" in message) null else current.offReason), message, snapshot)
@@ -88,11 +88,11 @@ internal class DemoScheduleCommands(
         val snapshot = world.snapshot()
         val current = find(message)
         if (current == null) {
-            emit(DemoReplies.failure(id, notFound()))
+            emit(DemoReplies.failure(id, NotFound))
             return
         }
         if (blockedBy(current, snapshot.disabled).isNotEmpty()) {
-            emit(DemoReplies.failure(id, blocked()))
+            emit(DemoReplies.failure(id, Blocked))
             return
         }
         val (run, switched) = schedules.run(current, snapshot.entities)
@@ -113,14 +113,8 @@ internal class DemoScheduleCommands(
     ): DemoOutcome<DemoSchedule> {
         val enabling = (message["enabled"] as? JsonPrimitive)?.booleanOrNull == true
         val stays = blockedBy(updated, snapshot.disabled).isNotEmpty()
-        return if (enabling && stays) blocked() else DemoOutcome.Ok(updated)
+        return if (enabling && stays) Blocked else DemoOutcome.Ok(updated)
     }
-
-    /** HAB-SCH-008: the schedule contains an entity the user deactivated (concept 7.5). */
-    private fun blocked() = DemoOutcome.Failed(DemoCodes.SCH_BLOCKED, "Activate the deactivated entity first")
-
-    /** HAB-SCH-003. */
-    private fun notFound() = DemoOutcome.Failed(DemoCodes.SCH_NOT_FOUND, "The schedule does not exist")
 
     /** [schedule] as the bridge sends it, with its next run. */
     private fun descriptor(schedule: DemoSchedule): JsonObject =
@@ -128,4 +122,13 @@ internal class DemoScheduleCommands(
 
     /** The string [key], or null. */
     private fun JsonObject.text(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull
+
+    /** Failures of the schedule commands. */
+    private companion object {
+        /** HAB-SCH-008: the schedule contains an entity the user deactivated (concept 7.5). */
+        val Blocked = DemoOutcome.Failed(DemoCodes.SCH_BLOCKED, "Activate the deactivated entity first")
+
+        /** HAB-SCH-003. */
+        val NotFound = DemoOutcome.Failed(DemoCodes.SCH_NOT_FOUND, "The schedule does not exist")
+    }
 }

@@ -118,19 +118,19 @@ class DemoBridge(private val world: DemoWorld, private val emit: (JsonObject) ->
         val entityId = message.text("entity_id")
         val service = message.text("service")
         val data = message["service_data"] as? JsonObject ?: JsonObject(emptyMap())
-        if (entityId == null || service == null || data.keys.any { it in TARGET_KEYS }) {
-            emit(DemoReplies.error(id, DemoCodes.WS_INVALID_REQUEST, "Invalid service call"))
-            return
-        }
         val entity = world.snapshot().entities.firstOrNull { it.entityId == entityId }
-        if (entity == null) {
-            emit(DemoReplies.error(id, DemoCodes.ENT_NOT_FOUND, "$entityId does not exist"))
-            return
+        when {
+            entityId == null || service == null || data.keys.any { it in TARGET_KEYS } ->
+                emit(DemoReplies.error(id, DemoCodes.WS_INVALID_REQUEST, "Invalid service call"))
+            entity == null -> emit(DemoReplies.error(id, DemoCodes.ENT_NOT_FOUND, "$entityId does not exist"))
+            entityId in world.snapshot().disabled ->
+                emit(DemoReplies.error(id, DemoCodes.ENT_DISABLED, "$entityId is deactivated"))
+            else -> performCall(id, entity, service, data)
         }
-        if (entityId in world.snapshot().disabled) {
-            emit(DemoReplies.error(id, DemoCodes.ENT_DISABLED, "$entityId is deactivated"))
-            return
-        }
+    }
+
+    /** Runs [service] on [entity] and answers message [id] with the empty result, then publishes the new state. */
+    private fun performCall(id: Int, entity: DemoEntity, service: String, data: JsonObject) {
         when (val outcome = DemoServices.call(entity, service, data, world.clock.millis())) {
             is DemoOutcome.Failed -> emit(DemoReplies.failure(id, outcome))
             is DemoOutcome.Ok -> {

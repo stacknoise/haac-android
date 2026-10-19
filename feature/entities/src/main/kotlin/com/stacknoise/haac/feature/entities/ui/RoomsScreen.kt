@@ -161,8 +161,8 @@ private fun Sheets(
     onOpenEntity: (String) -> Unit,
     onChange: (RoomSheet?) -> Unit,
 ) {
-    if (open is RoomSheet.Rename) {
-        RenameDialog(
+    when (open) {
+        is RoomSheet.Rename -> RenameDialog(
             tile = open.tile,
             onSave = { alias ->
                 viewModel.onRename(open.tile.entityId, alias)
@@ -170,51 +170,23 @@ private fun Sheets(
             },
             onDismiss = { onChange(null) },
         )
-        return
-    }
-    if (open is RoomSheet.Disable) {
-        val tile = open.tile
-        DisableFlow(
-            tile = tile,
+        is RoomSheet.Disable -> DisableFlow(
+            tile = open.tile,
             viewModel = disable,
             onDetails = {
                 onChange(null)
-                onOpenEntity(tile.entityId)
+                onOpenEntity(open.tile.entityId)
             },
             onClose = { onChange(null) },
         )
-        return
-    }
-    if (open is RoomSheet.Guard) {
-        GuardSettingsSheet(
+        is RoomSheet.Guard -> GuardSettingsSheet(
             name = open.tile.name,
             guard = guards[open.tile.entityId],
             onChange = { viewModel.onGuardChange(open.tile.entityId, it) },
             onDismiss = { onChange(null) },
         )
-        return
+        else -> RoomSheetContent(open, sheetActions(viewModel, onOpenEntity, onChange))
     }
-    RoomSheetContent(
-        open,
-        SheetActions(
-            onDetails = {
-                onChange(null)
-                onOpenEntity(it.entityId)
-            },
-            onRename = { onChange(RoomSheet.Rename(it)) },
-            onGuard = { onChange(RoomSheet.Guard(it)) },
-            onRemoveHere = {
-                viewModel.onRemoveHere(it)
-                onChange(null)
-            },
-            onRemoveEverywhere = {
-                viewModel.onRemoveEverywhere(it)
-                onChange(null)
-            },
-            onDisable = { onChange(RoomSheet.Disable(it)) },
-            onDismiss = { onChange(null) },
-        ),
-    )
 }
 
 /** *Home · Level* with its menu, the header actions, *Add entities* and the room name as title. */
