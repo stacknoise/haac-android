@@ -6,7 +6,8 @@ import androidx.room.PrimaryKey
 
 /**
  * One HA instance and HA user (table `server`, concept 12); holds no credentials. At least one of
- * [internalUrl] and [externalUrl] is set (concept 4.5).
+ * [internalUrl] and [externalUrl] is set (concept 4.5). [scheduleRunLogId] and [scheduleRunSeq] are the cursor in
+ * the bridge's run log (concept 19.11); both are null until the first run sync.
  */
 @Entity(tableName = "server")
 data class ServerEntity(
@@ -25,4 +26,6 @@ data class ServerEntity(
     @ColumnInfo(name = "exposure_revision") val exposureRevision: String? = null,
     @ColumnInfo(name = "last_sync_at") val lastSyncAt: Long? = null,
     @ColumnInfo(name = "last_active_at") val lastActiveAt: Long,
+    @ColumnInfo(name = "schedule_run_log_id") val scheduleRunLogId: String? = null,
+    @ColumnInfo(name = "schedule_run_seq") val scheduleRunSeq: Long? = null,
 )

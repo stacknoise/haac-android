@@ -6,8 +6,11 @@ import com.stacknoise.haac.core.database.assignment.EntityAlias
 import com.stacknoise.haac.core.database.assignment.EntityAliasDao
 import com.stacknoise.haac.core.database.assignment.RoomAssignment
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
+import com.stacknoise.haac.core.database.entity.EntityDisabledDao
 import com.stacknoise.haac.core.database.entity.ExposedEntity
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
+import com.stacknoise.haac.core.database.guard.EntityGuard
+import com.stacknoise.haac.core.database.guard.EntityGuardDao
 import com.stacknoise.haac.core.database.layout.FloorDao
 import com.stacknoise.haac.core.database.layout.FloorEntity
 import com.stacknoise.haac.core.database.layout.HomeDao
@@ -19,6 +22,7 @@ import com.stacknoise.haac.core.database.notification.NotificationDao
 import com.stacknoise.haac.core.database.notification.NotificationEntity
 import com.stacknoise.haac.core.database.schedule.ScheduleDao
 import com.stacknoise.haac.core.database.schedule.ScheduleEntity
+import com.stacknoise.haac.core.database.server.RunCursorDao
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.server.ServerEntity
 
@@ -33,14 +37,16 @@ import com.stacknoise.haac.core.database.server.ServerEntity
         RoomAssignment::class,
         EntityAlias::class,
         ScheduleEntity::class,
+        EntityGuard::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 /**
  * The local database (concept 12). Tables of later chapters are added with versioned migrations
  * (package `migration`); destructive migration is never enabled.
  */
+@Suppress("TooManyFunctions") // One abstract function per DAO (app review K-09).
 abstract class HaacDatabase : RoomDatabase() {
     /** The `server` table. */
     abstract fun serverDao(): ServerDao
@@ -71,4 +77,13 @@ abstract class HaacDatabase : RoomDatabase() {
 
     /** The `schedule` table (concept 19.7). */
     abstract fun scheduleDao(): ScheduleDao
+
+    /** The deactivation columns of `exposed_entity` (concept 7.5). */
+    abstract fun entityDisabledDao(): EntityDisabledDao
+
+    /** The run log cursor in `server` (concept 19.11). */
+    abstract fun runCursorDao(): RunCursorDao
+
+    /** The `entity_guard` table (concept 8.5). */
+    abstract fun entityGuardDao(): EntityGuardDao
 }

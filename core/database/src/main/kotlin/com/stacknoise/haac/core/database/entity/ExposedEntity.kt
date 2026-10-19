@@ -26,6 +26,7 @@ enum class EntityStatus {
 /**
  * Cached bridge data of one exposed entity of instance [serverId] (table `exposed_entity`, concept 7.1, 9.1,
  * 12). [lastState] is the last known state as JSON; a withdrawn entity keeps it for its inactive tile (7.4).
+ * [disabled] is the user's deactivation on the bridge since [disabledAt] (7.5); it is never changed offline.
  */
 data class ExposedEntity(
     @ColumnInfo(name = "server_id") val serverId: String,
@@ -42,4 +43,6 @@ data class ExposedEntity(
     val status: EntityStatus = EntityStatus.ACTIVE,
     @ColumnInfo(name = "withdrawn_at") val withdrawnAt: Long? = null,
     @ColumnInfo(name = "last_state") val lastState: String? = null,
+    @ColumnInfo(name = "disabled", defaultValue = "0") val disabled: Boolean = false,
+    @ColumnInfo(name = "disabled_at") val disabledAt: Long? = null,
 )

@@ -175,6 +175,12 @@ enum class ErrorCode(
         ErrorAction.NONE,
         "ServiceCallFactory rejected a control for the entity's domain or supported_features (concept 8, 17.2)",
     ),
+    ENT_DISABLED(
+        "HAAC-ENT-003",
+        R.string.error_ent_disabled,
+        ErrorAction.NONE,
+        "The entity is deactivated by the user on the bridge (HAB-ENT-002, concept 7.5)",
+    ),
     DB_SAVE_FAILED(
         "HAAC-DB-001",
         R.string.error_db_save_failed,
@@ -234,6 +240,18 @@ enum class ErrorCode(
         R.string.error_sch_run_incomplete,
         ErrorAction.NONE,
         "Last run result partial or failed (HAB-SCH-002 in last_run); shown in the detail screen only",
+    ),
+    SCH_BLOCKED(
+        "HAAC-SCH-008",
+        R.string.error_sch_blocked,
+        ErrorAction.NONE,
+        "The schedule contains a deactivated entity and cannot be switched on or run (HAB-SCH-008, concept 7.5)",
+    ),
+    SCH_DATE_PAST(
+        "HAAC-SCH-009",
+        R.string.error_sch_date_past,
+        ErrorAction.NONE,
+        "Date or time of a one-off or ending schedule is in the past or allows no run (HAB-SCH-009, concept 19.10)",
     ),
     APP_UNEXPECTED(
         "HAAC-APP-000",

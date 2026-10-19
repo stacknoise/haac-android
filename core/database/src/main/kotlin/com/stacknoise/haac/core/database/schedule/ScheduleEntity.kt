@@ -21,7 +21,9 @@ import com.stacknoise.haac.core.database.server.ServerEntity
  * Cached copy of one schedule of instance [serverId] (table `schedule`, concept 12, 19.7); filled by the schedule
  * sync and never edited offline. [days] is a bitmask with bit 0 = Monday. [updatedAt] stays the bridge's own text,
  * because an edit must send it back unchanged (19.4). [own] tells whether the user owns the schedule; foreign ones
- * exist only for admins. [entityIds] is a JSON list; times are epoch milliseconds.
+ * exist only for admins. [entityIds] is a JSON list; times are epoch milliseconds. The repeat rule ([repeatFreq],
+ * [repeatInterval], [startDate], [endDate] as `YYYY-MM-DD`), [notify], [offReason], [expired] and the JSON lists
+ * [blockedBy] and [nextRuns] (ISO times) come from concept 7.5, 19.10 and 19.11.
  */
 data class ScheduleEntity(
     @ColumnInfo(name = "server_id") val serverId: String,
@@ -46,4 +48,19 @@ data class ScheduleEntity(
     @ColumnInfo(name = "last_run_code") val lastRunCode: String? = null,
     @ColumnInfo(name = "next_run") val nextRun: Long? = null,
     @ColumnInfo(name = "synced_at") val syncedAt: Long,
-)
+    @ColumnInfo(name = "repeat_freq", defaultValue = "'weekly'") val repeatFreq: String = REPEAT_WEEKLY,
+    @ColumnInfo(name = "repeat_interval", defaultValue = "1") val repeatInterval: Int = 1,
+    @ColumnInfo(name = "start_date") val startDate: String? = null,
+    @ColumnInfo(name = "end_date") val endDate: String? = null,
+    @ColumnInfo(defaultValue = "0") val notify: Boolean = false,
+    @ColumnInfo(name = "off_reason") val offReason: String? = null,
+    @ColumnInfo(name = "blocked_by", defaultValue = "'[]'") val blockedBy: String = "[]",
+    @ColumnInfo(defaultValue = "0") val expired: Boolean = false,
+    @ColumnInfo(name = "next_runs", defaultValue = "'[]'") val nextRuns: String = "[]",
+) {
+    /** Values shared with the migration. */
+    companion object {
+        /** `repeat.freq` of a schedule without a `repeat` field (concept 19.10). */
+        const val REPEAT_WEEKLY = "weekly"
+    }
+}

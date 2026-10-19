@@ -55,7 +55,7 @@ class DefaultErrorFactory @Inject constructor() : ErrorFactory {
     override fun fromBridgeError(habCode: String): HaacException = when (val code = BRIDGE_CODES[habCode]) {
         null -> BridgeException(ErrorCode.BRG_ACTION_FAILED, bridgeCode = habCode)
         ErrorCode.AUTH_SESSION_EXPIRED, ErrorCode.AUTH_USER_BLOCKED -> AuthException(code, bridgeCode = habCode)
-        ErrorCode.ENT_NOT_FOUND -> ValidationException(code, bridgeCode = habCode)
+        ErrorCode.ENT_NOT_FOUND, ErrorCode.ENT_DISABLED -> ValidationException(code, bridgeCode = habCode)
         else -> BridgeException(code, bridgeCode = habCode)
     }
 
@@ -69,6 +69,7 @@ class DefaultErrorFactory @Inject constructor() : ErrorFactory {
             "HAB-SVC-002" to ErrorCode.BRG_ACTION_NOT_AVAILABLE,
             "HAB-SVC-003" to ErrorCode.BRG_ACTION_FAILED,
             "HAB-ENT-001" to ErrorCode.ENT_NOT_FOUND,
+            "HAB-ENT-002" to ErrorCode.ENT_DISABLED,
             "HAB-HIST-001" to ErrorCode.BRG_HISTORY_UNAVAILABLE,
             "HAB-HIST-002" to ErrorCode.BRG_HISTORY_UNAVAILABLE,
             "HAB-SCH-001" to ErrorCode.SCH_INVALID,
@@ -77,6 +78,8 @@ class DefaultErrorFactory @Inject constructor() : ErrorFactory {
             "HAB-SCH-005" to ErrorCode.SCH_LIMIT,
             "HAB-SCH-006" to ErrorCode.SCH_NOT_ALLOWED,
             "HAB-SCH-007" to ErrorCode.BRG_ACTION_FAILED,
+            "HAB-SCH-008" to ErrorCode.SCH_BLOCKED,
+            "HAB-SCH-009" to ErrorCode.SCH_DATE_PAST,
             "HAB-WS-001" to ErrorCode.BRG_ACTION_FAILED,
             "HAB-INT-000" to ErrorCode.BRG_ACTION_FAILED,
         )

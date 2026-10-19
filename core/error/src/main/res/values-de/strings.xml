@@ -28,6 +28,7 @@
     <string name="error_brg_history_unavailable">Der Verlauf ist auf diesem Server nicht verfügbar.</string>
     <string name="error_ent_not_found">Dieses Gerät gibt es in Home Assistant nicht mehr.</string>
     <string name="error_ent_action_not_supported">Dieses Gerät unterstützt diese Aktion nicht.</string>
+    <string name="error_ent_disabled">Dieses Gerät ist deaktiviert. Aktiviere es zuerst.</string>
     <string name="error_db_save_failed">Deine Änderungen konnten nicht gespeichert werden. Bitte versuche es erneut.</string>
     <string name="error_lay_place_missing">Dieses Zuhause, diese Ebene oder dieser Raum gibt es nicht mehr. Bitte prüfe deine Orte.</string>
     <string name="error_lay_name_missing">Bitte gib einen Namen ein.</string>
@@ -38,6 +39,8 @@
     <string name="error_sch_limit">Du hast die Höchstzahl an Zeitplänen erreicht. Lösche zuerst einen.</string>
     <string name="error_sch_not_allowed">Du darfst diesen Zeitplan nicht ändern.</string>
     <string name="error_sch_run_incomplete">Beim letzten Lauf konnten nicht alle Geräte geschaltet werden.</string>
+    <string name="error_sch_blocked">Dieser Zeitplan nutzt ein deaktiviertes Gerät. Aktiviere zuerst das Gerät.</string>
+    <string name="error_sch_date_past">Wähle ein Datum und eine Uhrzeit in der Zukunft.</string>
     <string name="error_app_unexpected">Etwas ist schiefgelaufen.</string>
     <!-- Action buttons of ErrorAction (concept 17.4). -->
     <string name="error_action_retry">Erneut versuchen</string>

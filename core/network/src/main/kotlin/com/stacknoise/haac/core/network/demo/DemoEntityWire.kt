@@ -49,6 +49,7 @@ internal object DemoEntityWire {
         put("unit_of_measurement", entity.unit)
         put("state_class", entity.stateClass)
         put("display_precision", entity.displayPrecision)
+        put("disabled", false)
     }
 
     /** The full state of an `a` event: `s`, `a`, `lc` and, if it differs, `lu` (Unix seconds). */

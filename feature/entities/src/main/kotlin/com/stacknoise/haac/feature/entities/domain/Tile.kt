@@ -15,6 +15,17 @@ enum class TileIcon {
     CLIMATE,
 }
 
+/**
+ * How an active tile may be used, shared by tile, list arrange mode and detail screen (concept 7.5, 8.5):
+ * [NORMAL] switches as usual, [GUARDED] asks for a confirmation first (switch guard), [DISABLED] cannot be switched
+ * by the user's own choice. A deactivated entity that also has a guard is [DISABLED]: no dialog appears for it.
+ */
+enum class TileMode {
+    NORMAL,
+    GUARDED,
+    DISABLED,
+}
+
 /** What a tile shows, by kind (M-05); built only by [TileFactory]. */
 sealed interface TileContent {
     /** A switch: [on] is null while its state is not known. */
@@ -37,7 +48,8 @@ sealed interface TileContent {
  * One tile of a room (concept 7.2, 7.4, M-05, M-08). [name] includes the local alias, [defaultName] is the name
  * without it (7.3). [available] is false while HA reports `unavailable` or `unknown`; [withdrawn] entities are
  * no longer shared and show as inactive tiles with their last state. [control] is null for tiles without one
- * and for unavailable or withdrawn entities (concept 8, 14.1).
+ * and for unavailable or withdrawn entities (concept 8, 14.1). [mode] tells whether the user deactivated or guarded
+ * the entity (7.5, 8.5).
  */
 data class Tile(
     val entityId: String,
@@ -49,9 +61,16 @@ data class Tile(
     val withdrawn: Boolean = false,
     val defaultName: String = name,
     val control: EntityControl? = null,
+    val mode: TileMode = TileMode.NORMAL,
 ) {
     /** True if HA reports a usable state and the entity is still shared; only then controls work. */
     val active: Boolean get() = available && !withdrawn
+
+    /** True if the user deactivated the entity: its state is shown, but it cannot be switched (concept 7.5). */
+    val disabled: Boolean get() = mode == TileMode.DISABLED
+
+    /** True if a tap that switches needs the confirmation dialog first (concept 8.5). */
+    val guarded: Boolean get() = mode == TileMode.GUARDED
 
     /**
      * True if a tap on the tile body does something: a withdrawn tile opens its sheet, a switch toggles. Every other

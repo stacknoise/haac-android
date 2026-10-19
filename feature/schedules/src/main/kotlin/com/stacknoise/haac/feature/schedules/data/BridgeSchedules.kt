@@ -35,6 +35,18 @@ internal class WhenDescriptor(
     @SerialName("offset_min") val offsetMin: Int? = null,
 )
 
+/**
+ * The date rule of a schedule (concept 19.10): [freq] is `once`, `daily`, `weekly`, `monthly` or `yearly`; the dates
+ * are local `YYYY-MM-DD`. A missing rule means weekly with interval 1, as in bridges before it existed.
+ */
+@Serializable
+internal class RepeatDescriptor(
+    val freq: String = ScheduleEntity.REPEAT_WEEKLY,
+    val interval: Int = 1,
+    @SerialName("start_date") val startDate: String? = null,
+    @SerialName("end_date") val endDate: String? = null,
+)
+
 /** A pause the system set (concept 19.6). */
 @Serializable
 internal class PausedDescriptor(val reason: String, val at: String)
@@ -60,6 +72,12 @@ internal class ScheduleDescriptor(
     val paused: PausedDescriptor? = null,
     @SerialName("last_run") val lastRun: LastRunDescriptor? = null,
     @SerialName("next_run") val nextRun: String? = null,
+    val repeat: RepeatDescriptor? = null,
+    val notify: Boolean = false,
+    @SerialName("off_reason") val offReason: String? = null,
+    @SerialName("blocked_by") val blockedBy: List<String> = emptyList(),
+    val expired: Boolean = false,
+    @SerialName("next_runs") val nextRuns: List<String> = emptyList(),
 ) {
     /** The cache row of instance [serverId]; without [own] the schedule is the caller's if the [scope] is `own`. */
     fun toRow(serverId: String, scope: String, syncedAt: Long): ScheduleEntity = ScheduleEntity(
@@ -85,8 +103,49 @@ internal class ScheduleDescriptor(
         lastRunCode = lastRun?.code,
         nextRun = isoEpochMillis(nextRun),
         syncedAt = syncedAt,
+        repeatFreq = repeat?.freq ?: ScheduleEntity.REPEAT_WEEKLY,
+        repeatInterval = repeat?.interval ?: 1,
+        startDate = repeat?.startDate,
+        endDate = repeat?.endDate,
+        notify = notify,
+        offReason = offReason,
+        blockedBy = Json.encodeToString(ENTITY_IDS, blockedBy),
+        expired = expired,
+        nextRuns = Json.encodeToString(ENTITY_IDS, nextRuns),
     )
 }
+
+/** Answer of `haac_bridge/schedules/preview` (concept 19.10): up to three planned runs of a draft, ISO times. */
+@Serializable
+internal class SchedulePreview(@SerialName("next_runs") val nextRuns: List<String> = emptyList())
+
+/**
+ * Answer of `haac_bridge/schedules/runs` (concept 19.11): the run log with its [logId] (new for an empty store),
+ * its newest sequence number [lastSeq] and the caller's entries after the cursor.
+ */
+@Serializable
+internal class ScheduleRuns(
+    @SerialName("log_id") val logId: String,
+    @SerialName("last_seq") val lastSeq: Long,
+    val entries: List<RunEntry> = emptyList(),
+)
+
+/**
+ * One run of an own schedule (concept 19.11): [result] is `ok`, `partial`, `failed` or `missed`, [trigger] `plan` or
+ * `manual`; [removed] tells that the run deleted a one-off or ending schedule and [notify] was its setting then.
+ */
+@Serializable
+internal class RunEntry(
+    val seq: Long,
+    @SerialName("schedule_id") val scheduleId: String,
+    val name: String,
+    val at: String,
+    val result: String,
+    val code: String? = null,
+    val trigger: String = "plan",
+    val removed: Boolean = false,
+    val notify: Boolean = false,
+)
 
 /** The JSON list of entity ids of column `entity_ids`. */
 private val ENTITY_IDS = ListSerializer(String.serializer())

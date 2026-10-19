@@ -29,6 +29,18 @@ internal object DemoScheduleWire {
         put("paused", JsonNull)
         put("last_run", schedule.lastRun?.let(::lastRun) ?: JsonNull)
         put("next_run", nextRun)
+        put("repeat", weekly())
+        put("notify", false)
+        put("off_reason", JsonNull)
+        put("blocked_by", JsonArray(emptyList()))
+        put("expired", false)
+        put("next_runs", JsonArray(listOfNotNull(nextRun).map(::JsonPrimitive)))
+    }
+
+    /** The date rule of the schedules the demo knows so far: weekly, every week (concept 19.10). */
+    private fun weekly(): JsonObject = buildJsonObject {
+        put("freq", "weekly")
+        put("interval", 1)
     }
 
     /** SHA-256 over `id`, `updated_at` and `last_run.at` of the schedules and the scope, as stable as the data. */
