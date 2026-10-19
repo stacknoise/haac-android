@@ -1,6 +1,7 @@
 package com.stacknoise.haac.core.network.demo
 
 import com.stacknoise.haac.core.common.entity.HaDomains
+import com.stacknoise.haac.core.network.http.text
 import java.time.LocalDate
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -123,8 +124,6 @@ internal object DemoScheduleRules {
         else -> null
     }
 
-    /** The string [key], or null. */
-    private fun JsonObject.text(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull
 
     /** The strings of the array [key] (anything else in it reads as an empty string), or null without the array. */
     private fun JsonObject.texts(key: String): List<String>? =
