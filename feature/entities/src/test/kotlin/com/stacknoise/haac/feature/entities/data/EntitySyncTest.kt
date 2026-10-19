@@ -1,6 +1,7 @@
 package com.stacknoise.haac.feature.entities.data
 
 import com.stacknoise.haac.core.database.entity.EntityStatus
+import com.stacknoise.haac.core.database.entity.EntityDisabledDao
 import com.stacknoise.haac.core.database.entity.ExposedEntity
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.error.DefaultErrorFactory
@@ -12,6 +13,7 @@ import com.stacknoise.haac.core.network.connection.BridgeConnection
 import com.stacknoise.haac.core.network.demo.DemoWorld
 import com.stacknoise.haac.core.network.demo.demoConnection
 import com.stacknoise.haac.core.network.demo.demoWorld
+import com.stacknoise.haac.feature.entities.disable.data.DisabledSync
 import com.stacknoise.haac.feature.entities.domain.ControlRequest
 import com.stacknoise.haac.feature.entities.domain.DefaultServiceCallFactory
 import com.stacknoise.haac.feature.entities.domain.EntityState
@@ -49,6 +51,7 @@ class EntitySyncTest {
     /** The bridge side: [revision] and [listed] answer the commands, [events] feed the subscription. */
     private inner class FakeChannel : BridgeChannel {
         override var isOpen = true
+        override var features: Set<String> = emptySet()
         var revision = "r1"
         var listed = listOf(descriptor("switch.a", "on"), descriptor("sensor.b", "21"))
         var failure: HaacException? = null
@@ -105,6 +108,18 @@ class EntitySyncTest {
     private val live = LiveStates()
     private val reportedErrors = mutableListOf<ErrorCode>()
     private val reportedChanges = mutableListOf<Pair<List<String>, List<String>>>()
+    private val disabledDao = object : EntityDisabledDao {
+        override suspend fun markDisabled(id: String, ids: List<String>, at: Long) {
+            ids.forEach { id ->
+                cache.computeIfPresent(id) { _, row -> row.copy(disabled = true, disabledAt = row.disabledAt ?: at) }
+            }
+        }
+
+        override suspend fun clearDisabledExcept(id: String, keep: List<String>) {
+            cache.keys.filter { it !in keep }
+                .forEach { cache.computeIfPresent(it) { _, row -> row.copy(disabled = false, disabledAt = null) } }
+        }
+    }
     private val sync = EntitySync(
         dao,
         json,
@@ -112,6 +127,7 @@ class EntitySyncTest {
         { error, _ -> reportedErrors += error.code },
         { _, added, removed -> reportedChanges += added to removed },
         live,
+        DisabledSync(dao, disabledDao, json, DefaultErrorFactory()),
         testDispatcher,
         FLUSH_MS,
     ) { now }
@@ -119,9 +135,9 @@ class EntitySyncTest {
 
     private fun parse(text: String): JsonElement = json.parseToJsonElement(text)
 
-    private fun descriptor(id: String, state: String, name: String = id) =
+    private fun descriptor(id: String, state: String, name: String = id, disabled: Boolean = false) =
         """{"entity_id":"$id","domain":"${id.substringBefore('.')}","name":"$name","state":"$state",""" +
-            """"attributes":{},"last_changed":"2026-09-26T07:12:03+00:00"}"""
+            """"attributes":{},"disabled":$disabled,"last_changed":"2026-09-26T07:12:03+00:00"}"""
 
     /** The live state, as the tiles see it. */
     private fun stateOf(id: String): EntityState? = live.current("s1", id)
@@ -146,6 +162,55 @@ class EntitySyncTest {
         assertEquals(EntityState("on", lastChanged = 1790406723000, lastUpdated = 1790406723000), stateOf("switch.a"))
         assertEquals(stateOf("switch.a"), cachedStateOf("switch.a"))
     }
+
+    @Test
+    fun `the first sync caches the deactivation of the list with its time`() = runTest(testDispatcher) {
+        channel.listed = listOf(descriptor("switch.a", "on", disabled = true), descriptor("sensor.b", "21"))
+        follow()
+        assertEquals(true, cache["switch.a"]?.disabled)
+        assertEquals(100L, cache["switch.a"]?.disabledAt)
+        assertEquals(false, cache["sensor.b"]?.disabled)
+    }
+
+    @Test
+    fun `a changed revision keeps the time of a deactivation that was already cached`() = runTest(testDispatcher) {
+        channel.listed = listOf(descriptor("switch.a", "on", disabled = true), descriptor("sensor.b", "21"))
+        follow()
+        now = 500L
+        channel.revision = "r2"
+        channel.listed = listOf(
+            descriptor("switch.a", "on", name = "Lamp", disabled = true),
+            descriptor("sensor.b", "21"),
+        )
+        channel.push("""{"exposure_changed":{"revision":"r2"}}""")
+        runCurrent()
+        assertEquals("Lamp", cache["switch.a"]?.haName)
+        assertEquals(100L, cache["switch.a"]?.disabledAt)
+    }
+
+    @Test
+    fun `disabled_changed replaces the deactivated entities`() = runTest(testDispatcher) {
+        follow()
+        channel.push("""{"disabled_changed":{"disabled":["sensor.b"]}}""")
+        runCurrent()
+        assertEquals(true, cache["sensor.b"]?.disabled)
+        assertEquals(false, cache["switch.a"]?.disabled)
+        channel.push("""{"disabled_changed":{"disabled":[]}}""")
+        runCurrent()
+        assertEquals(false, cache["sensor.b"]?.disabled)
+    }
+
+    @Test
+    fun `an unchanged revision still reads the list when the bridge reports entity_disable`() =
+        runTest(testDispatcher) {
+            channel.features = setOf("entity_disable")
+            follow()
+            channel.listed = listOf(descriptor("switch.a", "on", disabled = true), descriptor("sensor.b", "21"))
+            sync.recheck()
+            runCurrent()
+            assertEquals(true, cache["switch.a"]?.disabled)
+            assertEquals(2, channel.requests.count { it == "haac_bridge/entities/list" })
+        }
 
     @Test
     fun `an unchanged revision skips the entity list`() = runTest(testDispatcher) {
