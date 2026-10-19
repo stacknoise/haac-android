@@ -28,7 +28,7 @@ Product name of the app: **HA Android Client**, short form **HAAC**. The compani
 | Structure | Home → Floor → Room, Home → Room (per instance) | Sharing layouts between devices/users |
 | Storage | Local on the device | Cloud backup of the layout |
 | Entity exposure | Per HA user via YAML | Config flow / UI in HA |
-| Time-controlled actions | Schedules for switches: fixed time with weekdays, sunrise/sunset with offset; run on the server (chapter 19) | Climate actions, one-off dates, conditions, push notifications |
+| Time-controlled actions | Schedules for switches: fixed time with weekdays, sunrise/sunset with offset, one-off and repeating dates; run on the server (chapter 19) | Climate actions, conditions, push notifications |
 | Demo mode | A built-in demo instance with sample data, no server needed (chapter 20) | A hosted demo server, a guided tour |
 
 ### 1.3 Assumptions
