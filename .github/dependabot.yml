@@ -6,6 +6,9 @@ updates:
       interval: weekly
     commit-message:
       prefix: "chore(ci)"
+    groups:
+      codeql-action:
+        patterns: ["github/codeql-action", "github/codeql-action/*"]
 
   - package-ecosystem: gradle
     directory: /
