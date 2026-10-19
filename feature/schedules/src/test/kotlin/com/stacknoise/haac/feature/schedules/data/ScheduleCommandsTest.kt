@@ -200,7 +200,7 @@ class ScheduleCommandsTest {
         assertEquals("true", fields.getValue("notify").jsonPrimitive.content)
     }
 
-    private val once = draft.copy(repeat = RepeatRule(RepeatFreq.ONCE, 1, LocalDate.now().plusDays(5)))
+    private val once = evening.copy(repeat = RepeatRule(RepeatFreq.ONCE, 1, LocalDate.now().plusDays(5)))
 
     @Test
     fun `against the demo bridge a one-off schedule is cached with its date and next run`() = runTest {
