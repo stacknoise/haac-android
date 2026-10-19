@@ -27,7 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -267,7 +267,7 @@ internal fun DisableButton(disabled: Boolean, onClick: () -> Unit) {
 /** Shows "N schedules were switched on again" after an activation (M-21). */
 @Composable
 internal fun ReactivatedSnackbar(viewModel: DisableViewModel, snackbar: SnackbarHostState) {
-    val resources = LocalContext.current.resources
+    val resources = LocalResources.current
     LaunchedEffect(viewModel) {
         viewModel.reactivated.collect { count ->
             snackbar.showSnackbar(resources.getQuantityString(R.plurals.disable_reactivated, count, count))
