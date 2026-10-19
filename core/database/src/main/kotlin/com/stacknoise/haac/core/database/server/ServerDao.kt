@@ -7,7 +7,6 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 /** Access to the `server` table (concept 12). */
-@Suppress("TooManyFunctions") // A DAO has one small function per operation (app review K-09).
 @Dao
 interface ServerDao {
     /** Adds a new instance. */
@@ -49,10 +48,6 @@ interface ServerDao {
     /** Deletes instance [id]; its cache, layout, assignments and aliases follow by cascade (concept 12). */
     @Query("DELETE FROM server WHERE id = :id")
     suspend fun delete(id: String)
-
-    /** Stores the cursor in the bridge's run log of instance [id] (concept 19.11). */
-    @Query("UPDATE server SET schedule_run_log_id = :logId, schedule_run_seq = :seq WHERE id = :id")
-    suspend fun setRunCursor(id: String, logId: String, seq: Long)
 
     /** Number of instances; used to pick the accent colour of a new one. */
     @Query("SELECT COUNT(*) FROM server")

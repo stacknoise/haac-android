@@ -6,6 +6,7 @@ import com.stacknoise.haac.core.database.assignment.EntityAlias
 import com.stacknoise.haac.core.database.assignment.EntityAliasDao
 import com.stacknoise.haac.core.database.assignment.RoomAssignment
 import com.stacknoise.haac.core.database.assignment.RoomAssignmentDao
+import com.stacknoise.haac.core.database.entity.EntityDisabledDao
 import com.stacknoise.haac.core.database.entity.ExposedEntity
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
 import com.stacknoise.haac.core.database.guard.EntityGuard
@@ -21,6 +22,7 @@ import com.stacknoise.haac.core.database.notification.NotificationDao
 import com.stacknoise.haac.core.database.notification.NotificationEntity
 import com.stacknoise.haac.core.database.schedule.ScheduleDao
 import com.stacknoise.haac.core.database.schedule.ScheduleEntity
+import com.stacknoise.haac.core.database.server.RunCursorDao
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.server.ServerEntity
 
@@ -74,6 +76,12 @@ abstract class HaacDatabase : RoomDatabase() {
 
     /** The `schedule` table (concept 19.7). */
     abstract fun scheduleDao(): ScheduleDao
+
+    /** The deactivation columns of `exposed_entity` (concept 7.5). */
+    abstract fun entityDisabledDao(): EntityDisabledDao
+
+    /** The run log cursor in `server` (concept 19.11). */
+    abstract fun runCursorDao(): RunCursorDao
 
     /** The `entity_guard` table (concept 8.5). */
     abstract fun entityGuardDao(): EntityGuardDao
