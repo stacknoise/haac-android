@@ -34,7 +34,7 @@ class DemoEntityCommandsTest {
         assertEquals("1", info["api_version"]!!.jsonPrimitive.content)
         assertEquals(DemoInstance.INSTANCE_ID, info["instance_id"]!!.jsonPrimitive.content)
         val features = info["features"]!!.jsonArray.map { it.jsonPrimitive.content }
-        assertEquals(listOf("schedules", "schedule_runs", "entity_disable"), features)
+        assertEquals(listOf("schedules", "schedule_repeat", "schedule_runs", "entity_disable"), features)
     }
 
     @Test

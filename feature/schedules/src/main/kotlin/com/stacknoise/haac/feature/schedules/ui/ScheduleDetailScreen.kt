@@ -43,12 +43,14 @@ import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.feature.schedules.R
 import com.stacknoise.haac.feature.schedules.data.ScheduleView
+import com.stacknoise.haac.feature.schedules.domain.RepeatFreq
 import com.stacknoise.haac.feature.schedules.domain.WhenType
 import com.stacknoise.haac.feature.schedules.domain.nextRuns
 
 /**
- * The detail screen of one schedule (M-15, M-17, concept 19.7): the time, weekdays, what it does, the *Enabled*
- * switch, the next runs and the last run, and *Delete schedule* after a confirmation. [onClose] returns to the list.
+ * The detail screen of one schedule (M-15, M-17, M-25, concept 19.7, 19.10): the time, the date rule, what it does,
+ * the *Enabled* and *Show in notifications* switches, the next runs and the last run, and *Delete schedule* after a
+ * confirmation. [onClose] returns to the list.
  */
 @Composable
 fun ScheduleDetailScreen(
@@ -75,7 +77,8 @@ fun ScheduleDetailScreen(
             val view = state.view
             TopRow(onClose, onEdit = view?.let { { onEdit(it.item.id) } })
             when {
-                view != null -> DetailContent(view, state, viewModel::onEnabled, viewModel::onDelete)
+                view != null ->
+                    DetailContent(view, state, viewModel::onEnabled, viewModel::onNotify, viewModel::onDelete)
                 state.loaded -> HaacEmptyState(
                     painterResource(R.drawable.ic_schedules_warning),
                     stringResource(R.string.schedules_not_found),
@@ -110,6 +113,7 @@ private fun DetailContent(
     view: ScheduleView,
     state: ScheduleDetailUiState,
     onEnabled: (Boolean) -> Unit,
+    onNotify: (Boolean) -> Unit,
     onDelete: () -> Unit,
 ) {
     val item = view.item
@@ -135,13 +139,20 @@ private fun DetailContent(
                 color = HaacColors.Accent,
             )
         }
-        Text(repeatText(item.days), style = MaterialTheme.typography.titleMedium, color = HaacColors.Accent)
-        WeekdayDots(item.days, Modifier.padding(vertical = 8.dp))
+        Text(
+            repeatSummary(item.repeat, item.days),
+            style = MaterialTheme.typography.titleMedium,
+            color = HaacColors.Accent,
+        )
+        if (item.repeat.freq == RepeatFreq.WEEKLY) WeekdayDots(item.days, Modifier.padding(vertical = 8.dp))
+        if (item.repeat.once) InfoNote(R.string.schedules_once_removed)
+        if (item.expired) InfoNote(R.string.schedules_expired)
         if (!item.own) OwnerCard(item.ownerName)
         view.entityNames.forEach { name -> ActionCard(name, actionVerb(item.action)) }
         if (!item.own) LockedHint()
-        EnabledCard(item.enabled, state.editable, onEnabled)
-        NextRuns(item.let { nextRuns(it, System.currentTimeMillis()) })
+        val notify = item.notify.takeIf { state.features.runs && item.own }
+        EnabledCard(item.enabled, state.editable, onEnabled, notify, onNotify)
+        NextRuns(nextRuns(item, System.currentTimeMillis()))
         LastRunRow(item.lastRun)
         TextButton(onClick = { confirming = true }, enabled = state.editable) {
             Icon(

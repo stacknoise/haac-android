@@ -13,11 +13,13 @@ internal object DemoScheduleWire {
     /** The scope of the schedules the demo user sees: only the own ones, as every non-admin user. */
     const val SCOPE = "own"
 
-    /** One entry of `schedules/list`, `create` and `update` replies; the demo user owns every schedule; [disabled]
-     * are the deactivated entities that block it (concept 7.5). */
+    /**
+     * One entry of `schedules/list`, `create` and `update` replies; the demo user owns every schedule; [disabled] are
+     * the deactivated entities that block it (concept 7.5).
+     */
     fun descriptor(
         schedule: DemoSchedule,
-        nextRun: String?,
+        planned: Planned,
         disabled: List<String> = emptyList(),
     ): JsonObject = buildJsonObject {
         put("id", schedule.id)
@@ -33,19 +35,21 @@ internal object DemoScheduleWire {
         put("updated_at", schedule.updatedAt)
         put("paused", JsonNull)
         put("last_run", schedule.lastRun?.let(::lastRun) ?: JsonNull)
-        put("next_run", nextRun)
-        put("repeat", weekly())
-        put("notify", false)
+        put("next_run", planned.nextRun)
+        put("repeat", repeat(schedule.repeat))
+        put("notify", schedule.notify)
         put("off_reason", schedule.offReason)
         put("blocked_by", JsonArray(blockedBy(schedule, disabled).map(::JsonPrimitive)))
-        put("expired", false)
-        put("next_runs", JsonArray(listOfNotNull(nextRun).map(::JsonPrimitive)))
+        put("expired", planned.expired)
+        put("next_runs", JsonArray(planned.nextRuns.map(::JsonPrimitive)))
     }
 
-    /** The date rule of the schedules the demo knows so far: weekly, every week (concept 19.10). */
-    private fun weekly(): JsonObject = buildJsonObject {
-        put("freq", "weekly")
-        put("interval", 1)
+    /** The `repeat` object of a schedule; a one-off schedule has no interval and no end date (concept 19.10). */
+    private fun repeat(rule: DemoRepeat): JsonObject = buildJsonObject {
+        put("freq", rule.freq)
+        if (rule.freq != DemoRecurrence.ONCE) put("interval", rule.interval)
+        rule.startDate?.let { put("start_date", it) }
+        rule.endDate?.let { put("end_date", it) }
     }
 
     /** SHA-256 over `id`, `updated_at` and `last_run.at` of the schedules and the scope, as stable as the data. */

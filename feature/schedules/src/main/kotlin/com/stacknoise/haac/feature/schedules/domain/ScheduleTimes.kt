@@ -5,12 +5,19 @@ import java.time.LocalTime
 import java.time.ZoneOffset
 
 /**
- * The next [count] runs of a schedule after [now]: the bridge's own [ScheduleItem.nextRun] first, then, for a
- * fixed time, the following matching weekdays. The bridge reports only the first run and the app does not know HA's
- * time zone, so the zone offset is taken from the first run (a change of daylight saving time within these days
- * is not considered). Sun events move every day, and a schedule that is off or paused has no next run.
+ * The next [count] runs of a schedule after [now]: the runs the bridge reports in [ScheduleItem.nextRuns] (concept
+ * 19.10), or, for a bridge before the feature `schedule_repeat`, its own [ScheduleItem.nextRun] first and, for a
+ * fixed time, the following matching weekdays. The app does not know HA's time zone, so the zone offset is taken
+ * from the first run (a change of daylight saving time within these days is not considered). Sun events move every
+ * day, and a schedule that is off or paused has no next run.
  */
 fun nextRuns(item: ScheduleItem, now: Long, count: Int = NextRunCount): List<Long> {
+    val reported = item.nextRuns.filter { it > now }
+    return reported.take(count).ifEmpty { weeklyRuns(item, now, count) }
+}
+
+/** The runs of a weekly schedule computed from its first run, for a bridge that does not report them. */
+private fun weeklyRuns(item: ScheduleItem, now: Long, count: Int): List<Long> {
     val first = item.nextRun?.takeIf { it > now } ?: return emptyList()
     val time = item.time
     return if (item.whenType != WhenType.TIME || time == null || item.days.isEmpty()) {

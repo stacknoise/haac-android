@@ -28,11 +28,19 @@ class ScheduleCommands @Inject constructor(
     private val errors: ErrorFactory,
 ) {
     /** Turns [item] on or off (`enabled`) and caches the schedule the bridge answers with. */
-    suspend fun setEnabled(serverId: String, item: ScheduleItem, enabled: Boolean) {
+    suspend fun setEnabled(serverId: String, item: ScheduleItem, enabled: Boolean) =
+        setFlag(serverId, item, "enabled", enabled)
+
+    /** Turns the run notifications of [item] on or off (`notify`, concept 19.11); only its owner may. */
+    suspend fun setNotify(serverId: String, item: ScheduleItem, notify: Boolean) =
+        setFlag(serverId, item, "notify", notify)
+
+    /** Updates the boolean [field] of [item] and caches the schedule the bridge answers with. */
+    private suspend fun setFlag(serverId: String, item: ScheduleItem, field: String, value: Boolean) {
         val fields = buildJsonObject {
             put("schedule_id", item.id)
             put("updated_at", item.updatedAt)
-            put("enabled", enabled)
+            put(field, value)
         }
         cache(serverId, live.requireOpen().request(UPDATE, fields), item.own)
     }
@@ -50,17 +58,19 @@ class ScheduleCommands @Inject constructor(
      * never sends the entities (concept 19.4).
      */
     suspend fun save(serverId: String, original: ScheduleItem?, draft: ScheduleDraft) {
+        val channel = live.requireOpen()
+        val features = ScheduleFeatures.of(channel.features)
         val reply = if (original == null) {
-            live.requireOpen().request(CREATE, ScheduleFields.create(draft))
+            channel.request(CREATE, ScheduleFields.create(draft, features))
         } else {
-            val fields = ScheduleFields.changes(ScheduleDraft.of(original), draft, withEntities = original.own)
+            val fields = ScheduleFields.changes(ScheduleDraft.of(original), draft, original.own, features)
             if (fields.isEmpty()) return
             val request = buildJsonObject {
                 put("schedule_id", original.id)
                 put("updated_at", original.updatedAt)
                 fields.forEach { (key, value) -> put(key, value) }
             }
-            live.requireOpen().request(UPDATE, request)
+            channel.request(UPDATE, request)
         }
         cache(serverId, reply, own = original?.own ?: true)
     }

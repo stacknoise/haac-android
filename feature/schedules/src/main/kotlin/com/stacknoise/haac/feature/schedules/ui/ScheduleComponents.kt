@@ -84,7 +84,7 @@ internal fun ScheduleCard(
                     maxLines = 1,
                 )
                 Text(
-                    shortDays(item.days),
+                    shortRepeat(item),
                     style = MaterialTheme.typography.labelLarge.copy(fontSize = 13.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

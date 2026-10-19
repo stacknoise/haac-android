@@ -10,9 +10,12 @@ import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.core.network.demo.DemoWorld
 import com.stacknoise.haac.core.network.demo.demoConnection
 import com.stacknoise.haac.core.network.demo.demoWorld
+import com.stacknoise.haac.feature.schedules.domain.RepeatFreq
+import com.stacknoise.haac.feature.schedules.domain.RepeatRule
 import com.stacknoise.haac.feature.schedules.domain.ScheduleAction
 import com.stacknoise.haac.feature.schedules.domain.ScheduleDraft
 import com.stacknoise.haac.feature.schedules.domain.toItem
+import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +43,7 @@ class ScheduleCommandsTest {
 
     private val channel = object : BridgeChannel {
         override val isOpen = true
+        override var features: Set<String> = emptySet()
 
         override suspend fun request(type: String, fields: JsonObject): JsonElement {
             sent += type to fields
@@ -168,6 +172,67 @@ class ScheduleCommandsTest {
         val failure = runCatching { commands.save("s1", null, evening.copy(entityIds = listOf("sensor.demo_energy"))) }
             .exceptionOrNull() as HaacException
         assertEquals(ErrorCode.SCH_INVALID, failure.code)
+        assertEquals(emptyMap<String, ScheduleEntity>(), cache)
+    }
+
+    @Test
+    fun `with the repeat and run features a new schedule is sent with its rule and notify`() = runTest {
+        channel.features = setOf(ScheduleFeatures.REPEAT, ScheduleFeatures.RUNS)
+        val monthly = RepeatRule(RepeatFreq.MONTHLY, 2, LocalDate.of(2026, 10, 15))
+        commands.save("s1", null, draft.copy(repeat = monthly, notify = true))
+        val fields = sent.single().second
+        assertEquals("monthly", fields.getValue("repeat").jsonObject.getValue("freq").jsonPrimitive.content)
+        assertEquals("true", fields.getValue("notify").jsonPrimitive.content)
+    }
+
+    @Test
+    fun `a bridge without the features gets neither rule nor notify`() = runTest {
+        commands.save("s1", null, draft.copy(repeat = RepeatRule(RepeatFreq.DAILY), notify = true))
+        assertEquals(setOf("name", "enabled", "when", "action", "entities"), sent.single().second.keys)
+    }
+
+    @Test
+    fun `the notification switch updates only notify and the version`() = runTest {
+        commands.setNotify("s1", cached(), notify = true)
+        val (type, fields) = sent.single()
+        assertEquals("haac_bridge/schedules/update", type)
+        assertEquals(setOf("schedule_id", "updated_at", "notify"), fields.keys)
+        assertEquals("true", fields.getValue("notify").jsonPrimitive.content)
+    }
+
+    private val once = evening.copy(repeat = RepeatRule(RepeatFreq.ONCE, 1, LocalDate.now().plusDays(5)))
+
+    @Test
+    fun `against the demo bridge a one-off schedule is cached with its date and next run`() = runTest {
+        useDemo()
+        commands.save("s1", null, once)
+        val row = cache.values.single()
+        assertEquals("once", row.repeatFreq)
+        assertEquals(once.repeat.startDate.toString(), row.startDate)
+        assertEquals(1, row.toItem().nextRuns.size)
+        assertEquals(row.nextRun, row.toItem().nextRuns.single())
+    }
+
+    @Test
+    fun `a one-off date in the past is HAAC-SCH-009 from the demo bridge`() = runTest {
+        useDemo()
+        val past = once.copy(repeat = RepeatRule(RepeatFreq.ONCE, 1, LocalDate.now().minusDays(1)))
+        val failure = runCatching { commands.save("s1", null, past) }.exceptionOrNull() as HaacException
+        assertEquals(ErrorCode.SCH_DATE_PAST, failure.code)
+        assertEquals("HAB-SCH-009", failure.bridgeCode)
+        assertEquals(emptyMap<String, ScheduleEntity>(), cache)
+    }
+
+    @Test
+    fun `the preview of the demo bridge lists the next runs of a draft without saving it`() = runTest {
+        useDemo()
+        val previews = SchedulePreviews(live, json)
+        val daily = once.copy(repeat = RepeatRule(RepeatFreq.DAILY, 2, LocalDate.now().plusDays(1)))
+        assertEquals(3, previews.nextRuns(daily).size)
+        assertEquals(1, previews.nextRuns(once).size)
+        val past = once.copy(repeat = RepeatRule(RepeatFreq.ONCE, 1, LocalDate.now().minusDays(1)))
+        val failure = runCatching { previews.nextRuns(past) }.exceptionOrNull() as HaacException
+        assertEquals(ErrorCode.SCH_DATE_PAST, failure.code)
         assertEquals(emptyMap<String, ScheduleEntity>(), cache)
     }
 }

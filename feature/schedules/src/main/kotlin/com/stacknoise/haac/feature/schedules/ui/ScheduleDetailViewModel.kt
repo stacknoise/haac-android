@@ -11,6 +11,7 @@ import com.stacknoise.haac.core.network.connection.connected
 import com.stacknoise.haac.core.network.connection.stale
 import com.stacknoise.haac.feature.schedules.data.ScheduleCommands
 import com.stacknoise.haac.feature.schedules.data.ScheduleFailures
+import com.stacknoise.haac.feature.schedules.data.ScheduleFeatures
 import com.stacknoise.haac.feature.schedules.data.ScheduleRepository
 import com.stacknoise.haac.feature.schedules.data.ScheduleView
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,6 +38,7 @@ data class ScheduleDetailUiState(
     val connected: Boolean = false,
     val stale: Boolean = false,
     val error: ErrorCode? = null,
+    val features: ScheduleFeatures = ScheduleFeatures(),
 ) {
     /** True if the schedule can be changed; a stale one never. */
     val editable: Boolean get() = connected && !stale
@@ -65,9 +67,11 @@ class ScheduleDetailViewModel @Inject constructor(
 
     private val link: Flow<Pair<Boolean, Boolean>> = combine(live.connected, live.stale) { c, s -> c to s }
 
+    private val features: Flow<ScheduleFeatures> = live.connection.map { ScheduleFeatures.of(it?.features.orEmpty()) }
+
     /** The state of the screen. */
-    val state: StateFlow<ScheduleDetailUiState> = combine(schedule, link, failure) { read, link, error ->
-        ScheduleDetailUiState(read.second, read.first, link.first, link.second, error)
+    val state: StateFlow<ScheduleDetailUiState> = combine(schedule, link, failure, features) { read, link, error, f ->
+        ScheduleDetailUiState(read.second, read.first, link.first, link.second, error, f)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), ScheduleDetailUiState())
 
     /** True once the schedule was deleted from this screen; the screen then closes. */
@@ -78,6 +82,13 @@ class ScheduleDetailViewModel @Inject constructor(
         val id = serverId.value ?: return
         val view = state.value.view ?: return
         viewModelScope.launch { failure.value = failures.run(id) { commands.setEnabled(id, view.item, enabled) } }
+    }
+
+    /** The *Show in notifications* switch (concept 19.11). */
+    fun onNotify(notify: Boolean) {
+        val id = serverId.value ?: return
+        val view = state.value.view ?: return
+        viewModelScope.launch { failure.value = failures.run(id) { commands.setNotify(id, view.item, notify) } }
     }
 
     /** *Delete schedule*, confirmed. */

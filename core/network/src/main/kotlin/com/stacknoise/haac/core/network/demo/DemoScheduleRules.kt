@@ -1,6 +1,8 @@
 package com.stacknoise.haac.core.network.demo
 
 import com.stacknoise.haac.core.common.entity.HaDomains
+import com.stacknoise.haac.core.network.http.text
+import java.time.LocalDate
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -9,7 +11,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 
 /** The schedule fields after validation (concept 19.2); [time] is set for fixed times, [offsetMin] for sun events. */
-internal class Plan(
+internal data class Plan(
     val name: String,
     val enabled: Boolean,
     val whenType: String,
@@ -18,6 +20,8 @@ internal class Plan(
     val offsetMin: Int?,
     val action: String,
     val entities: List<String>,
+    val repeat: DemoRepeat,
+    val notify: Boolean,
 )
 
 /** The validation rules of the bridge for schedules (concept 19.2), applied to the fields of create and update. */
@@ -36,26 +40,59 @@ internal object DemoScheduleRules {
      * [fields] on top of [base] (nothing for a new schedule), checked against the rules of concept 19.2; HAB-SCH-001
      * with the first problem if they do not hold. [entities] are the exposed entities.
      */
-    fun plan(fields: JsonObject, base: DemoSchedule?, entities: List<DemoEntity>): DemoOutcome<Plan> {
-        val plan = merge(fields, base)
-        val problem = nameProblem(plan) ?: triggerProblem(plan) ?: actionProblem(plan) ?: entityProblem(plan, entities)
-        return if (problem == null) DemoOutcome.Ok(plan) else DemoOutcome.Failed(DemoCodes.SCH_INVALID, problem)
+    fun plan(
+        fields: JsonObject,
+        base: DemoSchedule?,
+        entities: List<DemoEntity>,
+        today: LocalDate,
+    ): DemoOutcome<Plan> =
+        merge(fields, base, today).then { plan ->
+            val problem = nameProblem(plan) ?: triggerProblem(plan) ?: actionProblem(plan)
+                ?: entityProblem(plan, entities)
+            if (problem == null) DemoOutcome.Ok(plan) else DemoOutcome.Failed(DemoCodes.SCH_INVALID, problem)
+        }
+
+    /** Only the trigger and date rule of [fields] (`schedules/preview`), checked as in [plan]. */
+    fun trigger(fields: JsonObject, today: LocalDate): DemoOutcome<Plan> = merge(fields, null, today).then { plan ->
+        val problem = triggerProblem(plan)
+        if (problem == null) DemoOutcome.Ok(plan) else DemoOutcome.Failed(DemoCodes.SCH_INVALID, problem)
     }
 
     /** The given fields, else the value of [base]; a trigger of the other kind drops the fields of the old one. */
-    private fun merge(fields: JsonObject, base: DemoSchedule?): Plan {
+    private fun merge(fields: JsonObject, base: DemoSchedule?, today: LocalDate): DemoOutcome<Plan> {
+        val repeat = (fields["repeat"] as? JsonObject)?.let { DemoRecurrence.parse(it, today) }
+            ?: DemoOutcome.Ok(base?.repeat ?: DemoRepeat(startDate = today.toString()))
+        return repeat.then { DemoOutcome.Ok(build(fields, base, it)) }
+    }
+
+    /** The plan from the given fields on top of [base], with the date rule [repeat]. */
+    private fun build(fields: JsonObject, base: DemoSchedule?, repeat: DemoRepeat): Plan = withTrigger(
+        Plan(
+            name = fields.text("name")?.trim() ?: base?.name.orEmpty(),
+            enabled = (fields["enabled"] as? JsonPrimitive)?.booleanOrNull ?: base?.enabled ?: true,
+            whenType = "",
+            time = null,
+            days = emptyList(),
+            offsetMin = 0,
+            action = fields.text("action") ?: base?.action.orEmpty(),
+            entities = fields.texts("entities") ?: base?.entities.orEmpty(),
+            repeat = repeat,
+            notify = (fields["notify"] as? JsonPrimitive)?.booleanOrNull ?: base?.notify ?: false,
+        ),
+        fields,
+        base,
+    )
+
+    /** [plan] with the trigger from the `when` object of [fields], else from [base]; fields of the other kind drop. */
+    private fun withTrigger(plan: Plan, fields: JsonObject, base: DemoSchedule?): Plan {
         val trigger = fields["when"] as? JsonObject
         val type = trigger?.text("type") ?: base?.whenType.orEmpty()
         val fixedTime = type == "time"
-        return Plan(
-            name = fields.text("name")?.trim() ?: base?.name.orEmpty(),
-            enabled = (fields["enabled"] as? JsonPrimitive)?.booleanOrNull ?: base?.enabled ?: true,
+        return plan.copy(
             whenType = type,
             time = if (fixedTime) trigger?.text("time") ?: base?.time else null,
             days = trigger?.texts("days")?.map { it.toIntOrNull() ?: -1 } ?: base?.days.orEmpty(),
             offsetMin = if (fixedTime) null else trigger?.number("offset_min") ?: base?.offsetMin ?: 0,
-            action = fields.text("action") ?: base?.action.orEmpty(),
-            entities = fields.texts("entities") ?: base?.entities.orEmpty(),
         )
     }
 
@@ -68,7 +105,8 @@ internal object DemoScheduleRules {
         plan.whenType !in TYPES -> "Unknown trigger ${plan.whenType}"
         plan.whenType == "time" && plan.time?.let(TIME::matches) != true -> "The time needs the form HH:MM"
         plan.whenType != "time" && plan.offsetMin !in -MAX_OFFSET..MAX_OFFSET -> "The offset is at most $MAX_OFFSET"
-        plan.days.isEmpty() || plan.days.any { it !in WEEKDAYS } || plan.days.distinct() != plan.days ->
+        plan.repeat.freq == DemoRecurrence.WEEKLY && plan.days.isEmpty() -> "A weekly schedule needs weekdays"
+        plan.days.any { it !in WEEKDAYS } || plan.days.distinct() != plan.days ->
             "The weekdays need different numbers from 0 to 6"
         else -> null
     }
@@ -86,8 +124,6 @@ internal object DemoScheduleRules {
         else -> null
     }
 
-    /** The string [key], or null. */
-    private fun JsonObject.text(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull
 
     /** The strings of the array [key] (anything else in it reads as an empty string), or null without the array. */
     private fun JsonObject.texts(key: String): List<String>? =

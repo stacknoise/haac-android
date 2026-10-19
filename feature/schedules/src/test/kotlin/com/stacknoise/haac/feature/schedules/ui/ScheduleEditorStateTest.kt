@@ -1,5 +1,8 @@
 package com.stacknoise.haac.feature.schedules.ui
 
+import com.stacknoise.haac.feature.schedules.data.ScheduleFeatures
+import com.stacknoise.haac.feature.schedules.domain.RepeatFreq
+import com.stacknoise.haac.feature.schedules.domain.RepeatRule
 import com.stacknoise.haac.feature.schedules.domain.ScheduleAction
 import com.stacknoise.haac.feature.schedules.domain.ScheduleDraft
 import com.stacknoise.haac.feature.schedules.domain.ScheduleItem
@@ -66,5 +69,25 @@ class ScheduleEditorStateTest {
         assertFalse(state(mine, ScheduleDraft.of(mine), connected = false).canSave)
         val stale = state(mine, ScheduleDraft.of(mine)).copy(stale = true)
         assertFalse(stale.canSave)
+    }
+
+    @Test
+    fun `the notification switch needs the feature and the owner`() {
+        val runs = ScheduleFeatures(repeat = true, runs = true)
+        val mine = item(own = true)
+        val foreign = item(own = false)
+        assertTrue(state(mine, ScheduleDraft.of(mine)).copy(features = runs).showNotify)
+        assertTrue(state(null, ScheduleDraft()).copy(features = runs).showNotify)
+        assertFalse(state(foreign, ScheduleDraft.of(foreign)).copy(features = runs).showNotify)
+        assertFalse(state(mine, ScheduleDraft.of(mine)).showNotify)
+    }
+
+    @Test
+    fun `a draft with a weekly rule and no weekday or a one-off rule without a date cannot be saved`() {
+        val weekly = ScheduleDraft(name = "Light", entityIds = listOf("switch.a"), days = emptySet())
+        assertFalse(state(null, weekly).canSave)
+        val monthly = weekly.copy(repeat = RepeatRule(RepeatFreq.MONTHLY))
+        assertTrue(state(null, monthly).canSave)
+        assertFalse(state(null, monthly.copy(repeat = RepeatRule(RepeatFreq.ONCE))).canSave)
     }
 }

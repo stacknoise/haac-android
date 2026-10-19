@@ -110,9 +110,9 @@ internal fun PresetChips(days: Set<Int>, onDays: (Set<Int>) -> Unit) {
     }
 }
 
-/** The live summary "Every weekday at 06:45 · Lamp turns on" (design 3b). */
+/** The live summary "Every weekday at 06:45 · Lamp turns on" (design 3b), below it the [detail] "First run: …". */
 @Composable
-internal fun SummaryCard(text: String) {
+internal fun SummaryCard(text: String, detail: String? = null) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -120,13 +120,17 @@ internal fun SummaryCard(text: String) {
             .background(HaacColors.AccentTint, HaacShapes.Small)
             .padding(14.dp),
     ) {
-        GlyphIcon(R.drawable.ic_schedules_clock, HaacColors.Accent, 20.dp)
-        Text(
-            text,
-            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-            color = HaacColors.Accent,
-            modifier = Modifier.padding(start = 10.dp),
-        )
+        GlyphIcon(R.drawable.ic_schedules_repeat, HaacColors.Accent, 20.dp)
+        Column(Modifier.padding(start = 10.dp)) {
+            Text(
+                text,
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                color = HaacColors.Accent,
+            )
+            if (detail != null) {
+                Text(detail, style = MaterialTheme.typography.bodyMedium, color = HaacColors.OnSurfaceVariant)
+            }
+        }
     }
 }
 
