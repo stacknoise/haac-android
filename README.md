@@ -10,7 +10,7 @@ The official Home Assistant Companion App shows everything the signed-in user ca
 
 This limits what the app shows and controls. It is not a Home Assistant permission: someone holding a user's access token can still use Home Assistant's standard API directly. Use a dedicated non-admin user per person (see the [bridge README](https://github.com/stacknoise/haac-bridge#security-note)).
 
-**Status:** version 0.4.3, available as a signed sideload APK on GitHub Releases (not on Google Play yet). Feature complete for v1, plus schedules, a dark design and a demo mode.
+**Status:** version 0.5.0, available as a signed sideload APK on GitHub Releases (not on Google Play yet). Feature complete for v1, plus schedules, a dark design and a demo mode.
 
 - Supported entity domains in v1: switch, sensor, climate.
 - Android 9 (API 28) or newer.
@@ -69,7 +69,13 @@ The screenshots show the German interface; the app follows the system language.
 - Schedules run **on the Home Assistant server** (in HAAC Bridge), so they work with the app closed or the phone off. The app is only the editor and keeps a read-only copy; creating and editing need a connection.
 - A *Schedules* tab (shown only if the bridge supports schedules) with a *Next up* banner, an on/off switch per schedule, a detail screen with the next runs and the last run, and an editor with weekday presets and a *Run at* sheet.
 - Home Assistant administrators also see all schedules (filter *All* / *Mine*) and can change or delete a foreign schedule, but only its owner changes its entities.
-- Needs HAAC Bridge 0.2.1 or newer (0.2.2 or newer also puts the owner into the names of the schedule entities in Home Assistant).
+- Repeat a schedule daily, weekly, monthly or yearly with an interval, a start date and an optional end date, or run it once; a one-time schedule and a repeating one after its last run are removed by the bridge. The editor shows a preview of the next runs, the detail screen the upcoming ones.
+- A schedule with the *Notify* switch on adds an entry to the notification list after every run (success or failure, also when the bridge removed it after the last run).
+- Needs HAAC Bridge 0.2.1 or newer (0.2.2 or newer also puts the owner into the names of the schedule entities in Home Assistant). Repeat rules, the preview and run notifications need HAAC Bridge 0.4.0 or newer; without it these parts stay hidden.
+
+**Deactivate and protect**
+- *Deactivate* an entity (long-press menu): it is dimmed, cannot be controlled and cannot be used in new schedules; your schedules that use it are switched off and switch back on when you activate it again. The state is kept in HAAC Bridge per user (bridge 0.4.0 or newer).
+- *Switch guard* (switches only, on this phone only): turning a protected switch on or off asks for confirmation first; schedules are not affected.
 
 **History and detail**
 - Detail screen with state, readings, names, times and attributes.

@@ -58,7 +58,12 @@ Control
 Schedules
 • "Every weekday at 06:45 turn the light on": turn on, turn off or toggle, at a fixed time on chosen weekdays or at sunrise or sunset with an offset.
 • Schedules run on your Home Assistant server, so they work with the app closed or the phone off.
+• Repeat daily, weekly, monthly or yearly, or run once, with a preview of the next runs and optional notifications after each run.
 • Administrators see and manage all schedules.
+
+Control
+• Deactivate a device temporarily; its schedules pause and resume when you activate it again.
+• Switch guard: ask for confirmation before a protected switch is turned on or off.
 
 History
 • Charts for 24 hours, 7 days or a custom period for your sensors, switches and climate devices.
