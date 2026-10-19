@@ -53,6 +53,9 @@ import com.stacknoise.haac.core.common.ui.theme.haacOutlinedButtonColors
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.HaacException
 import com.stacknoise.haac.feature.entities.R
+import com.stacknoise.haac.feature.entities.disable.ui.DisableFlow
+import com.stacknoise.haac.feature.entities.disable.ui.DisableViewModel
+import com.stacknoise.haac.feature.entities.disable.ui.ReactivatedSnackbar
 import com.stacknoise.haac.feature.entities.domain.RoomGroup
 import kotlinx.coroutines.flow.Flow
 
@@ -62,13 +65,18 @@ import kotlinx.coroutines.flow.Flow
  * failed service calls show a snackbar with the code.
  */
 @Composable
-fun RoomsScreen(navigation: RoomsNavigation, viewModel: RoomsViewModel = hiltViewModel()) {
+fun RoomsScreen(
+    navigation: RoomsNavigation,
+    viewModel: RoomsViewModel = hiltViewModel(),
+    disable: DisableViewModel = hiltViewModel(),
+) {
     val snackbar = remember { SnackbarHostState() }
     Box(modifier = Modifier.fillMaxSize()) {
-        RoomsContent(navigation, viewModel)
+        RoomsContent(navigation, viewModel, disable)
         SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter))
     }
     FailureSnackbar(viewModel.failed, snackbar)
+    ReactivatedSnackbar(disable, snackbar)
 }
 
 /** Shows each of the [failed] service calls as a snackbar: message and code (concept 14.1, 17.4). */
@@ -86,7 +94,11 @@ internal fun FailureSnackbar(failed: Flow<HaacException>, snackbar: SnackbarHost
 
 /** Header, chips, banner and grid of the shown room. */
 @Composable
-private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel) {
+private fun RoomsContent(
+    navigation: RoomsNavigation,
+    viewModel: RoomsViewModel,
+    disable: DisableViewModel,
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var sheet by remember { mutableStateOf<RoomSheet?>(null) }
     val groups = state.groups ?: return
@@ -113,7 +125,11 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
         } else {
             val actions = TileActions(
                 onClick = { tile ->
-                    if (tile.withdrawn) sheet = RoomSheet.Withdrawn(tile) else viewModel.onToggle(tile)
+                    when {
+                        tile.withdrawn -> sheet = RoomSheet.Withdrawn(tile)
+                        tile.disabled -> sheet = RoomSheet.Disable(tile)
+                        else -> viewModel.onToggle(tile)
+                    }
                 },
                 onLongClick = { tile ->
                     sheet = if (tile.withdrawn) RoomSheet.Withdrawn(tile) else RoomSheet.Menu(tile)
@@ -125,7 +141,7 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
             RoomGrid(state.tiles, state.connected, actions, if (state.stale) grid.alpha(StaleAlpha) else grid)
         }
     }
-    sheet?.let { open -> Sheets(open, viewModel, navigation.onOpenEntity, onChange = { sheet = it }) }
+    sheet?.let { open -> Sheets(open, viewModel, disable, navigation.onOpenEntity, onChange = { sheet = it }) }
 }
 
 /** The open sheet or rename dialog; [onChange] switches to another one or closes it (null). */
@@ -133,6 +149,7 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
 private fun Sheets(
     open: RoomSheet,
     viewModel: RoomsViewModel,
+    disable: DisableViewModel,
     onOpenEntity: (String) -> Unit,
     onChange: (RoomSheet?) -> Unit,
 ) {
@@ -144,6 +161,19 @@ private fun Sheets(
                 onChange(null)
             },
             onDismiss = { onChange(null) },
+        )
+        return
+    }
+    if (open is RoomSheet.Disable) {
+        val tile = open.tile
+        DisableFlow(
+            tile = tile,
+            viewModel = disable,
+            onDetails = {
+                onChange(null)
+                onOpenEntity(tile.entityId)
+            },
+            onClose = { onChange(null) },
         )
         return
     }
@@ -163,6 +193,7 @@ private fun Sheets(
                 viewModel.onRemoveEverywhere(it)
                 onChange(null)
             },
+            onDisable = { onChange(RoomSheet.Disable(it)) },
             onDismiss = { onChange(null) },
         ),
     )

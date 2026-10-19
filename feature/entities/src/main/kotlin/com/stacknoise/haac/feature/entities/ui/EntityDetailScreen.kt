@@ -36,6 +36,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
 import com.stacknoise.haac.feature.entities.R
+import com.stacknoise.haac.feature.entities.disable.ui.DisableButton
+import com.stacknoise.haac.feature.entities.disable.ui.DisableFlow
+import com.stacknoise.haac.feature.entities.disable.ui.DisableViewModel
+import com.stacknoise.haac.feature.entities.disable.ui.ReactivatedSnackbar
 import com.stacknoise.haac.feature.entities.domain.ControlRequest
 import com.stacknoise.haac.feature.entities.domain.EntityDetail
 
@@ -44,10 +48,15 @@ import com.stacknoise.haac.feature.entities.domain.EntityDetail
  * controls of its domain, names and times, and every attribute. The pencil opens *Rename* (M-07).
  */
 @Composable
-fun EntityDetailScreen(onClose: () -> Unit, viewModel: EntityDetailViewModel = hiltViewModel()) {
+fun EntityDetailScreen(
+    onClose: () -> Unit,
+    viewModel: EntityDetailViewModel = hiltViewModel(),
+    disable: DisableViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var renaming by rememberSaveable { mutableStateOf(false) }
+    var disabling by rememberSaveable { mutableStateOf(false) }
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier
@@ -58,12 +67,16 @@ fun EntityDetailScreen(onClose: () -> Unit, viewModel: EntityDetailViewModel = h
             TopRow(canRename = state.detail != null, onClose = onClose, onRename = { renaming = true })
             state.error?.let { ErrorMessage(it) }
             if (state.missing) Note(stringResource(R.string.detail_missing))
-            state.detail?.let { DetailBody(it, state.connected, viewModel::onControl) }
+            state.detail?.let { DetailBody(it, state.connected, viewModel::onControl) { disabling = true } }
         }
         SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter))
     }
     FailureSnackbar(viewModel.failed, snackbar)
+    ReactivatedSnackbar(disable, snackbar)
     val detail = state.detail
+    if (disabling && detail != null) {
+        DisableFlow(tile = detail.tile, viewModel = disable, onDetails = null, onClose = { disabling = false })
+    }
     if (renaming && detail != null) {
         RenameDialog(
             tile = detail.tile,
@@ -98,6 +111,7 @@ private fun DetailBody(
     detail: EntityDetail,
     connected: Boolean,
     onControl: (ControlRequest?) -> Unit,
+    onDisable: () -> Unit,
 ) {
     val tile = detail.tile
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -116,11 +130,13 @@ private fun DetailBody(
         modifier = Modifier.padding(top = 16.dp),
     )
     if (tile.withdrawn) Note(stringResource(R.string.tile_removed_text))
+    if (tile.disabled) Note(stringResource(R.string.detail_deactivated))
     detail.readings.forEach { InfoRow(readingLabel(it.kind), modeOrValue(it.kind, it.value)) }
-    if (detail.controls.isNotEmpty()) {
+    if (detail.controls.isNotEmpty() || tile.disabled) {
         Section(R.string.detail_controls)
         if (!connected) Note(stringResource(R.string.detail_offline))
-        DetailControls(detail.controls, enabled = connected, onControl = onControl)
+        DetailControls(detail.controls, enabled = connected && !tile.disabled, onControl = onControl)
+        DisableButton(tile.disabled, onDisable)
     }
     if (!tile.withdrawn) {
         Section(R.string.history_title)

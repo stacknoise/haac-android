@@ -144,4 +144,29 @@
     <string name="assign_choose">Raum wählen</string>
     <string name="assign_gone">Diese Entitäten sind nicht mehr freigegeben.</string>
     <string name="rooms_stale">Offline: Es werden die zuletzt bekannten Zustände angezeigt. Die Steuerung funktioniert wieder, sobald die Verbindung zurück ist.</string>
+
+    <string name="tile_deactivated">Deaktiviert</string>
+    <string name="disable_menu_deactivate">Deaktivieren</string>
+    <string name="disable_menu_activate">Aktivieren</string>
+    <string name="disable_dialog_title">%1$s deaktivieren?</string>
+    <string name="disable_dialog_text">Die Kachel bleibt in allen Räumen sichtbar, lässt sich aber nicht mehr schalten.</string>
+    <plurals name="disable_dialog_schedules">
+        <item quantity="one">%1$d Zeitplan wird ausgeschaltet:</item>
+        <item quantity="other">%1$d Zeitpläne werden ausgeschaltet:</item>
+    </plurals>
+    <string name="disable_dialog_scope">Gilt für dein Konto auf allen Geräten. Andere Benutzer sind nicht betroffen.</string>
+    <string name="disable_cancel">Abbrechen</string>
+    <string name="disable_confirm">Deaktivieren</string>
+    <string name="disable_sheet_text">Du hast dieses Gerät deaktiviert. Es kann weder hier noch über Zeitpläne geschaltet werden.</string>
+    <plurals name="disable_sheet_schedules">
+        <item quantity="one">%1$d Zeitplan wird wieder eingeschaltet:</item>
+        <item quantity="other">%1$d Zeitpläne werden wieder eingeschaltet:</item>
+    </plurals>
+    <string name="disable_activate">Aktivieren</string>
+    <string name="disable_offline">Dafür brauchst du eine Verbindung zum Server.</string>
+    <plurals name="disable_reactivated">
+        <item quantity="one">%1$d Zeitplan wurde wieder eingeschaltet</item>
+        <item quantity="other">%1$d Zeitpläne wurden wieder eingeschaltet</item>
+    </plurals>
+    <string name="detail_deactivated">Dieses Gerät ist deaktiviert. Verlauf und Attribute bleiben lesbar, schalten lässt sich nichts.</string>
 </resources>

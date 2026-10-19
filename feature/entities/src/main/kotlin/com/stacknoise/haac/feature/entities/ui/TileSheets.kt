@@ -35,6 +35,9 @@ internal sealed interface RoomSheet {
 
     /** The rename dialog (M-07). */
     data class Rename(val tile: Tile) : RoomSheet
+
+    /** The dialog *Deactivate?* of an active tile or the sheet of a deactivated one (concept 7.5, M-20, M-21). */
+    data class Disable(val tile: Tile) : RoomSheet
 }
 
 /** Callbacks of the sheets; each closes the sheet. */
@@ -43,6 +46,7 @@ internal class SheetActions(
     val onRename: (Tile) -> Unit,
     val onRemoveHere: (List<String>) -> Unit,
     val onRemoveEverywhere: (List<String>) -> Unit,
+    val onDisable: (Tile) -> Unit,
     val onDismiss: () -> Unit,
 )
 
@@ -50,7 +54,7 @@ internal class SheetActions(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun RoomSheetContent(sheet: RoomSheet, actions: SheetActions) {
-    if (sheet is RoomSheet.Rename) return
+    if (sheet is RoomSheet.Rename || sheet is RoomSheet.Disable) return
     ModalBottomSheet(onDismissRequest = actions.onDismiss) {
         Column(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
             when (sheet) {
@@ -58,6 +62,12 @@ internal fun RoomSheetContent(sheet: RoomSheet, actions: SheetActions) {
                     Heading(sheet.tile.name, sheet.tile.entityId)
                     SheetButton(R.string.tile_details) { actions.onDetails(sheet.tile) }
                     SheetButton(R.string.tile_rename) { actions.onRename(sheet.tile) }
+                    // Only what can be switched can be deactivated; a deactivated tile can always be activated.
+                    if (sheet.tile.control != null || sheet.tile.disabled) {
+                        val disabled = sheet.tile.disabled
+                        val label = if (disabled) R.string.disable_menu_activate else R.string.disable_menu_deactivate
+                        SheetButton(label) { actions.onDisable(sheet.tile) }
+                    }
                     SheetButton(R.string.tile_remove_here) { actions.onRemoveHere(listOf(sheet.tile.entityId)) }
                 }
                 is RoomSheet.Withdrawn -> {
@@ -73,7 +83,7 @@ internal fun RoomSheetContent(sheet: RoomSheet, actions: SheetActions) {
                     val ids = sheet.tiles.map { it.entityId }
                     RemoveButtons(ids, R.string.review_remove_here, R.string.review_remove_everywhere, actions)
                 }
-                is RoomSheet.Rename -> Unit
+                is RoomSheet.Rename, is RoomSheet.Disable -> Unit
             }
         }
     }
