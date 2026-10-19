@@ -54,6 +54,7 @@ import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.Tile
 import com.stacknoise.haac.feature.entities.domain.TileContent
 import com.stacknoise.haac.feature.entities.domain.TileIcon
+import com.stacknoise.haac.feature.entities.guard.GuardShield
 
 
 /**
@@ -125,6 +126,7 @@ private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: Til
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
             IconBox(tile.icon, on)
             Spacer(Modifier.weight(1f))
+            if (tile.guarded) GuardShield()
             // A deactivated tile shows its switch next to the *Deactivated* label instead (M-19).
             if (tile.content is TileContent.Switch && !tile.disabled) {
                 // The whole tile is the touch target, so the switch need not reserve 48 dp of height (concept 8.2).

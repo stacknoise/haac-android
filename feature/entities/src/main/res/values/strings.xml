@@ -169,4 +169,26 @@
         <item quantity="other">%1$d schedules were switched on again</item>
     </plurals>
     <string name="detail_deactivated">This device is deactivated. History and attributes stay readable, but nothing can be switched.</string>
+    <!-- Switch guard (concept 8.5, M-27, M-28). -->
+    <string name="guard_menu">Switch guard</string>
+    <string name="guard_title">Switch guard</string>
+    <string name="guard_label">Switch guard</string>
+    <string name="guard_shield">Switch guard is on</string>
+    <string name="guard_title_on">Turn on %1$s?</string>
+    <string name="guard_title_off">Turn off %1$s?</string>
+    <string name="guard_text_on">Currently on. Flip the switch to send the command.</string>
+    <string name="guard_text_off">Currently off. Flip the switch to send the command.</string>
+    <string name="guard_text_unknown">Flip the switch to send the command.</string>
+    <string name="guard_action_on">Turn on</string>
+    <string name="guard_action_off">Turn off</string>
+    <string name="guard_sent_at_once">Is sent to Home Assistant right away</string>
+    <string name="guard_cancel">Cancel</string>
+    <string name="guard_require">Require confirmation</string>
+    <string name="guard_require_hint">A dialog appears before switching</string>
+    <string name="guard_when">When</string>
+    <string name="guard_when_on">Turn on</string>
+    <string name="guard_when_off">Turn off</string>
+    <string name="guard_when_both">Both</string>
+    <string name="guard_info">Protects against mistaken taps in this app on this device. In Home Assistant and through schedules the switch stays switchable.</string>
+    <string name="guard_done">Done</string>
 </resources>

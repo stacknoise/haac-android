@@ -169,4 +169,26 @@
         <item quantity="other">%1$d Zeitpläne wurden wieder eingeschaltet</item>
     </plurals>
     <string name="detail_deactivated">Dieses Gerät ist deaktiviert. Verlauf und Attribute bleiben lesbar, schalten lässt sich nichts.</string>
+    <!-- Schaltschutz (Konzept 8.5, M-27, M-28). -->
+    <string name="guard_menu">Schaltschutz</string>
+    <string name="guard_title">Schaltschutz</string>
+    <string name="guard_label">Schaltschutz</string>
+    <string name="guard_shield">Schaltschutz ist an</string>
+    <string name="guard_title_on">%1$s einschalten?</string>
+    <string name="guard_title_off">%1$s ausschalten?</string>
+    <string name="guard_text_on">Aktuell an. Lege den Schalter um, um den Befehl zu senden.</string>
+    <string name="guard_text_off">Aktuell aus. Lege den Schalter um, um den Befehl zu senden.</string>
+    <string name="guard_text_unknown">Lege den Schalter um, um den Befehl zu senden.</string>
+    <string name="guard_action_on">Einschalten</string>
+    <string name="guard_action_off">Ausschalten</string>
+    <string name="guard_sent_at_once">Wird sofort an Home Assistant gesendet</string>
+    <string name="guard_cancel">Abbrechen</string>
+    <string name="guard_require">Bestätigung verlangen</string>
+    <string name="guard_require_hint">Vor dem Schalten erscheint ein Dialog</string>
+    <string name="guard_when">Wann</string>
+    <string name="guard_when_on">Einschalten</string>
+    <string name="guard_when_off">Ausschalten</string>
+    <string name="guard_when_both">Beides</string>
+    <string name="guard_info">Schützt vor Fehltipps in dieser App auf diesem Gerät. In Home Assistant und über Zeitpläne bleibt das Gerät schaltbar.</string>
+    <string name="guard_done">Fertig</string>
 </resources>
