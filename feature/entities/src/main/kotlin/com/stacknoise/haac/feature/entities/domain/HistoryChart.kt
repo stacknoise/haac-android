@@ -97,9 +97,13 @@ sealed interface HistoryChart {
         override val isEmpty: Boolean get() = bars.isEmpty()
     }
 
-    /** States over time (switches, text and enum sensors). */
-    data class Timeline(override val start: Long, override val end: Long, val segments: List<Segment>) :
-        HistoryChart {
+    /** States over time (switches, text and enum sensors); [binary] names the words of a binary sensor (8.6). */
+    data class Timeline(
+        override val start: Long,
+        override val end: Long,
+        val segments: List<Segment>,
+        val binary: BinaryClass? = null,
+    ) : HistoryChart {
         override val isEmpty: Boolean get() = segments.isEmpty()
     }
 }

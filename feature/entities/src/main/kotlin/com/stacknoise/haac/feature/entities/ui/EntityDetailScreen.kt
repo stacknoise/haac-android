@@ -43,6 +43,7 @@ import com.stacknoise.haac.feature.entities.disable.ui.DisableViewModel
 import com.stacknoise.haac.feature.entities.disable.ui.ReactivatedSnackbar
 import com.stacknoise.haac.feature.entities.domain.ControlRequest
 import com.stacknoise.haac.feature.entities.domain.EntityDetail
+import com.stacknoise.haac.feature.entities.domain.TileContent
 import com.stacknoise.haac.feature.entities.guard.GuardConfirmDialog
 import com.stacknoise.haac.feature.entities.guard.GuardSettingsSheet
 import com.stacknoise.haac.feature.entities.guard.guardable
@@ -147,6 +148,7 @@ private fun DetailBody(
         style = MaterialTheme.typography.displaySmall,
         modifier = Modifier.padding(top = 16.dp),
     )
+    RawState(detail)
     if (tile.withdrawn) Note(stringResource(R.string.tile_removed_text))
     if (tile.disabled) Note(stringResource(R.string.detail_deactivated))
     detail.readings.forEach { InfoRow(readingLabel(it.kind), modeOrValue(it.kind, it.value)) }
@@ -175,6 +177,13 @@ private fun DetailBody(
     if (detail.attributes.isEmpty()) Note(stringResource(R.string.detail_no_attributes))
     detail.attributes.forEach { InfoRow(it.name, it.value, mono = true) }
     Spacer(Modifier.padding(bottom = 32.dp))
+}
+
+/** The state as HA sends it below the words of a binary sensor (concept 8.6). */
+@Composable
+private fun RawState(detail: EntityDetail) {
+    val raw = detail.state ?: return
+    if (detail.tile.content is TileContent.Binary) InfoRow(stringResource(R.string.detail_raw_state), raw, mono = true)
 }
 
 /** HA's name, the bridge's name, `entity_id` and the times of the last change and update (concept 8.1). */

@@ -3,6 +3,7 @@ package com.stacknoise.haac.feature.entities.domain
 import com.stacknoise.haac.core.database.assignment.TileSize
 import com.stacknoise.haac.core.database.entity.EntityStatus
 import com.stacknoise.haac.core.database.entity.ExposedEntity
+import com.stacknoise.haac.feature.entities.R
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -79,5 +80,41 @@ class TileFactoryTest {
         val withdrawn = factory.create(gone, EntityState("on"), "Plug", TileSize.SMALL)
         assertEquals(TileMode.NORMAL, withdrawn.mode)
         assertEquals(TileMode.NORMAL, factory.create(entity("switch.x"), EntityState("on"), "X", TileSize.SMALL).mode)
+    }
+
+    @Test
+    fun `a binary sensor shows the words of its class and lights up only while on`() {
+        val door = entity("binary_sensor.door", "door")
+        val open = factory.create(door, EntityState("on", lastChanged = 5L), "Door", TileSize.SMALL)
+        assertEquals(TileContent.Binary(R.string.binary_open, BinaryLevel.ACTIVE, 5L), open.content)
+        assertEquals(TileIcon.DOOR, open.icon)
+        assertEquals(null, open.control)
+        val closed = factory.create(door, EntityState("off"), "Door", TileSize.SMALL)
+        assertEquals(TileContent.Binary(R.string.binary_closed, null, null), closed.content)
+        val smoke = factory.create(entity("binary_sensor.s", "smoke"), EntityState("on"), "Smoke", TileSize.SMALL)
+        assertEquals(BinaryLevel.ALARM, (smoke.content as TileContent.Binary).level)
+        assertEquals(TileIcon.ALARM, smoke.icon)
+    }
+
+    @Test
+    fun `a binary sensor without a known class is on and off, unavailable is not available`() {
+        val plain = factory.create(entity("binary_sensor.x", "weird"), EntityState("on"), "X", TileSize.SMALL)
+        assertEquals(TileContent.Binary(R.string.tile_on, BinaryLevel.ACTIVE, null), plain.content)
+        assertEquals(TileIcon.BINARY, plain.icon)
+        val gone = factory.create(entity("binary_sensor.x"), EntityState("unavailable"), "X", TileSize.SMALL)
+        assertFalse(gone.available)
+        assertEquals(null, (gone.content as TileContent.Binary).level)
+    }
+
+    @Test
+    fun `an unlocked lock is active, not an alarm, and binary sensors are not tappable`() {
+        val lock = factory.create(entity("binary_sensor.l", "lock"), EntityState("on"), "Lock", TileSize.SMALL)
+        assertEquals(TileContent.Binary(R.string.binary_unlocked, BinaryLevel.ACTIVE, null), lock.content)
+        assertFalse(lock.tappable)
+    }
+
+    @Test
+    fun `binary sensors have a tab label and the tab sits between sensor and climate`() {
+        assertEquals(R.string.add_domain_binary, factory.labels("binary_sensor")?.name)
     }
 }

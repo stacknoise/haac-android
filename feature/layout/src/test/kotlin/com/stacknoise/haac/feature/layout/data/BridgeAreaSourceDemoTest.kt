@@ -21,8 +21,8 @@ class BridgeAreaSourceDemoTest {
         assertEquals(listOf(HaFloor("ground_floor", "Ground floor", 0)), areas.floors)
         assertEquals(
             listOf(
-                HaArea("living_room", "Living room", "ground_floor", 4),
-                HaArea("kitchen", "Kitchen", "ground_floor", 2),
+                HaArea("living_room", "Living room", "ground_floor", 6),
+                HaArea("kitchen", "Kitchen", "ground_floor", 3),
                 HaArea("bedroom", "Bedroom", "ground_floor", 1),
             ),
             areas.areas,

@@ -1,5 +1,6 @@
 package com.stacknoise.haac.feature.entities.domain
 
+import androidx.annotation.StringRes
 import com.stacknoise.haac.core.database.assignment.TileSize
 
 /** Icon of a tile, from the domain and the device class (concept 8.2, 8.3). */
@@ -13,6 +14,12 @@ enum class TileIcon {
     ENERGY,
     BATTERY,
     CLIMATE,
+    BINARY,
+    DOOR,
+    MOTION,
+    MOISTURE,
+    LOCK,
+    ALARM,
 }
 
 /**
@@ -39,6 +46,12 @@ sealed interface TileContent {
 
     /** A climate entity: target and current temperature (formatted) and whether it heats right now. */
     data class Climate(val target: String?, val current: String?, val heating: Boolean) : TileContent
+
+    /**
+     * A binary sensor (concept 8.6): the state [text] of its class, the [level] it lights up with (null while it is
+     * off or has no usable state) and the time [since] (ms) of its last change.
+     */
+    data class Binary(@param:StringRes val text: Int, val level: BinaryLevel?, val since: Long?) : TileContent
 
     /** Any other domain: its plain state. */
     data class Other(val state: String) : TileContent

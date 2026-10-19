@@ -105,4 +105,14 @@ class HistoryChartFactoryTest {
     fun `an empty answer is an empty chart`() {
         assertTrue(factory.create(lamp, day, HistoryQuery.States(false), json("{}")).isEmpty)
     }
+
+    @Test
+    fun `a binary sensor reads states and draws a timeline with the words of its class`() {
+        val door = ExposedEntity("s1", "binary_sensor.d", "binary_sensor", "Door", deviceClass = "door")
+        assertEquals(HistoryQuery.States(attributes = false), factory.query(door, week))
+        val result = json("""{"binary_sensor.d":[{"s":"off","lu":-10.0},{"s":"on","lu":3600.0}]}""")
+        val chart = factory.create(door, day, HistoryQuery.States(false), result) as HistoryChart.Timeline
+        assertEquals(binaryClass("door"), chart.binary)
+        assertEquals(listOf("off", "on"), chart.segments.map { it.state })
+    }
 }

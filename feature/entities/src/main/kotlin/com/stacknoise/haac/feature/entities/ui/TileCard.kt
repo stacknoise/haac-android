@@ -50,6 +50,7 @@ import com.stacknoise.haac.feature.entities.disable.ui.DeactivatedChip
 import com.stacknoise.haac.feature.entities.disable.ui.DisabledAlpha
 import com.stacknoise.haac.feature.entities.disable.ui.DisabledRow
 import com.stacknoise.haac.feature.entities.disable.ui.LockBadge
+import com.stacknoise.haac.feature.entities.domain.BinaryLevel
 import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.Tile
 import com.stacknoise.haac.feature.entities.domain.TileContent
@@ -67,9 +68,13 @@ import com.stacknoise.haac.feature.entities.guard.GuardShield
 internal fun TileCard(tile: Tile, enabled: Boolean, actions: TileActions, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val shape = HaacShapes.Tile
-    val on = (tile.content as? TileContent.Switch)?.on == true && tile.available && !tile.withdrawn
+    val alarm = tile.litLevel() == BinaryLevel.ALARM
+    val on = tile.lit()
     val frame = when {
         tile.withdrawn -> Modifier.dashedBorder(colors.outline)
+        alarm -> Modifier
+            .background(HaacColors.DangerContainer, shape)
+            .border(1.5.dp, HaacColors.Danger, shape)
         on -> Modifier
             .background(HaacColors.AccentTint, shape)
             .border(1.5.dp, HaacColors.AccentBorder, shape)
@@ -91,7 +96,7 @@ internal fun TileCard(tile: Tile, enabled: Boolean, actions: TileActions, modifi
             when {
                 tile.withdrawn -> WithdrawnContent(tile)
                 tile.content is TileContent.Climate -> ClimateTile(tile, tile.content, usable, actions)
-                else -> PlainContent(tile, on, usable, actions)
+                else -> PlainContent(tile, on, alarm, usable, actions)
             }
         }
         if (tile.disabled) LockBadge(Modifier.align(Alignment.TopEnd))
@@ -121,10 +126,10 @@ private fun Modifier.tileGestures(tile: Tile, actions: TileActions, menuLabel: S
 
 /** Icon (with the toggle of a switch), then value or name and state (switch, sensor, other domains). */
 @Composable
-private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: TileActions) {
+private fun PlainContent(tile: Tile, on: Boolean, alarm: Boolean, enabled: Boolean, actions: TileActions) {
     Column(modifier = Modifier.fillMaxSize()) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-            IconBox(tile.icon, on)
+            IconBox(if (alarm) TileIcon.ALARM else tile.icon, on, alarm)
             Spacer(Modifier.weight(1f))
             if (tile.guarded) GuardShield()
             // A deactivated tile shows its switch next to the *Deactivated* label instead (M-19).
@@ -154,23 +159,25 @@ private fun PlainContent(tile: Tile, on: Boolean, enabled: Boolean, actions: Til
                 Text(
                     stateText(tile),
                     style = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp),
-                    color = if (on) HaacColors.Accent else secondaryColor(),
+                    color = stateColor(on, alarm),
                     maxLines = 1,
                 )
+                BinarySince(tile)
             }
         }
         if (tile.disabled) DisabledRow(tile, on)
     }
 }
 
-/** The 48 dp rounded icon box of a tile: accent with a white icon when [on], muted otherwise. */
+/** The 48 dp icon box of a tile: accent (error colour if [alarm]) with a white icon when [on], muted otherwise. */
 @Composable
-private fun IconBox(icon: TileIcon, on: Boolean) {
+private fun IconBox(icon: TileIcon, on: Boolean, alarm: Boolean = false) {
+    val lit = if (alarm) HaacColors.Danger else HaacColors.Accent
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .size(48.dp)
-            .background(if (on) HaacColors.Accent else HaacColors.SurfaceMuted, HaacShapes.Medium),
+            .background(if (on) lit else HaacColors.SurfaceMuted, HaacShapes.Medium),
     ) {
         Icon(
             painterResource(iconOf(icon)),
@@ -237,6 +244,7 @@ internal fun stateText(tile: Tile): String {
         is TileContent.Sensor -> listOfNotNull(content.value, content.unit).joinToString(" ")
         is TileContent.Timestamp -> relativeTime(content.at)
         is TileContent.Climate -> content.target ?: content.current.orEmpty()
+        is TileContent.Binary -> stringResource(content.text)
         is TileContent.Other -> content.state
     }
 }
@@ -251,6 +259,12 @@ internal fun iconOf(icon: TileIcon): Int = when (icon) {
     TileIcon.HUMIDITY -> R.drawable.ic_entities_humidity
     TileIcon.POWER, TileIcon.ENERGY -> R.drawable.ic_entities_power
     TileIcon.BATTERY -> R.drawable.ic_entities_battery
+    TileIcon.BINARY -> R.drawable.ic_entities_binary
+    TileIcon.DOOR -> R.drawable.ic_entities_door
+    TileIcon.MOTION -> R.drawable.ic_entities_motion
+    TileIcon.MOISTURE -> R.drawable.ic_entities_water
+    TileIcon.LOCK -> R.drawable.ic_entities_lock
+    TileIcon.ALARM -> R.drawable.ic_entities_warning
 }
 
 /** Secondary text colour of a tile. */

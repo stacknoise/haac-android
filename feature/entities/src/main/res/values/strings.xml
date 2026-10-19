@@ -191,4 +191,65 @@
     <string name="guard_when_both">Both</string>
     <string name="guard_info">Protects against mistaken taps in this app on this device. In Home Assistant and through schedules the switch stays switchable.</string>
     <string name="guard_done">Done</string>
+
+    <!-- Binary sensors (concept 8.6). -->
+    <string name="binary_open">Open</string>
+    <string name="binary_closed">Closed</string>
+    <string name="binary_unlocked">Unlocked</string>
+    <string name="binary_locked">Locked</string>
+    <string name="binary_motion">Motion</string>
+    <string name="binary_no_motion">No motion</string>
+    <string name="binary_moving">Moving</string>
+    <string name="binary_still">Still</string>
+    <string name="binary_occupied">Occupied</string>
+    <string name="binary_clear">Clear</string>
+    <string name="binary_home">Home</string>
+    <string name="binary_away">Away</string>
+    <string name="binary_smoke">Smoke detected</string>
+    <string name="binary_no_smoke">No smoke</string>
+    <string name="binary_gas">Gas detected</string>
+    <string name="binary_no_gas">No gas</string>
+    <string name="binary_co">CO detected</string>
+    <string name="binary_no_co">No CO</string>
+    <string name="binary_wet">Wet</string>
+    <string name="binary_dry">Dry</string>
+    <string name="binary_unsafe">Unsafe</string>
+    <string name="binary_safe">Safe</string>
+    <string name="binary_tampered">Tampered</string>
+    <string name="binary_not_tampered">Not tampered</string>
+    <string name="binary_problem">Problem</string>
+    <string name="binary_ok">OK</string>
+    <string name="binary_hot">Hot</string>
+    <string name="binary_normal">Normal</string>
+    <string name="binary_cold">Cold</string>
+    <string name="binary_low">Low</string>
+    <string name="binary_charging">Charging</string>
+    <string name="binary_not_charging">Not charging</string>
+    <string name="binary_connected">Connected</string>
+    <string name="binary_disconnected">Disconnected</string>
+    <string name="binary_plugged_in">Plugged in</string>
+    <string name="binary_unplugged">Unplugged</string>
+    <string name="binary_power">Power</string>
+    <string name="binary_no_power">No power</string>
+    <string name="binary_running">Running</string>
+    <string name="binary_not_running">Not running</string>
+    <string name="binary_light">Light</string>
+    <string name="binary_dark">Dark</string>
+    <string name="binary_sound">Sound</string>
+    <string name="binary_quiet">Quiet</string>
+    <string name="binary_vibration">Vibration</string>
+    <string name="binary_no_vibration">No vibration</string>
+    <string name="binary_update">Update available</string>
+    <string name="binary_up_to_date">Up to date</string>
+    <string name="binary_since">since %1$s</string>
+    <string name="detail_raw_state">State in Home Assistant</string>
+    <string name="add_domain_binary">Binary sensor</string>
+    <plurals name="add_binary_sensors">
+        <item quantity="one">%1$d binary sensor</item>
+        <item quantity="other">%1$d binary sensors</item>
+    </plurals>
+    <plurals name="binary_summary">
+        <item quantity="one">%1$d change, %2$s %3$s</item>
+        <item quantity="other">%1$d changes, %2$s %3$s</item>
+    </plurals>
 </resources>

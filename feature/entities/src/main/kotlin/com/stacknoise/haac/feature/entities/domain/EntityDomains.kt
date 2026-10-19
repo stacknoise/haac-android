@@ -9,6 +9,7 @@ import kotlinx.serialization.json.doubleOrNull
 internal object EntityDomains {
     const val SWITCH = HaDomains.SWITCH
     const val SENSOR = HaDomains.SENSOR
+    const val BINARY_SENSOR = HaDomains.BINARY_SENSOR
     const val CLIMATE = HaDomains.CLIMATE
     const val ON = "on"
     const val OFF = "off"

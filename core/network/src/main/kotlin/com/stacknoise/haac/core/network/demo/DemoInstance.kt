@@ -35,7 +35,7 @@ object DemoInstance {
     val info = BridgeInfo(
         bridgeVersion = "demo",
         apiVersion = 1,
-        domains = listOf(HaDomains.CLIMATE, HaDomains.SENSOR, HaDomains.SWITCH),
+        domains = listOf(HaDomains.BINARY_SENSOR, HaDomains.CLIMATE, HaDomains.SENSOR, HaDomains.SWITCH),
         haVersion = "demo",
         instanceId = INSTANCE_ID,
         urls = BridgeUrls(),

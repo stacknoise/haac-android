@@ -45,6 +45,8 @@ class DemoEntityCommandsTest {
             setOf(
                 "switch.demo_living_room_light", "switch.demo_kitchen_light", "switch.demo_bedroom_lamp",
                 "switch.demo_socket", "sensor.demo_temperature", "sensor.demo_energy", "climate.demo_thermostat",
+                "binary_sensor.demo_front_door", "binary_sensor.demo_hallway_motion",
+                "binary_sensor.demo_smoke_detector",
             ),
             byId.keys,
         )
@@ -53,12 +55,16 @@ class DemoEntityCommandsTest {
         assertEquals("measurement", temperature["state_class"]!!.jsonPrimitive.content)
         assertEquals("Living room", temperature["area"]!!.jsonPrimitive.content)
         assertEquals("total_increasing", byId.getValue("sensor.demo_energy").str("state_class"))
+        val smoke = byId.getValue("binary_sensor.demo_smoke_detector").jsonObject
+        assertEquals("smoke", smoke["device_class"]!!.jsonPrimitive.content)
+        assertEquals("off", smoke["state"]!!.jsonPrimitive.content)
+        assertEquals("Kitchen", smoke["area"]!!.jsonPrimitive.content)
     }
 
     @Test
     fun `the revision is the same for the same data, across restarts and after a state change`() {
         val first = demo.ask("haac_bridge/exposure/revision")
-        assertEquals("7", first["entity_count"]!!.jsonPrimitive.content)
+        assertEquals("10", first["entity_count"]!!.jsonPrimitive.content)
         assertEquals(first["revision"], demo.ask("haac_bridge/entities/list")["revision"])
         service("switch.demo_socket", "turn_off")
         assertEquals(first["revision"], demo.ask("haac_bridge/exposure/revision")["revision"])
@@ -75,7 +81,7 @@ class DemoEntityCommandsTest {
         val counts = demo.list(areas, "areas").associate {
             it.jsonObject["name"]!!.jsonPrimitive.content to it.jsonObject["entity_count"]!!.jsonPrimitive.content
         }
-        assertEquals(mapOf("Living room" to "4", "Kitchen" to "2", "Bedroom" to "1"), counts)
+        assertEquals(mapOf("Living room" to "6", "Kitchen" to "3", "Bedroom" to "1"), counts)
         assertTrue(demo.list(areas, "areas").all { it.str("floor_id") == "ground_floor" })
     }
 
@@ -84,7 +90,7 @@ class DemoEntityCommandsTest {
         val reply = demo.request("haac_bridge/subscribe_entities")
         assertEquals(JsonPrimitive(true), reply["success"])
         val added = demo.events(demo.lastMessageId).single()["a"]!!.jsonObject
-        assertEquals(7, added.size)
+        assertEquals(10, added.size)
         assertEquals("on", added.getValue("switch.demo_living_room_light").jsonObject["s"]!!.jsonPrimitive.content)
         assertNotNull(added.getValue("switch.demo_socket").jsonObject["lc"])
     }
@@ -118,6 +124,7 @@ class DemoEntityCommandsTest {
     fun `a service the entity does not support is HAB-SVC-002`() {
         assertEquals("HAB-SVC-002", demo.code(service("switch.demo_socket", "set_temperature", Temperature20)))
         assertEquals("HAB-SVC-002", demo.code(service("sensor.demo_energy", "turn_on")))
+        assertEquals("HAB-SVC-002", demo.code(service("binary_sensor.demo_front_door", "turn_on")))
         assertEquals("HAB-SVC-002", demo.code(service("climate.demo_thermostat", "turn_on")))
         assertEquals("HAB-SVC-002", demo.code(service(Thermostat, "set_humidity", """{"humidity":40}""")))
     }
