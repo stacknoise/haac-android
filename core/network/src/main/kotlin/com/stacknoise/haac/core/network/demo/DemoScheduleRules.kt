@@ -10,7 +10,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 
 /** The schedule fields after validation (concept 19.2); [time] is set for fixed times, [offsetMin] for sun events. */
-internal class Plan(
+internal data class Plan(
     val name: String,
     val enabled: Boolean,
     val whenType: String,
@@ -65,21 +65,33 @@ internal object DemoScheduleRules {
     }
 
     /** The plan from the given fields on top of [base], with the date rule [repeat]. */
-    private fun build(fields: JsonObject, base: DemoSchedule?, repeat: DemoRepeat): Plan {
-        val trigger = fields["when"] as? JsonObject
-        val type = trigger?.text("type") ?: base?.whenType.orEmpty()
-        val fixedTime = type == "time"
-        return Plan(
+    private fun build(fields: JsonObject, base: DemoSchedule?, repeat: DemoRepeat): Plan = withTrigger(
+        Plan(
             name = fields.text("name")?.trim() ?: base?.name.orEmpty(),
             enabled = (fields["enabled"] as? JsonPrimitive)?.booleanOrNull ?: base?.enabled ?: true,
-            whenType = type,
-            time = if (fixedTime) trigger?.text("time") ?: base?.time else null,
-            days = trigger?.texts("days")?.map { it.toIntOrNull() ?: -1 } ?: base?.days.orEmpty(),
-            offsetMin = if (fixedTime) null else trigger?.number("offset_min") ?: base?.offsetMin ?: 0,
+            whenType = "",
+            time = null,
+            days = emptyList(),
+            offsetMin = 0,
             action = fields.text("action") ?: base?.action.orEmpty(),
             entities = fields.texts("entities") ?: base?.entities.orEmpty(),
             repeat = repeat,
             notify = (fields["notify"] as? JsonPrimitive)?.booleanOrNull ?: base?.notify ?: false,
+        ),
+        fields,
+        base,
+    )
+
+    /** [plan] with the trigger from the `when` object of [fields], else from [base]; fields of the other kind drop. */
+    private fun withTrigger(plan: Plan, fields: JsonObject, base: DemoSchedule?): Plan {
+        val trigger = fields["when"] as? JsonObject
+        val type = trigger?.text("type") ?: base?.whenType.orEmpty()
+        val fixedTime = type == "time"
+        return plan.copy(
+            whenType = type,
+            time = if (fixedTime) trigger?.text("time") ?: base?.time else null,
+            days = trigger?.texts("days")?.map { it.toIntOrNull() ?: -1 } ?: base?.days.orEmpty(),
+            offsetMin = if (fixedTime) null else trigger?.number("offset_min") ?: base?.offsetMin ?: 0,
         )
     }
 

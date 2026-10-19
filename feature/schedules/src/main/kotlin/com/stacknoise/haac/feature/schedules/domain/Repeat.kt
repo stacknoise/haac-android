@@ -6,9 +6,9 @@ import java.time.format.DateTimeParseException
 /** How often a schedule runs (concept 19.10); [maxInterval] is the largest interval the bridge accepts. */
 enum class RepeatFreq(val wire: String, val maxInterval: Int) {
     ONCE("once", 1),
-    DAILY("daily", MAX_DAYS),
-    WEEKLY("weekly", MAX_WEEKS),
-    MONTHLY("monthly", MAX_MONTHS),
+    DAILY("daily", MaxDays),
+    WEEKLY("weekly", MaxWeeks),
+    MONTHLY("monthly", MaxMonths),
     YEARLY("yearly", 1),
     ;
 
@@ -23,9 +23,9 @@ enum class RepeatFreq(val wire: String, val maxInterval: Int) {
 }
 
 /** Largest intervals of the bridge in days, weeks and months (concept 19.10). */
-private const val MAX_DAYS = 365
-private const val MAX_WEEKS = 52
-private const val MAX_MONTHS = 12
+private const val MaxDays = 365
+private const val MaxWeeks = 52
+private const val MaxMonths = 12
 
 /**
  * The date rule of a schedule (concept 19.10): [freq] every [interval] days, weeks or months, from [startDate] to

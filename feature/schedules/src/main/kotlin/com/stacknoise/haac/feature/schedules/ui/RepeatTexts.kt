@@ -1,6 +1,5 @@
 package com.stacknoise.haac.feature.schedules.ui
 
-import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -11,38 +10,7 @@ import com.stacknoise.haac.feature.schedules.domain.RepeatRule
 import com.stacknoise.haac.feature.schedules.domain.ScheduleItem
 import com.stacknoise.haac.feature.schedules.domain.WhenType
 import com.stacknoise.haac.feature.schedules.domain.ordinalOf
-import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalTime
-import java.time.YearMonth
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.temporal.TemporalAccessor
-import java.util.Locale
-
-/** Date skeletons: weekday with day and month, the same with the year, day and month, and month with year. */
-private const val ShortDate = "EEEdMMM"
-private const val FullDate = "EEEdMMMy"
-private const val DayAndMonth = "dMMM"
-private const val MonthAndYear = "MMMMy"
-
-/** [date] written in the phone's language for [skeleton], e.g. "Mon, 26 Oct" or "Mo., 26. Okt.". */
-private fun formatDate(date: TemporalAccessor, skeleton: String): String {
-    val locale = Locale.getDefault()
-    return DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, skeleton), locale).format(date)
-}
-
-/** The weekday, day and month of [date], e.g. "Mon, 26 Oct". */
-internal fun shortDate(date: LocalDate): String = formatDate(date, ShortDate)
-
-/** The weekday, day, month and year of [date], e.g. "Mon, 26 Oct 2026". */
-internal fun fullDate(date: LocalDate): String = formatDate(date, FullDate)
-
-/** The month and year of [month], e.g. "October 2026", for the calendar header. */
-internal fun monthTitle(month: YearMonth): String = formatDate(month, MonthAndYear)
-
-/** The local date of [millis] in the phone's time zone. */
-internal fun dateOf(millis: Long): LocalDate = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
 
 /** [days] (0 = Monday) as "Mon and Thu" or "Mon, Wed and Fri". */
 @Composable
@@ -107,7 +75,7 @@ internal fun repeatLabel(rule: RepeatRule, days: List<Int>): String {
                 ordinalText(start.dayOfMonth),
             )
         rule.freq == RepeatFreq.YEARLY && start != null ->
-            stringResource(R.string.schedules_label_yearly, formatDate(start, DayAndMonth))
+            stringResource(R.string.schedules_label_yearly, dayAndMonth(start))
         else -> intervalLabel(rule.freq, rule.interval)
     }
 }
@@ -120,7 +88,7 @@ internal fun repeatLabel(rule: RepeatRule, days: List<Int>): String {
 internal fun repeatSummary(rule: RepeatRule, days: List<Int>, phrase: String? = null): String {
     val base = repeatLabel(rule, days) + phrase?.let { " $it" }.orEmpty()
     val end = rule.endDate?.takeIf { !rule.once }
-    return if (end == null) base else stringResource(R.string.schedules_label_until, base, formatDate(end, DayAndMonth))
+    return if (end == null) base else stringResource(R.string.schedules_label_until, base, dayAndMonth(end))
 }
 
 /** The trigger after the rule: "at 06:45" for a fixed time, "at sunrise" or "30 min after sunset" for a sun event. */

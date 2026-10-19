@@ -23,7 +23,7 @@ internal class DemoSchedules(private val clock: Clock) {
         fields: JsonObject,
         existing: List<DemoSchedule>,
         entities: List<DemoEntity>,
-    ): DemoOutcome<DemoSchedule> = DemoScheduleRules.plan(fields, null, entities, today()).then { plan ->
+    ): DemoOutcome<DemoSchedule> = DemoScheduleRules.plan(fields, null, entities, LocalDate.now(clock)).then { plan ->
         if (existing.size >= DemoScheduleRules.MAX_SCHEDULES) {
             DemoOutcome.Failed(DemoCodes.SCH_LIMIT, "Too many schedules")
         } else {
@@ -44,7 +44,7 @@ internal class DemoSchedules(private val clock: Clock) {
     ): DemoOutcome<DemoSchedule> = if (updatedAt != current.updatedAt) {
         DemoOutcome.Failed(DemoCodes.SCH_CONFLICT, "The schedule changed in the meantime")
     } else {
-        DemoScheduleRules.plan(fields, current, entities, today()).then { plan ->
+        DemoScheduleRules.plan(fields, current, entities, LocalDate.now(clock)).then { plan ->
             val version = version(current.updatedAt)
             val built = build(current.id, plan, current.createdAt, version, current.lastRun)
             val reopened = fields.containsKey("repeat") || (plan.enabled && !current.enabled)
@@ -54,7 +54,7 @@ internal class DemoSchedules(private val clock: Clock) {
 
     /** The next runs of the draft in [fields] of `schedules/preview`: ISO times, none for a draft that cannot run. */
     fun preview(fields: JsonObject): DemoOutcome<List<String>> =
-        DemoScheduleRules.trigger(fields, today()).then { plan ->
+        DemoScheduleRules.trigger(fields, LocalDate.now(clock)).then { plan ->
             checked(build(PREVIEW_ID, plan, "", "", null)).then { DemoOutcome.Ok(planned(it).nextRuns) }
         }
 
@@ -87,7 +87,8 @@ internal class DemoSchedules(private val clock: Clock) {
 
     /** The first [count] runs after now that the date rule hits from its start date on, on or off. */
     private fun runs(schedule: DemoSchedule, count: Int): List<ZonedDateTime> {
-        val from = maxOf(today().minusDays(1), schedule.repeat.startDate?.let(LocalDate::parse) ?: today())
+        val today = LocalDate.now(clock)
+        val from = maxOf(today.minusDays(1), schedule.repeat.startDate?.let(LocalDate::parse) ?: today)
         return (0L..SEARCH_DAYS).asSequence()
             .map { runOn(schedule, from.plusDays(it), clock.zone) }
             .filter { it.toInstant().isAfter(clock.instant()) }
@@ -96,8 +97,6 @@ internal class DemoSchedules(private val clock: Clock) {
             .toList()
     }
 
-    /** Today's date in the time zone of the phone. */
-    private fun today(): LocalDate = LocalDate.now(clock)
 
     /** The planned time of [schedule] on [date]; a time inside a DST gap moves to the first minute after it. */
     private fun runOn(schedule: DemoSchedule, date: LocalDate, zone: ZoneId): ZonedDateTime {

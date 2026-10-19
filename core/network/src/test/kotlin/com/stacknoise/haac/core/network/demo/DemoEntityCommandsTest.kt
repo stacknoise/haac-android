@@ -33,7 +33,8 @@ class DemoEntityCommandsTest {
         val info = demo.ask("haac_bridge/info")
         assertEquals("1", info["api_version"]!!.jsonPrimitive.content)
         assertEquals(DemoInstance.INSTANCE_ID, info["instance_id"]!!.jsonPrimitive.content)
-        assertEquals(listOf("schedules", "schedule_repeat"), info["features"]!!.jsonArray.map { it.jsonPrimitive.content })
+        val features = info["features"]!!.jsonArray.map { it.jsonPrimitive.content }
+        assertEquals(listOf("schedules", "schedule_repeat"), features)
     }
 
     @Test

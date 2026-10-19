@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 class ScheduleDraftTest {
     private val valid = ScheduleDraft(name = "Morning light", entityIds = listOf("switch.a"))
-    private val Start = LocalDate.of(2026, 10, 19)
+    private val start = LocalDate.of(2026, 10, 19)
 
     @Test
     fun `a draft needs a name, a weekday and, for the owner, one to twenty entities`() {
@@ -24,12 +24,12 @@ class ScheduleDraftTest {
 
     @Test
     fun `only a weekly rule needs a weekday and a one-off rule needs its date`() {
-        val monthly = valid.copy(days = emptySet(), repeat = RepeatRule(RepeatFreq.MONTHLY, 1, Start))
+        val monthly = valid.copy(days = emptySet(), repeat = RepeatRule(RepeatFreq.MONTHLY, 1, start))
         assertTrue(monthly.isValid(true))
-        assertFalse(monthly.copy(repeat = monthly.repeat.copy(endDate = Start.minusDays(1))).isValid(true))
+        assertFalse(monthly.copy(repeat = monthly.repeat.copy(endDate = start.minusDays(1))).isValid(true))
         assertFalse(valid.copy(repeat = RepeatRule(RepeatFreq.ONCE)).isValid(true))
-        assertTrue(valid.copy(repeat = RepeatRule(RepeatFreq.ONCE, 1, Start)).isValid(true))
-        assertFalse(valid.copy(repeat = RepeatRule(RepeatFreq.ONCE, 1, Start, Start.plusDays(1))).isValid(true))
+        assertTrue(valid.copy(repeat = RepeatRule(RepeatFreq.ONCE, 1, start)).isValid(true))
+        assertFalse(valid.copy(repeat = RepeatRule(RepeatFreq.ONCE, 1, start, start.plusDays(1))).isValid(true))
     }
 
     @Test
@@ -41,18 +41,18 @@ class ScheduleDraftTest {
 
     @Test
     fun `switching the frequency fixes the date rule and brings back weekdays for weekly`() {
-        val once = valid.withFreq(RepeatFreq.ONCE, Start)
-        assertEquals(RepeatRule(RepeatFreq.ONCE, 1, Start.plusDays(1)), once.repeat)
-        val weekly = valid.copy(days = emptySet()).withFreq(RepeatFreq.WEEKLY, Start)
+        val once = valid.withFreq(RepeatFreq.ONCE, start)
+        assertEquals(RepeatRule(RepeatFreq.ONCE, 1, start.plusDays(1)), once.repeat)
+        val weekly = valid.copy(days = emptySet()).withFreq(RepeatFreq.WEEKLY, start)
         assertEquals(ScheduleDraft.WEEKDAYS, weekly.days)
-        val yearly = valid.copy(repeat = RepeatRule(RepeatFreq.DAILY, 100)).withFreq(RepeatFreq.YEARLY, Start)
+        val yearly = valid.copy(repeat = RepeatRule(RepeatFreq.DAILY, 100)).withFreq(RepeatFreq.YEARLY, start)
         assertEquals(1, yearly.repeat.interval)
     }
 
     @Test
     fun `a reload keeps a changed rule and a changed notify switch`() {
-        val mine = valid.copy(repeat = RepeatRule(RepeatFreq.DAILY, 2, Start), notify = true)
-        val fresh = valid.copy(repeat = RepeatRule(RepeatFreq.YEARLY, 1, Start), notify = false)
+        val mine = valid.copy(repeat = RepeatRule(RepeatFreq.DAILY, 2, start), notify = true)
+        val fresh = valid.copy(repeat = RepeatRule(RepeatFreq.YEARLY, 1, start), notify = false)
         val merged = mine.rebase(valid, fresh)
         assertEquals(mine.repeat, merged.repeat)
         assertTrue(merged.notify)

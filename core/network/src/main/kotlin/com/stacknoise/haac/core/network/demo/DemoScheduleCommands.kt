@@ -1,10 +1,10 @@
 package com.stacknoise.haac.core.network.demo
 
+import com.stacknoise.haac.core.network.http.text
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.put
 
 /** The schedule commands (`haac_bridge/schedules/...`) of the demo bridge (concept 19.4); replies go to [emit]. */
@@ -125,6 +125,4 @@ internal class DemoScheduleCommands(
     private fun descriptor(schedule: DemoSchedule): JsonObject =
         DemoScheduleWire.descriptor(schedule, schedules.planned(schedule))
 
-    /** The string [key], or null. */
-    private fun JsonObject.text(key: String): String? = (this[key] as? JsonPrimitive)?.contentOrNull
 }
