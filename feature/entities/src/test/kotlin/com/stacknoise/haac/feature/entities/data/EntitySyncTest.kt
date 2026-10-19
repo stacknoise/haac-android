@@ -334,9 +334,9 @@ class EntitySyncTest {
     }
 
     @Test
-    fun `the first sync of the demo bridge caches seven entities with names and states`() = runTest(testDispatcher) {
+    fun `the first sync of the demo bridge caches ten entities with names and states`() = runTest(testDispatcher) {
         followDemo()
-        assertEquals(7, cache.size)
+        assertEquals(10, cache.size)
         assertEquals("Living room light", cache.getValue("switch.demo_living_room_light").haName)
         assertEquals("Living room", cache.getValue("switch.demo_socket").area)
         assertEquals("\u00b0C", cache.getValue("sensor.demo_temperature").unit)
@@ -344,6 +344,8 @@ class EntitySyncTest {
         assertEquals(1, cache.getValue("climate.demo_thermostat").supportedFeatures)
         assertEquals("heat", stateOf("climate.demo_thermostat")?.state)
         assertEquals("on", stateOf("switch.demo_socket")?.state)
+        assertEquals("smoke", cache.getValue("binary_sensor.demo_smoke_detector").deviceClass)
+        assertEquals("off", stateOf("binary_sensor.demo_front_door")?.state)
         assertNull(sync.status.value.error)
         assertEquals(emptyList<Pair<List<String>, List<String>>>(), reportedChanges)
     }
