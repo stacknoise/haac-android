@@ -54,13 +54,15 @@ import java.time.format.FormatStyle
 /**
  * Notification list (M-09, concept 9.1, 17.4). [onErrorAction] receives the action of an error entry
  * (*Try again*, *Sign in*, *Open settings*) and the instance it belongs to (null for global entries);
- * [onAddToRoom] the entity ids of an *Add to room* or *Review N entities*, which also resolves the entry.
+ * [onAddToRoom] the entity ids of an *Add to room* or *Review N entities*, which also resolves the entry, and
+ * [onOpenSchedule] the id of the schedule of a run entry's *Open schedule* (concept 19.11), which resolves it too.
  */
 @Composable
 fun NotificationsScreen(
     onBack: () -> Unit,
     onErrorAction: (ErrorAction, String?) -> Unit,
     onAddToRoom: (List<String>) -> Unit,
+    onOpenSchedule: (String) -> Unit,
     viewModel: NotificationsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -77,6 +79,10 @@ fun NotificationsScreen(
             onAddToRoom = { item ->
                 viewModel.onResolve(item)
                 onAddToRoom(item.unassigned)
+            },
+            onOpenSchedule = { item ->
+                viewModel.onResolve(item)
+                item.run?.scheduleId?.let(onOpenSchedule)
             },
             onRemoveTiles = viewModel::onRemoveTiles,
             onDelete = viewModel::onDelete,

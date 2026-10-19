@@ -33,6 +33,27 @@
     <string name="notifications_pause_no_entities">none of its devices is shared with you any more</string>
     <string name="notifications_pause_sun_unavailable">the sun position is not available</string>
     <string name="notifications_pause_other">the server paused it</string>
+    <string name="notifications_open_schedule">Open schedule</string>
+    <plurals name="notifications_run_ok">
+        <item quantity="one">%1$s ran</item>
+        <item quantity="other">%1$s ran %2$d×</item>
+    </plurals>
+    <plurals name="notifications_run_partial">
+        <item quantity="one">%1$s ran only partly</item>
+        <item quantity="other">%1$s ran only partly %2$d×</item>
+    </plurals>
+    <plurals name="notifications_run_failed">
+        <item quantity="one">%1$s failed</item>
+        <item quantity="other">%1$s failed %2$d×</item>
+    </plurals>
+    <plurals name="notifications_run_missed">
+        <item quantity="one">%1$s did not run</item>
+        <item quantity="other">%1$s did not run %2$d×</item>
+    </plurals>
+    <string name="notifications_run_last">last at %1$s</string>
+    <string name="notifications_run_incomplete">Not every device responded.</string>
+    <string name="notifications_run_missed_text">Home Assistant was not reachable at that time.</string>
+    <string name="notifications_run_removed">The one-off schedule was removed.</string>
     <string name="notifications_times">×%1$d</string>
     <string name="notifications_delete">Delete</string>
     <string name="notifications_cancel">Cancel</string>

@@ -64,7 +64,7 @@ class DemoBridgeConnectorTest {
         val connection = connector.connect(DemoInstance.SERVER_ID, connector.select(DemoInstance.SERVER_ID), scope)
         assertEquals(DemoInstance.ADDRESS.toHttpUrl(), connection.url)
         assertEquals(DemoInstance.INSTANCE_ID, connection.info.instanceId)
-        assertEquals(setOf("schedules"), connection.features)
+        assertEquals(setOf("schedules", "schedule_runs"), connection.features)
         val info = withTimeout(REAL_TIME_LIMIT_MS) { connection.request("haac_bridge/info") }.jsonObject
         assertEquals("1", info["api_version"]!!.jsonPrimitive.content)
         assertTrue(real.selected.isEmpty() && real.connected.isEmpty())

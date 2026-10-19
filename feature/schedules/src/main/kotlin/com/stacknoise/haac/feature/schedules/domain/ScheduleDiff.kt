@@ -5,6 +5,9 @@ import com.stacknoise.haac.core.database.schedule.ScheduleEntity
 /** A schedule of the user that the server newly paused, with the reason (concept 19.6). */
 data class PausedSchedule(val name: String, val reason: String)
 
+/** A schedule of the user that no longer exists on the server. */
+data class RemovedSchedule(val id: String, val name: String)
+
 /**
  * What one schedule sync changes: the rows to write, the ids to delete and what the user is told about (concept
  * 19.7). Only the user's own schedules are announced; foreign ones, which admins see, change silently.
@@ -12,9 +15,15 @@ data class PausedSchedule(val name: String, val reason: String)
 data class ScheduleChange(
     val rows: List<ScheduleEntity>,
     val removedIds: List<String>,
-    val removedNames: List<String>,
+    val removedOwn: List<RemovedSchedule>,
     val paused: List<PausedSchedule>,
-)
+) {
+    /**
+     * The names of the removed own schedules that the user is told about: not those in [ranOut], the ids of
+     * one-off or ending schedules whose last run deleted them (concept 19.10, 19.11); their run entry tells it.
+     */
+    fun removedNames(ranOut: Set<String>): List<String> = removedOwn.filter { it.id !in ranOut }.map { it.name }
+}
 
 /** The difference between the cached schedules and a fresh list, by schedule id (concept 19.7 step 2 and 3). */
 object ScheduleDiff {
@@ -29,7 +38,7 @@ object ScheduleDiff {
         return ScheduleChange(
             rows = listed.filter { row -> before[row.scheduleId]?.let { changed(it, row) } ?: true },
             removedIds = gone.map { it.scheduleId },
-            removedNames = gone.filter { it.own }.map { it.name },
+            removedOwn = gone.filter { it.own }.map { RemovedSchedule(it.scheduleId, it.name) },
             paused = listed.mapNotNull { row -> before[row.scheduleId]?.let { pausedNow(it, row) } },
         )
     }

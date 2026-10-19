@@ -69,11 +69,16 @@ class DemoBridge(private val world: DemoWorld, private val emit: (JsonObject) ->
             }
             "unsubscribe_events" -> unsubscribe(id, message)
             "haac_bridge/call_service" -> callService(id, message)
-            else -> if (!queries.handle(type, id, message) && !scheduleCommands.handle(type, id, message)) {
+            else -> if (!handledElsewhere(type, id, message)) {
                 emit(DemoReplies.error(id, "unknown_command", "Unknown command."))
             }
         }
     }
+
+    /** True if the query, schedule or run log handler answered [type]. */
+    private fun handledElsewhere(type: String, id: Int, message: JsonObject): Boolean =
+        queries.handle(type, id, message) || scheduleCommands.handle(type, id, message) ||
+            world.runLog.handle(type, id, message, emit)
 
     /** Registers the subscription, answers with an empty result and sends the states of all entities as `a`. */
     private fun subscribeEntities(id: Int) {
