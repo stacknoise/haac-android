@@ -11,7 +11,15 @@ class DemoRunLogTest {
 
     private fun runs(fields: String = "{}") = demo.ask("haac_bridge/schedules/runs", fields)
 
-    private fun runNow() = demo.request("haac_bridge/schedules/run_now", """{"schedule_id":"$morning"}""")
+    private fun runNow(id: String = morning) =
+        demo.request("haac_bridge/schedules/run_now", """{"schedule_id":"$id"}""")
+
+    /** A second schedule, because the fixed clock gives every run of one schedule the same time. */
+    private fun otherSchedule(): String {
+        val fields = """{"name":"Evening","when":{"type":"time","time":"21:00","days":[1]},""" +
+            """"action":"turn_off","entities":["switch.demo_socket"]}"""
+        return demo.ask("haac_bridge/schedules/create", fields).str("id")
+    }
 
     @Test
     fun `a new log is empty and has an id`() {
@@ -39,7 +47,7 @@ class DemoRunLogTest {
     fun `entries after the cursor of the same log are returned, a different log id returns all`() {
         runNow()
         val logId = runs().str("log_id")
-        runNow()
+        runNow(otherSchedule())
         val after = runs("""{"log_id":"$logId","after_seq":1}""")
         assertEquals(listOf("2"), after["entries"]!!.jsonArray.map { it.str("seq") })
         assertEquals("2", after.str("last_seq"))
