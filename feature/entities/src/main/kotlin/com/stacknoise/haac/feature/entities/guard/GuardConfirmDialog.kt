@@ -36,15 +36,15 @@ import com.stacknoise.haac.core.common.ui.theme.haacSwitchColors
 import com.stacknoise.haac.feature.entities.R
 
 /** The dialog's switch reacts only this long after the dialog opened, so a double tap cannot do both steps. */
-internal const val ARM_DELAY_MS = 500L
+internal const val ArmDelayMs = 500L
 
 /** The dialog closes without a command after this long without input (concept 8.5). */
-internal const val IDLE_TIMEOUT_MS = 15_000L
+internal const val IdleTimeoutMs = 15_000L
 
 /**
  * The switch guard dialog (M-27, concept 8.5): a second switch has to be flipped on purpose before the command for
- * [prompt] is sent through [onConfirm]. *Cancel*, the back gesture, a tap outside and [IDLE_TIMEOUT_MS] without input
- * call [onDismiss]; the switch is locked for [ARM_DELAY_MS] after the dialog opened.
+ * [prompt] is sent through [onConfirm]. *Cancel*, the back gesture, a tap outside and [IdleTimeoutMs] without input
+ * call [onDismiss]; the switch is locked for [ArmDelayMs] after the dialog opened.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,11 +52,11 @@ fun GuardConfirmDialog(prompt: GuardPrompt, onConfirm: () -> Unit, onDismiss: ()
     var armed by remember(prompt) { mutableStateOf(false) }
     var touches by remember(prompt) { mutableIntStateOf(0) }
     LaunchedEffect(prompt) {
-        delay(ARM_DELAY_MS)
+        delay(ArmDelayMs)
         armed = true
     }
     LaunchedEffect(prompt, touches) {
-        delay(IDLE_TIMEOUT_MS)
+        delay(IdleTimeoutMs)
         onDismiss()
     }
     val turnOn = prompt.request.on

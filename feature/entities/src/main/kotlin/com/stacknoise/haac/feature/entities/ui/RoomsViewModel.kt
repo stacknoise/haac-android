@@ -19,7 +19,6 @@ import com.stacknoise.haac.feature.entities.domain.groupOf
 import com.stacknoise.haac.feature.entities.domain.roomGroups
 import com.stacknoise.haac.feature.entities.domain.roomOrFirst
 import com.stacknoise.haac.feature.entities.guard.GuardGate
-import com.stacknoise.haac.feature.entities.guard.GuardPrompt
 import com.stacknoise.haac.feature.entities.guard.SwitchGuard
 import com.stacknoise.haac.feature.entities.guard.SwitchGuards
 import com.stacknoise.haac.feature.entities.guard.withGuards
@@ -112,20 +111,11 @@ class RoomsViewModel @Inject constructor(
     /** Failed service calls, shown as a snackbar with the code (concept 14.1, 17.4). */
     val failed: Flow<HaacException> = controller.failed
 
-    /** Sends go through the switch guard first (concept 8.5); a guarded one waits for the dialog. */
-    private val gate = GuardGate { entityId, request ->
+    /** Sends go through the switch guard first (concept 8.5); a guarded one waits for the dialog (M-27). */
+    val gate = GuardGate { entityId, request ->
         val id = serverId.value
         if (id != null && state.value.connected) controller.send(id, entityId, request)
     }
-
-    /** The open switch guard dialog, or null (M-27). */
-    val guardPrompt: StateFlow<GuardPrompt?> = gate.prompt
-
-    /** The user flipped the switch in the guard dialog: sends the command. */
-    fun onGuardConfirm() = gate.confirm()
-
-    /** The guard dialog was cancelled, timed out or dismissed: no command. */
-    fun onGuardDismiss() = gate.dismiss()
 
     /** Turns the guard of [entityId] on with [guard]'s direction or, for null, off (concept 8.5, M-28). */
     fun onGuardChange(entityId: String, guard: SwitchGuard?) {

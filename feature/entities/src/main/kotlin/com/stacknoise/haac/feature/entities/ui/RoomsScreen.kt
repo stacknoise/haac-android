@@ -131,8 +131,8 @@ private fun RoomsContent(navigation: RoomsNavigation, viewModel: RoomsViewModel)
     sheet?.let { open ->
         Sheets(open, state.guards, viewModel, navigation.onOpenEntity, onChange = { sheet = it })
     }
-    val prompt by viewModel.guardPrompt.collectAsStateWithLifecycle()
-    prompt?.let { GuardConfirmDialog(it, onConfirm = viewModel::onGuardConfirm, onDismiss = viewModel::onGuardDismiss) }
+    val prompt by viewModel.gate.prompt.collectAsStateWithLifecycle()
+    prompt?.let { GuardConfirmDialog(it, onConfirm = viewModel.gate::confirm, onDismiss = viewModel.gate::dismiss) }
 }
 
 /** The open sheet or rename dialog; [onChange] switches to another one or closes it (null). */

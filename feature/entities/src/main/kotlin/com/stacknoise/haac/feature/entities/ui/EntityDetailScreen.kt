@@ -69,8 +69,8 @@ fun EntityDetailScreen(onClose: () -> Unit, viewModel: EntityDetailViewModel = h
     }
     FailureSnackbar(viewModel.failed, snackbar)
     val detail = state.detail
-    val prompt by viewModel.guardPrompt.collectAsStateWithLifecycle()
-    prompt?.let { GuardConfirmDialog(it, onConfirm = viewModel::onGuardConfirm, onDismiss = viewModel::onGuardDismiss) }
+    val prompt by viewModel.gate.prompt.collectAsStateWithLifecycle()
+    prompt?.let { GuardConfirmDialog(it, onConfirm = viewModel.gate::confirm, onDismiss = viewModel.gate::dismiss) }
     if (guarding && detail != null) {
         GuardSettingsSheet(
             name = detail.tile.name,
