@@ -46,9 +46,9 @@ core/database         Room database, DAOs, entities (schemas in core/database/sc
 feature/onboarding    server entry, login
 feature/instance      instances, switching
 feature/layout        homes, levels (floors), rooms
-feature/entities      picker, room grid, controls, detail, history, sync
+feature/entities      picker, room grid, controls, detail, history, sync, deactivating, switch guard
 feature/notifications notification list incl. errors
-feature/schedules     schedule list, editor, detail, sync
+feature/schedules     schedule list, editor (repeat rules, preview), detail, sync, run log
 feature/settings      settings, about, licenses
 build-logic/          convention plugins and the code index generator
 config/detekt/        Detekt overrides

@@ -6,7 +6,7 @@ Source text of the page `https://stacknoise.com/haac/privacy`, which Google Play
 
 ## English
 
-*Last updated: 2 October 2026*
+*Last updated: 19 October 2026*
 
 **Who is responsible.** Anton Graichen-Hartl, stacknoise.com, **[postal address]**, contact: **[anton.hartl@stacknoise.com]**. This policy covers the Android app "HAAC – HA Android Client" (package `com.stacknoise.haac`). HAAC is not affiliated with or endorsed by Home Assistant, the Open Home Foundation or Nabu Casa.
 
@@ -15,10 +15,10 @@ Source text of the page `https://stacknoise.com/haac/privacy`, which Google Play
 **What the app stores on your phone**
 - The sign-in token of your Home Assistant account (the refresh token), encrypted with a key in the Android Keystore. Your password is used once to sign in at your Home Assistant server and is never stored.
 - The addresses and names of your Home Assistant instances, and the certificate key of a self-signed server you chose to trust.
-- Your homes, levels and rooms, the entities you placed in them with their local names and sizes, a copy of the schedules, the notification list, and your settings (for example the design).
+- Your homes, levels and rooms, the entities you placed in them with their local names and sizes, a copy of the schedules, the notification list, the switches you protected with the switch guard, and your settings (for example the design).
 - This data is excluded from Android's cloud backup and device transfer. It is deleted when you remove an instance (the token is revoked at your server) or uninstall the app.
 
-**What the app sends, and where to.** The app talks only to the Home Assistant servers whose addresses you entered or chose from the search in your network. It sends your sign-in and your commands (for example switching a device) and receives the states, history and schedules that your administrator shared with you through HAAC Bridge. Your Home Assistant administrator operates that server and is responsible for the data on it. The developer has no access.
+**What the app sends, and where to.** The app talks only to the Home Assistant servers whose addresses you entered or chose from the search in your network. It sends your sign-in and your commands (for example switching a device) and receives the states, history and schedules that your administrator shared with you through HAAC Bridge. The server also keeps which entities you deactivated and a short log of your schedule runs. Your Home Assistant administrator operates that server and is responsible for the data on it. The developer has no access.
 
 **Permissions**
 - *Internet* and *network state*: to reach your Home Assistant server and to choose between its internal and external address.
@@ -39,7 +39,7 @@ Source text of the page `https://stacknoise.com/haac/privacy`, which Google Play
 
 ## Deutsch
 
-*Stand: 2. Oktober 2026*
+*Stand: 19. Oktober 2026*
 
 **Verantwortlich.** Anton Graichen-Hartl, stacknoise.com, **[Postanschrift]**, Kontakt: **[anton.hartl@stacknoise.com]**. Diese Erklärung gilt für die Android-App „HAAC – HA Android Client“ (Paketname `com.stacknoise.haac`). HAAC steht in keiner Verbindung zu Home Assistant, der Open Home Foundation oder Nabu Casa und wird von ihnen nicht unterstützt.
 
@@ -48,10 +48,10 @@ Source text of the page `https://stacknoise.com/haac/privacy`, which Google Play
 **Was die App auf deinem Telefon speichert**
 - Das Anmelde-Token deines Home-Assistant-Kontos (Refresh-Token), verschlüsselt mit einem Schlüssel im Android Keystore. Dein Passwort wird nur einmal zur Anmeldung an deinem Home-Assistant-Server verwendet und nie gespeichert.
 - Adressen und Namen deiner Home-Assistant-Instanzen sowie der Zertifikatsschlüssel eines selbstsignierten Servers, dem du vertraut hast.
-- Deine Orte, Ebenen und Räume, die darin platzierten Entitäten mit lokalen Namen und Größen, eine Kopie der Zeitpläne, die Benachrichtigungsliste und deine Einstellungen (zum Beispiel das Design).
+- Deine Orte, Ebenen und Räume, die darin platzierten Entitäten mit lokalen Namen und Größen, eine Kopie der Zeitpläne, die Benachrichtigungsliste, die Schalter, die du mit dem Schaltschutz gesichert hast, und deine Einstellungen (zum Beispiel das Design).
 - Diese Daten sind vom Cloud-Backup und von der Geräteübertragung von Android ausgenommen. Sie werden gelöscht, wenn du eine Instanz entfernst (das Token wird auf deinem Server widerrufen) oder die App deinstallierst.
 
-**Was die App sendet und wohin.** Die App spricht nur mit den Home-Assistant-Servern, deren Adresse du eingegeben oder aus der Suche in deinem Netzwerk gewählt hast. Sie sendet deine Anmeldung und deine Befehle (zum Beispiel das Schalten eines Geräts) und empfängt Zustände, Verlauf und Zeitpläne, die dir dein Administrator über HAAC Bridge freigegeben hat. Diesen Server betreibt dein Home-Assistant-Administrator, der auch für die Daten darauf verantwortlich ist. Der Entwickler hat keinen Zugriff.
+**Was die App sendet und wohin.** Die App spricht nur mit den Home-Assistant-Servern, deren Adresse du eingegeben oder aus der Suche in deinem Netzwerk gewählt hast. Sie sendet deine Anmeldung und deine Befehle (zum Beispiel das Schalten eines Geräts) und empfängt Zustände, Verlauf und Zeitpläne, die dir dein Administrator über HAAC Bridge freigegeben hat. Dort liegen auch die Entitäten, die du deaktiviert hast, und ein kurzes Protokoll der Läufe deiner Zeitpläne. Diesen Server betreibt dein Home-Assistant-Administrator, der auch für die Daten darauf verantwortlich ist. Der Entwickler hat keinen Zugriff.
 
 **Berechtigungen**
 - *Internet* und *Netzwerkstatus*: um deinen Home-Assistant-Server zu erreichen und zwischen interner und externer Adresse zu wählen.
