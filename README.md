@@ -6,13 +6,13 @@ Native Android client for Home Assistant. You build your own homes, levels and r
 
 ## Why HAAC and not the Companion App?
 
-The official Home Assistant Companion App shows everything the signed-in user can reach: Home Assistant has no per-entity permissions for users, so in practice every user sees every entity. **HAAC lets the admin share individual entities per user.** In the HAAC Bridge (on the Home Assistant side) the admin decides, user by user, which switches, sensors and climate devices the app may show and control, with domain, entity and wildcard rules and explicit excludes, in the Home Assistant UI or in YAML. A user who is not configured sees nothing. The app talks to entities only through the bridge, never through Home Assistant's generic state and service APIs, and each user arranges the shared entities in their own homes, levels and rooms.
+The official Home Assistant Companion App shows everything the signed-in user can reach: Home Assistant has no per-entity permissions for users, so in practice every user sees every entity. **HAAC lets the admin share individual entities per user.** In the HAAC Bridge (on the Home Assistant side) the admin decides, user by user, which switches, sensors, binary sensors and climate devices the app may show and control, with domain, entity and wildcard rules and explicit excludes, in the Home Assistant UI or in YAML. A user who is not configured sees nothing. The app talks to entities only through the bridge, never through Home Assistant's generic state and service APIs, and each user arranges the shared entities in their own homes, levels and rooms.
 
 This limits what the app shows and controls. It is not a Home Assistant permission: someone holding a user's access token can still use Home Assistant's standard API directly. Use a dedicated non-admin user per person (see the [bridge README](https://github.com/stacknoise/haac-bridge#security-note)).
 
-**Status:** version 0.5.0, available as a signed sideload APK on GitHub Releases (not on Google Play yet). Feature complete for v1, plus schedules, a dark design and a demo mode.
+**Status:** version 0.6.0, available as a signed sideload APK on GitHub Releases (not on Google Play yet). Feature complete for v1, plus schedules, binary sensors, a dark design and a demo mode.
 
-- Supported entity domains in v1: switch, sensor, climate.
+- Supported entity domains: switch, sensor, binary sensor (read-only), climate.
 - Android 9 (API 28) or newer.
 - Requires Home Assistant 2026.9.0 or newer with HAAC Bridge installed.
 - Install: download `haac-vX.Y.Z-sideload.apk` from the [latest GitHub Release](https://github.com/stacknoise/haac-android/releases/latest), compare its SHA-256 with the `.sha256` file next to it and open it on the phone (allow installs from this source once).
@@ -32,7 +32,17 @@ This limits what the app shows and controls. It is not a Home Assistant permissi
   </tr>
 </table>
 
-The screenshots show the German interface; the app follows the system language.
+Binary sensors (door, motion, smoke and similar, shown read-only with the state in words):
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/mockups/png/M-29-room-binary-sensors.png" width="220" alt="Room with binary sensors"><br>Room</td>
+    <td align="center"><img src="docs/mockups/png/M-30-add-binary-sensors.png" width="220" alt="Add binary sensors"><br>Add binary sensors</td>
+    <td align="center"><img src="docs/mockups/png/M-31-binary-sensor-detail.png" width="220" alt="Binary sensor detail"><br>Detail with history</td>
+  </tr>
+</table>
+
+The first group shows the German interface of the app; the binary sensor images are design mockups (`docs/mockups`). The app follows the system language.
 
 ## Features
 
