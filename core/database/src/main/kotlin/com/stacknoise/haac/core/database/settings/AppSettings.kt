@@ -10,8 +10,10 @@ import kotlinx.serialization.json.Json
 
 /**
  * Non-sensitive app settings in the typed DataStore (concept 12); never secrets. [shortcutKey] only tells the
- * shortcut intents of this installation from foreign ones; it opens no account. Whether an instance uses
- * fingerprint unlock is not stored here: it follows from the key that protects its token (concept 5.4).
+ * shortcut intents of this installation from foreign ones; it opens no account. [deviceName] is the name the app
+ * sends with switching actions: null until the user changes it (the device model is used then), empty for none
+ * (concept 21.5). Whether an instance uses fingerprint unlock is not stored here: it follows from the key that
+ * protects its token (concept 5.4).
  */
 @Serializable
 data class AppSettings(
@@ -20,6 +22,7 @@ data class AppSettings(
     val lockTimeoutMinutes: Int = SecuritySettings.DEFAULT_LOCK_TIMEOUT_MINUTES,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val shortcutKey: String? = null,
+    val deviceName: String? = null,
 )
 
 /** Reads and writes [AppSettings] as JSON. */

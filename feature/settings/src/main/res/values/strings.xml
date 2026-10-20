@@ -34,6 +34,9 @@
     <string name="settings_theme_system">System</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
+    <string name="settings_device">Device</string>
+    <string name="settings_device_name">Device name</string>
+    <string name="settings_device_name_hint">Sent with every switching action, so Home Assistant can show where it came from. Visible in Home Assistant, in its log and on its Activity page. Leave empty to send no name.</string>
     <string name="settings_about">About</string>
     <string name="about_version">Version %1$s</string>
     <string name="about_license">HAAC is open source under the Apache License 2.0.</string>

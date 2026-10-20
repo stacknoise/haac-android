@@ -27,4 +27,17 @@ class AppSettingsSerializerTest {
 
         assertEquals(ThemeMode.DARK, read(out.toString(Charsets.UTF_8)).themeMode)
     }
+
+    @Test
+    fun `a settings file from before the device name has none stored`() {
+        assertEquals(null, read("""{"activeServerId":"s1"}""").deviceName)
+    }
+
+    @Test
+    fun `an empty device name survives a write and a read`() {
+        val out = ByteArrayOutputStream()
+        runBlocking { AppSettingsSerializer.writeTo(AppSettings(deviceName = ""), out) }
+
+        assertEquals("", read(out.toString(Charsets.UTF_8)).deviceName)
+    }
 }

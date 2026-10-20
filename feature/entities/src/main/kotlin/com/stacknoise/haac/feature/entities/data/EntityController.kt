@@ -1,8 +1,10 @@
 package com.stacknoise.haac.feature.entities.data
 
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
+import com.stacknoise.haac.core.database.settings.DeviceNameSettings
 import com.stacknoise.haac.core.error.ErrorFactory
 import com.stacknoise.haac.core.error.HaacException
+import com.stacknoise.haac.core.network.bridge.ClientField
 import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.core.network.connection.connected
 import com.stacknoise.haac.core.network.connection.requireOpen
@@ -76,7 +78,9 @@ class EntityController @Inject constructor(
     private suspend fun perform(key: EntityKey, request: ControlRequest) {
         val entity = entities.require(key.serverId, key.entityId, tools.errors)
         val channel = live.requireOpen()
-        channel.request(CALL_SERVICE, tools.calls.create(entity, request).fields())
+        val fields = tools.calls.create(entity, request).fields()
+        val named = ClientField.attach(fields, tools.deviceName.deviceName.first(), channel.features)
+        channel.request(CALL_SERVICE, named)
         withTimeoutOrNull(CONFIRM_MS) {
             states.of(key.serverId, key.entityId).first { it?.let(request::isConfirmedBy) == true }
         }
@@ -95,7 +99,7 @@ class EntityController @Inject constructor(
     }
 }
 
-/** What [EntityController] needs to build calls and read states. */
+/** What [EntityController] needs to build calls, read states and name the device. */
 class ControlTools @Inject constructor(
     /** Builds and checks the service calls. */
     val calls: ServiceCallFactory,
@@ -103,4 +107,6 @@ class ControlTools @Inject constructor(
     val errors: ErrorFactory,
     /** Decodes the cached states. */
     val json: Json,
+    /** The device name sent with a call when the bridge accepts it (concept 21.5). */
+    val deviceName: DeviceNameSettings,
 )
