@@ -41,7 +41,7 @@ Steuere die dir freigegebenen Home-Assistant-Geräte, mit Zeitplänen.
 ```text
 HAAC lets you control the Home Assistant devices that your administrator shared with you, and nothing else.
 
-Home Assistant has no per-entity permissions for users, so the official Companion App shows everything a signed-in user can reach. HAAC works differently: the administrator decides, user by user, which switches, sensors and climate devices the app may show and control. A user who is not configured sees nothing. This needs the free integration HAAC Bridge on your Home Assistant server (installed through HACS, https://github.com/stacknoise/haac-bridge).
+Home Assistant has no per-entity permissions for users, so the official Companion App shows everything a signed-in user can reach. HAAC works differently: the administrator decides, user by user, which switches, sensors, binary sensors and climate devices the app may show and control. A user who is not configured sees nothing. This needs the free integration HAAC Bridge on your Home Assistant server (installed through HACS, https://github.com/stacknoise/haac-bridge).
 
 No server at hand? Tap "Try the demo" on the first screen to look around with sample data.
 
@@ -52,6 +52,7 @@ Your home, your way
 
 Control
 • Switches with a toggle on the tile.
+• Binary sensors (door, window, motion, smoke and more) show their state in words, with an alarm highlight, and keep a history.
 • Climate devices with a target temperature dial; on the detail screen HVAC mode, presets, fan, swing, humidity and target range as far as the device supports them.
 • Clear messages when an action is not available, and a "stale" indication when the connection is down.
 
@@ -91,7 +92,7 @@ HAAC is not affiliated with or endorsed by Home Assistant, the Open Home Foundat
 ```text
 Mit HAAC steuerst du die Home-Assistant-Geräte, die dir dein Administrator freigegeben hat, und sonst nichts.
 
-Home Assistant kennt keine Rechte pro Entität für Benutzer, deshalb zeigt die offizielle Companion App alles, was ein angemeldeter Benutzer erreichen kann. HAAC arbeitet anders: Der Administrator legt Benutzer für Benutzer fest, welche Schalter, Sensoren und Klimageräte die App anzeigen und steuern darf. Ein nicht eingerichteter Benutzer sieht nichts. Dafür braucht dein Home-Assistant-Server die kostenlose Integration HAAC Bridge (Installation über HACS, https://github.com/stacknoise/haac-bridge).
+Home Assistant kennt keine Rechte pro Entität für Benutzer, deshalb zeigt die offizielle Companion App alles, was ein angemeldeter Benutzer erreichen kann. HAAC arbeitet anders: Der Administrator legt Benutzer für Benutzer fest, welche Schalter, Sensoren, Binärsensoren und Klimageräte die App anzeigen und steuern darf. Ein nicht eingerichteter Benutzer sieht nichts. Dafür braucht dein Home-Assistant-Server die kostenlose Integration HAAC Bridge (Installation über HACS, https://github.com/stacknoise/haac-bridge).
 
 Gerade kein Server zur Hand? Tippe auf dem ersten Bildschirm auf „Demo ausprobieren“ und sieh dich mit Beispieldaten um.
 
@@ -102,6 +103,7 @@ Dein Zuhause, auf deine Art
 
 Steuern
 • Schalter mit einem Umschalter direkt auf der Kachel.
+• Binärsensoren (Tür, Fenster, Bewegung, Rauch und mehr) zeigen ihren Zustand in Worten, mit Alarm-Hervorhebung, und haben einen Verlauf.
 • Klimageräte mit einem Drehregler für die Zieltemperatur; auf dem Detailbildschirm HVAC-Modus, Voreinstellungen, Lüfter, Swing, Feuchte und Zielbereich, soweit das Gerät sie unterstützt.
 • Klare Meldungen, wenn eine Aktion nicht möglich ist, und ein Hinweis „veraltet“, wenn die Verbindung fehlt.
 
