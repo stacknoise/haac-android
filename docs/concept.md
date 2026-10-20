@@ -1978,7 +1978,7 @@ Not in scope: an own log store or log viewer in the bridge or the app. The log i
 
 ### 21.3 What is logged
 
-One line per event, `key=value`, written by the audit log only (21.6). Values that a user can type (schedule names, `service_data` values, the device name) are written with `repr`, so a line break cannot forge a log line.
+One line per event, `key=value`, written by the audit log only (21.6). Values that a user can type (schedule names, `service_data` values, the device name) are written as JSON text (`format_value`: quotes and line breaks are escaped), so a line break cannot forge a log line.
 
 | Event | Level | Content |
 | --- | --- | --- |
@@ -1986,15 +1986,12 @@ One line per event, `key=value`, written by the audit log only (21.6). Values th
 | `call_service` refused or failed | warning | as before (HAB code, command, user) plus entity, service and device name; written once, by the command wrapper |
 | Schedule run, per entity succeeded | info | schedule id and name, owner, trigger (`plan`, or `manual` with the starting user), device name of a manual run, entity, service |
 | Schedule run, result | info | `ok`, `partial`, `failed` or `missed`, n of m entities, whether the schedule was removed afterwards |
-| Schedule paused or resumed | info | schedule id, reason (`no_entities`, `owner_inactive`, `entity_disabled`, `sun_unavailable`) |
+| Schedule run did not take place | info, `warning` for `missed` | schedule id and name, owner, reason (`missed`, `paused_no_entities`, `paused_owner_inactive`) |
 | Schedule created, changed, deleted, switched on or off | info | user, schedule id and name, trigger, repeat, number of entities |
 | Entity deactivated or activated (7.5) | info | user, entity, number of schedules switched off or on again |
-| Administrator changes the configuration (user added, changed, removed; YAML import; reload; log level) | info | affected user, number of filter rules; the rules themselves only at `debug` |
+| Configuration changed (options saved, `haac_bridge.reload`, log level or Activity switch) | info | what changed, number of users, the new level and switch for a logging change; filter rules are never written |
 | Integration started | info | version, `api_version`, features, number of users and schedules |
-| Every `haac_bridge/*` command | debug | type, user, duration, size of the reply |
-| Subscriptions start and end | debug | user, kind, number of entities |
-| Entity list, history and statistics requested | debug | user, number of entities, period |
-| Exposure caches cleared, revision changed | debug | reason |
+| Every `haac_bridge/*` command, read-only ones included | debug | type, user id, duration in ms |
 | Unexpected error (`HAB-INT-000`) | error | as before, with traceback |
 
 Read-only requests never appear above `debug`. States and attributes are never logged, so the hidden attributes (11.3) cannot reach the log. Tokens, token ids and IP addresses are never logged.
@@ -2003,7 +2000,7 @@ Example lines:
 
 ```text
 INFO  audit action=call_service user=anton(1a2b3c4d) source=app client="Pixel 8" entity=switch.garage service=turn_on data={} result=ok ms=42
-INFO  audit action=schedule_run schedule="Morning light"(9f8e7d6c) owner=anton trigger=plan entity=switch.hall service=turn_on result=ok
+INFO  audit action=schedule_run schedule="Morning light" id=9f8e7d6c owner=anton(1a2b3c4d) trigger=plan entity=switch.hall service=turn_on result=ok
 WARN  command HAB-SVC-001 in haac_bridge/call_service (user anton) entity=switch.heating service=turn_on client="Pixel 8"
 ```
 
@@ -2011,18 +2008,19 @@ WARN  command HAB-SVC-001 in haac_bridge/call_service (user anton) entity=switch
 
 ### 21.4 Activity page
 
-The bridge fires the event `haac_bridge_action` once per carried-out switching action and describes it through the logbook platform `logbook.py` in the integration folder (the module offers `async_describe_events(hass, async_describe_event)` and returns name, message, `entity_id` and `context_id`, like the platforms of `automation` and `script`). The Activity page then shows the entry on the entity's history as well.
+The bridge fires the event `haac_bridge_action` once per carried-out switching action and describes it through the logbook platform `logbook.py` in the integration folder (the module offers `async_describe_events(hass, async_describe_event)` and returns name, message and `entity_id`, like the platforms of `automation` and `script`). The Activity page then shows the entry on the entity's history as well.
 
 | Occasion | Text | Entity |
 | --- | --- | --- |
 | App controls an entity | "turned on via HAAC app (Pixel 8)", with a value for climate: "set temperature to 21.5 via HAAC app" | yes |
 | The service fails (`HAB-SVC-003`) | "turn on failed via HAAC app" | yes |
+| Another client of the bridge (not the app's login) | "turned on via HAAC Bridge" | yes |
 | Schedule run, per entity | "turned off by a schedule", "turn off failed by a schedule" | yes |
 | Schedule run missed or paused | "HAAC schedule did not run" | no |
 
 - **Not shown:** refused calls (`HAB-SVC-001`, `HAB-SVC-002`, `HAB-ENT-002`) and everything that only changes the bridge data (schedules, deactivation, configuration). These go to the log only. A refused call names an entity that the user typed and may not see; schedule names are private to their owner and the administrators (19.2).
 - **Context.** `ServiceCallFactory.create` creates the `Context` of the call (the user, or the user who started a manual run, 19.3); the same context goes into the service call and the event. HA then shows the state change and the bridge entry as one action by that user.
-- `service_data` is part of the event only for a successful call; it is checked by HA and limited to the keys of 11.4.
+- The event carries `action`, `result`, `entity_id`, `service`, `source`, `client` (if sent) and, for a successful call only, `data`; it is checked by HA and limited to the keys of 11.4.
 - The text of the device name is part of the event, so every HA user who can see the entity's activity sees it (21.5).
 - One event per action. The worst case is a schedule with 20 entities per user, up to 50 schedules, at the same minute; the recorder stores them like any other event.
 - The switch *Show actions in the Activity page* (default on) turns the events off; the log is not affected.
@@ -2036,7 +2034,7 @@ The bridge fires the event `haac_bridge_action` once per carried-out switching a
 
 ### 21.6 Code layout (bridge)
 
-New topic `audit/` (18.1): `levels.py` (`LogLevel`, reading the option and YAML, applying the level), `entry.py` (`AuditEntry`), `factory.py` (`AuditEntryFactory`, 18.2), `log.py` (`AuditLog.record(entry)`: writes the line to the logger `custom_components.haac_bridge.audit` and fires the event if the Activity switch is on), `describe.py` (Activity text from the event data) and, in the integration folder, the thin platform `logbook.py`. `HaacBridgeData` gets `audit` and `audit_entries` (with a no-op stand-in until they exist). Call sites call `AuditLog.record`; none writes an `info` line of its own. `HaacBridgeError` gets an optional `context` (entity, service, device name) that the command wrapper adds to its single error line (18.3: every error is logged once).
+New topic `audit/` (18.1): `levels.py` (`LogLevel`, reading the option and YAML, applying the level), `entry.py` (`AuditEntry`), `factory.py` (`AuditEntryFactory`, 18.2), `log.py` (`AuditLog.record(entry)`: writes the line to the logger `custom_components.haac_bridge.audit` and fires the event if the Activity switch is on), `describe.py` (Activity text from the event data), `client.py` (the `client` request field and the source of a call), `actions.py` (the audited service call of `haac_bridge/call_service`, so `api/` holds no logic) and, in the integration folder, the thin platform `logbook.py`. `HaacBridgeData` gets `audit` and `audit_entries` (with a no-op stand-in until they exist). Call sites call `AuditLog.record`; none writes an `info` line of its own. `HaacBridgeError` gets an optional `details` (entity, service, device name) that the command wrapper adds to its single error line (18.3: every error is logged once).
 
 ### 21.7 Security and privacy
 
