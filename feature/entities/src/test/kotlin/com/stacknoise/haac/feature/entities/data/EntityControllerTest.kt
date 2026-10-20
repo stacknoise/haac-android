@@ -2,6 +2,7 @@ package com.stacknoise.haac.feature.entities.data
 
 import com.stacknoise.haac.core.database.entity.ExposedEntity
 import com.stacknoise.haac.core.database.entity.ExposedEntityDao
+import com.stacknoise.haac.core.database.settings.DeviceNameSettings
 import com.stacknoise.haac.core.error.BridgeException
 import com.stacknoise.haac.core.error.DefaultErrorFactory
 import com.stacknoise.haac.core.error.ErrorCode
@@ -72,6 +73,7 @@ class EntityControllerTest {
     /** Records the service calls; [failure] rejects them. */
     private val channel = object : BridgeChannel {
         override val isOpen = true
+        override var features: Set<String> = emptySet()
         val calls = mutableListOf<JsonObject>()
         var failure: HaacException? = null
 
@@ -94,7 +96,13 @@ class EntityControllerTest {
     private val reported = mutableListOf<ErrorCode>()
     private var rechecks = 0
     private val failures = ControlFailures({ error, _ -> reported += error.code }) { rechecks++ }
-    private val tools = ControlTools(DefaultServiceCallFactory(), DefaultErrorFactory(), Json)
+    private val deviceName = object : DeviceNameSettings {
+        val name = MutableStateFlow("Pixel 8")
+        override val deviceName: Flow<String> = name
+
+        override suspend fun setDeviceName(name: String) = Unit
+    }
+    private val tools = ControlTools(DefaultServiceCallFactory(), DefaultErrorFactory(), Json, deviceName)
 
     private fun TestScope.controller() = EntityController(live, dao, states, tools, pending, failures, backgroundScope)
 
@@ -115,6 +123,30 @@ class EntityControllerTest {
         confirm("switch.lamp", """{"state":"on"}""")
         runCurrent()
         assertEquals(null, shown("switch.lamp"))
+    }
+
+    @Test
+    fun `the device name is sent when the bridge lists client_info`() = runTest {
+        channel.features = setOf("client_info")
+        controller().send("s1", "switch.lamp", ControlRequest.SwitchTo(on = true))
+        runCurrent()
+        assertEquals("Pixel 8", channel.calls.single()["client"]?.jsonPrimitive?.content)
+    }
+
+    @Test
+    fun `an older bridge gets no client field`() = runTest {
+        controller().send("s1", "switch.lamp", ControlRequest.SwitchTo(on = true))
+        runCurrent()
+        assertEquals(null, channel.calls.single()["client"])
+    }
+
+    @Test
+    fun `an empty device name sends no client field`() = runTest {
+        channel.features = setOf("client_info")
+        deviceName.name.value = ""
+        controller().send("s1", "switch.lamp", ControlRequest.SwitchTo(on = true))
+        runCurrent()
+        assertEquals(null, channel.calls.single()["client"])
     }
 
     @Test

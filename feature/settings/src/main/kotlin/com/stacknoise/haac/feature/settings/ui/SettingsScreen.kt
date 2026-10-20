@@ -60,7 +60,11 @@ fun SettingsScreen(
         onSignOut = viewModel::onSignOut,
         instances = instances,
         addresses = { AddressesSection() },
-        appearance = { AppearanceSection() },
+        appearance = {
+            AppearanceSection()
+            Spacer(Modifier.height(32.dp))
+            DeviceNameSection()
+        },
         diagnostics = { DiagnosticsSection() },
         about = { AboutSection(onOpenLicenses) },
         security = SecurityActions(

@@ -25,7 +25,9 @@ import com.stacknoise.haac.core.database.settings.AppSettingsSerializer
 import com.stacknoise.haac.core.database.settings.AppearanceSettings
 import com.stacknoise.haac.core.database.settings.DataStoreActiveInstanceStore
 import com.stacknoise.haac.core.database.settings.DataStoreAppearanceSettings
+import com.stacknoise.haac.core.database.settings.DataStoreDeviceNameSettings
 import com.stacknoise.haac.core.database.settings.DataStoreSecuritySettings
+import com.stacknoise.haac.core.database.settings.DeviceNameSettings
 import com.stacknoise.haac.core.database.settings.SecuritySettings
 import dagger.Binds
 import dagger.Module
@@ -50,6 +52,10 @@ abstract class DatabaseModule {
     /** Appearance settings in the settings DataStore. */
     @Binds
     abstract fun bindAppearanceSettings(settings: DataStoreAppearanceSettings): AppearanceSettings
+
+    /** Device name setting in the settings DataStore. */
+    @Binds
+    abstract fun bindDeviceNameSettings(settings: DataStoreDeviceNameSettings): DeviceNameSettings
 
     /** Transactions of the app database. */
     @Binds
