@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-/** The device name the app sends with a switching action, so Home Assistant can show where it came from (concept 21.5). */
+/** The device name sent with a switching action, so Home Assistant can show where it came from (concept 21.5). */
 object DeviceName {
     /** The longest name the bridge accepts. */
     const val MAX_LENGTH = 40
