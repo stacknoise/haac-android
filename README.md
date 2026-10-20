@@ -10,11 +10,12 @@ The official Home Assistant Companion App shows everything the signed-in user ca
 
 This limits what the app shows and controls. It is not a Home Assistant permission: someone holding a user's access token can still use Home Assistant's standard API directly. Use a dedicated non-admin user per person (see the [bridge README](https://github.com/stacknoise/haac-bridge#security-note)).
 
-**Status:** version 0.6.0, available as a signed sideload APK on GitHub Releases (not on Google Play yet). Feature complete for v1, plus schedules, binary sensors, a dark design and a demo mode.
+**Status:** version 0.7.0, available as a signed sideload APK on GitHub Releases (not on Google Play yet). Feature complete for v1, plus schedules, binary sensors, a dark design and a demo mode.
 
 - Supported entity domains: switch, sensor, binary sensor (read-only), climate.
 - Android 9 (API 28) or newer.
 - Requires Home Assistant 2026.9.0 or newer with HAAC Bridge installed.
+- With HAAC Bridge 0.6.0 or newer the app sends a device name (Settings → Device, the phone model by default, can be changed or left empty) with every switching action, so Home Assistant's log and Activity page show which device switched.
 - Install: download `haac-vX.Y.Z-sideload.apk` from the [latest GitHub Release](https://github.com/stacknoise/haac-android/releases/latest), compare its SHA-256 with the `.sha256` file next to it and open it on the phone (allow installs from this source once).
 
 ## Screenshots
