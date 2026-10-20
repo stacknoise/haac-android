@@ -37,6 +37,7 @@ Native Android client for Home Assistant (HA). This repository contains the Andr
 | Mockups, design tokens, screen specs | 15 |
 | GitHub repos, branches, CI/CD, secrets | 16 |
 | Development guidelines: packages, factories, errors, code index | 17 |
+| Bridge logging, log level, HA Activity entries, device name | 21 |
 
 ## Repository layout
 
