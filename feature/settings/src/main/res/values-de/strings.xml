@@ -49,4 +49,7 @@
     <string name="diagnostics_reconnecting">Verbinde erneut …</string>
     <string name="diagnostics_failed">Nicht verbunden</string>
     <string name="diagnostics_idle">Nicht verbunden</string>
+    <string name="settings_device">Gerät</string>
+    <string name="settings_device_name">Gerätename</string>
+    <string name="settings_device_name_hint">Wird bei jeder Schaltaktion mitgeschickt, damit Home Assistant zeigen kann, woher sie kam. Sichtbar in Home Assistant, im Protokoll und auf der Aktivitätsseite. Leer lassen, um keinen Namen zu senden.</string>
 </resources>
