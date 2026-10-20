@@ -65,6 +65,7 @@ Schedules
 Control
 • Deactivate a device temporarily; its schedules pause and resume when you activate it again.
 • Switch guard: ask for confirmation before a protected switch is turned on or off.
+• Device name: switching actions carry the name of your phone, so Home Assistant shows where they came from.
 
 History
 • Charts for 24 hours, 7 days or a custom period for your sensors, switches and climate devices.
