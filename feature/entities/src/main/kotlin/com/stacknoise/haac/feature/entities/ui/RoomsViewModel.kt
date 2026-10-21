@@ -62,7 +62,7 @@ class RoomsViewModel @Inject constructor(
     private val savedState: SavedStateHandle,
     active: ActiveInstanceStore,
     places: PlaceRepository,
-    catalog: EntityCatalog,
+    private val catalog: EntityCatalog,
     private val writer: AssignmentWriter,
     private val controller: EntityController,
     private val switchGuards: SwitchGuards,
@@ -101,6 +101,13 @@ class RoomsViewModel @Inject constructor(
     /** Whether the connection is open and whether the cached states count as stale (concept 14.1). */
     private val link: Flow<Pair<Boolean, Boolean>> =
         combine(controller.connected, controller.stale) { connected, stale -> connected to stale }
+
+    /** The number of tiles per room, shown in the place tree (concept 15.7). */
+    val tileCounts: StateFlow<Map<String, Int>> = active.activeServerId
+        .flatMapLatest { id ->
+            if (id == null) flowOf(emptyMap()) else catalog.roomTileCounts(id).reportErrors(emptyMap())
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), emptyMap())
 
     /** The current screen state. */
     val state: StateFlow<RoomsUiState> =

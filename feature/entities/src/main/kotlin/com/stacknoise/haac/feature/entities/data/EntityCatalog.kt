@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 
 /**
  * Reads the entities of an instance as tiles: per room for the grid, all of them for the picker (concept 7). Live
@@ -88,6 +89,11 @@ class EntityCatalog @Inject constructor(
             }
         }.flowOn(dispatcher).databaseErrors()
     }
+
+    /** The number of tiles per room of instance [serverId], keyed by room id (place tree, concept 15.7). */
+    fun roomTileCounts(serverId: String): Flow<Map<String, Int>> = assignments.observeAll(serverId)
+        .map { rows -> rows.groupingBy { it.roomId }.eachCount() }
+        .databaseErrors()
 
     /** Database errors of a flow arrive as HAAC-DB-001. */
     private fun <T> Flow<T>.databaseErrors(): Flow<T> =
