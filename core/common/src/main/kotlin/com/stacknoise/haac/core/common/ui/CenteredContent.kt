@@ -15,6 +15,9 @@ val ReadableContentWidth: Dp = 640.dp
 /** Width of the card on the sign-in and lock screens from the medium class on (concept 15.7). */
 val CardContentWidth: Dp = 480.dp
 
+/** Width of the list pane next to a detail pane in the expanded class (concept 15.7). */
+val ListPaneWidth: Dp = 420.dp
+
 /**
  * Limits the content to [maxWidth] and centres it; Compact keeps the full width.
  *

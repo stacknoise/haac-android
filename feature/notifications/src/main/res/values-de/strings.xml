@@ -2,6 +2,8 @@
 <resources>
     <string name="notifications_title">Benachrichtigungen</string>
     <string name="notifications_back">Zurück</string>
+    <string name="notifications_close">Schließen</string>
+    <string name="notifications_detail_empty">Wähle links einen Fehler, um die Details zu sehen.</string>
     <string name="notifications_mark_all_read">Alle als gelesen markieren</string>
     <string name="notifications_today">Heute</string>
     <string name="notifications_yesterday">Gestern</string>
