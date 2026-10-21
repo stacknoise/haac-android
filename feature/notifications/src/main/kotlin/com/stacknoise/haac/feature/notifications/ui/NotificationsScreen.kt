@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.centeredContent
 import com.stacknoise.haac.core.common.ui.theme.HaacEmptyState
 import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
@@ -120,6 +121,7 @@ fun NotificationsContent(state: NotificationsUiState, actions: NotificationActio
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .centeredContent()
             .padding(horizontal = 20.dp),
     ) {
         item { Header(actions, canDeleteAll = state.days.isNotEmpty()) }

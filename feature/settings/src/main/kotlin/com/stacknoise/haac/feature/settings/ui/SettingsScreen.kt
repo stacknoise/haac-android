@@ -27,6 +27,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.SecureWindow
+import com.stacknoise.haac.core.common.ui.centeredContent
 import com.stacknoise.haac.core.common.ui.findActivity
 import com.stacknoise.haac.core.common.ui.theme.HaacCard
 import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
@@ -95,6 +96,7 @@ fun SettingsContent(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
+            .centeredContent()
             .padding(horizontal = 20.dp, vertical = 16.dp),
     ) {
         HaacScreenTitle(stringResource(R.string.settings_title))
