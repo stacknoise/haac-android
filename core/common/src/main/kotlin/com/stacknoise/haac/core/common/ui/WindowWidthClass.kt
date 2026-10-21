@@ -3,7 +3,7 @@ package com.stacknoise.haac.core.common.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
 
 /** Width class of the app window: phone, tablet in portrait, tablet in landscape (concept 15.7). */
 enum class WindowWidthClass { Compact, Medium, Expanded }
@@ -27,6 +27,6 @@ val LocalWindowWidthClass = compositionLocalOf { WindowWidthClass.Compact }
 /** Provides [LocalWindowWidthClass] for [content]; follows rotation and window resizing (concept 15.7). */
 @Composable
 fun ProvideWindowWidthClass(content: @Composable () -> Unit) {
-    val widthDp = LocalConfiguration.current.screenWidthDp
+    val widthDp = LocalWindowInfo.current.containerDpSize.width.value.toInt()
     CompositionLocalProvider(LocalWindowWidthClass provides windowWidthClassOf(widthDp), content = content)
 }
