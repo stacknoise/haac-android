@@ -1,0 +1,257 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HAAC Tablet Mockups</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap"><style>
+:root{
+  --bg:#F3F5F0; --surface:#FFFFFF; --muted:#EDF1E9; --track:#E8EDE4; --outline:#E2E7DD; --outline-strong:#CBD3C6;
+  --on:#1D2620; --on-var:#5A6A5F; --accent:#2F6B4F; --on-accent:#FFFFFF; --tint:rgba(47,107,79,.10); --tint-border:rgba(47,107,79,.47);
+  --tint-strong:#E3EFE6; --sw-off:#B9C3B3; --thumb-off:#FFFFFF; --nav:#FAFBF8; --nav-border:#DDE3D8; --dis-bg:#E4E9DF; --dis-fg:#6B7A70;
+  --danger:#9B2C2C; --danger-c:#F6E3E1; --warn:#8A5A00; --warn-c:#F6ECD6; --scrim:rgba(29,38,32,.5);
+  --page:#E6EAE2; --page-fg:#1D2620; --page-sub:#5A6A5F; --frame:#1D2620;
+  --font:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111713; --surface:#1A221D; --muted:#212B25; --track:#26312A; --outline:#2B372F; --outline-strong:#3F4D44;
+  --on:#E4EBE5; --on-var:#9DAEA2; --accent:#6FC79A; --on-accent:#0C2418; --tint:rgba(111,199,154,.15); --tint-border:rgba(111,199,154,.53);
+  --tint-strong:#1F3A2D; --sw-off:#3A4840; --thumb-off:#9AA89E; --nav:#161D19; --nav-border:#28322C; --dis-bg:#222C26; --dis-fg:#6E7D73;
+  --danger:#EF8F87; --danger-c:#3B1F1D; --warn:#E3B45C; --warn-c:#3A2E14; --scrim:rgba(0,0,0,.7);
+  --page:#0B0F0C; --page-fg:#E4EBE5; --page-sub:#9DAEA2; --frame:#2B372F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111713; --surface:#1A221D; --muted:#212B25; --track:#26312A; --outline:#2B372F; --outline-strong:#3F4D44;
+  --on:#E4EBE5; --on-var:#9DAEA2; --accent:#6FC79A; --on-accent:#0C2418; --tint:rgba(111,199,154,.15); --tint-border:rgba(111,199,154,.53);
+  --tint-strong:#1F3A2D; --sw-off:#3A4840; --thumb-off:#9AA89E; --nav:#161D19; --nav-border:#28322C; --dis-bg:#222C26; --dis-fg:#6E7D73;
+  --danger:#EF8F87; --danger-c:#3B1F1D; --warn:#E3B45C; --warn-c:#3A2E14; --scrim:rgba(0,0,0,.7);
+  --page:#0B0F0C; --page-fg:#E4EBE5; --page-sub:#9DAEA2; --frame:#2B372F; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--page);color:var(--page-fg);font-family:var(--font);margin:0}
+.wrap{max-width:1500px;margin:0 auto;padding:32px max(16px,env(safe-area-inset-left,0px)) 56px}
+header.page{max-width:72ch;display:grid;gap:8px;margin-bottom:28px}
+header.page h1{font-size:30px;font-weight:700;margin:0;text-wrap:balance}
+header.page p{margin:0;color:var(--page-sub);line-height:1.5;font-size:15px}
+.list{display:flex;flex-wrap:wrap;gap:40px 32px;align-items:flex-start}
+figure.fig{margin:0;display:grid;gap:10px}
+figcaption{display:grid;gap:3px;max-width:62ch}
+figcaption b{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--page-sub);font-weight:600}
+figcaption span{font-size:16px;font-weight:600}
+figcaption small{font-size:13px;color:var(--page-sub);line-height:1.4}
+/* The frame is drawn at real dp size (L 1280x800, P 800x1280) and scaled down on the page with zoom (--z). */
+.scale{zoom:var(--z,.56)}
+body.full .scale{zoom:1}
+.tab{border:10px solid var(--frame);border-radius:34px;background:var(--bg);color:var(--on);position:relative;overflow:hidden;display:flex;font-size:15px}
+.tab.L{width:1280px;height:800px}.tab.P{width:800px;height:1280px}
+.rail{width:80px;flex:none;background:var(--nav);border-right:1px solid var(--nav-border);display:flex;flex-direction:column;align-items:center;padding:18px 0;gap:6px}
+.rail .inst{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-weight:700;font-size:18px;margin-bottom:14px}
+.rail .it{width:80px;height:68px;display:grid;place-items:center;align-content:center;gap:4px;font-size:12px;color:var(--on-var);position:relative}
+.rail .it.act{color:var(--accent);font-weight:600}
+.rail .it.act::before{content:"";position:absolute;left:0;top:22px;width:3px;height:24px;background:var(--accent);border-radius:0 3px 3px 0}
+.rail .it svg{width:26px;height:26px}
+.rail .sp{flex:1}
+svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pane{display:flex;flex-direction:column;min-width:0;min-height:0}
+.pane.tree{width:264px;flex:none;border-right:1px solid var(--outline);padding:24px 14px;gap:6px;background:var(--bg)}
+.pane.main{flex:1;padding:26px 28px;gap:16px;overflow:hidden}
+.pane.det{width:380px;flex:none;border-left:1px solid var(--outline);background:var(--surface);padding:22px 24px;gap:16px;overflow:hidden}
+.pane.listp{width:420px;flex:none;border-right:1px solid var(--outline);padding:26px 22px;gap:14px;overflow:hidden}
+.pane.formp{flex:1;padding:26px 32px;gap:16px;overflow:hidden}
+.label{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--on-var)}
+.hd{display:flex;align-items:center;gap:12px}
+.hd .grow{flex:1;min-width:0}
+.title{font-size:34px;font-weight:700;line-height:1.1}
+.h2{font-size:22px;font-weight:700}
+.sub{font-size:13px;color:var(--on-var)}
+.ib{width:44px;height:44px;border-radius:16px;border:1px solid var(--outline-strong);display:grid;place-items:center;color:var(--on);position:relative;flex:none}
+.ib.fill{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ib .dot{position:absolute;top:9px;right:10px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:40px;padding:0 16px;border-radius:12px;border:1px solid var(--outline-strong);display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:var(--on-var)}
+.chip.sel{background:var(--on);color:var(--bg);border-color:var(--on)}
+.tgrid{display:grid;grid-template-columns:repeat(var(--c),1fr);grid-auto-rows:120px;gap:14px;grid-auto-flow:dense}
+.tile{border-radius:26px;background:var(--surface);border:1px solid var(--outline);padding:14px;display:flex;flex-direction:column;justify-content:space-between;position:relative;min-width:0}
+.tile.on{background:var(--tint);border:1.5px solid var(--tint-border)}
+.tile.sel{outline:3px solid var(--accent);outline-offset:2px}
+.tile.w{grid-column:span 2}.tile.l{grid-row:span 2}
+.tile .row{display:flex;justify-content:space-between;align-items:flex-start}
+.ibox{width:38px;height:38px;border-radius:14px;background:var(--muted);display:grid;place-items:center;color:var(--on-var)}
+.tile.on .ibox{background:var(--accent);color:var(--on-accent)}
+.tile.alarm{background:var(--danger-c);border-color:var(--danger)}.tile.alarm .ibox{background:var(--danger);color:var(--surface)}
+.tname{font-weight:700;font-size:16px;line-height:1.15}
+.tstate{font-size:13px;color:var(--on-var)}
+.sw{width:42px;height:24px;border-radius:12px;background:var(--sw-off);position:relative;flex:none}
+.sw::after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:var(--thumb-off);top:3px;left:3px}
+.sw.on{background:var(--accent)}.sw.on::after{left:21px;background:var(--on-accent)}
+.card{background:var(--surface);border:1px solid var(--outline);border-radius:22px;padding:14px 16px;display:grid;gap:6px}
+.card.sel{background:var(--tint);border:1.5px solid var(--tint-border)}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:var(--muted);color:var(--on-var);border:1px solid var(--outline-strong)}
+.crow{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+.btn{height:48px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;padding:0 22px}
+.btn.p{background:var(--accent);color:var(--on-accent)}
+.btn.s{border:1px solid var(--outline-strong);color:var(--on)}
+.seg{display:flex;background:var(--track);border-radius:14px;padding:4px}
+.seg span{flex:1;text-align:center;padding:9px 0;border-radius:10px;font-size:14px;font-weight:600;color:var(--on-var)}
+.seg span.sel{background:var(--on);color:var(--bg)}
+.field{border:1px solid var(--outline);background:var(--surface);border-radius:16px;padding:12px 16px;display:grid;gap:2px}
+.field b{font-size:20px}
+.tr{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px}
+.tr.sel{background:var(--tint)}
+.tr .chev{margin-left:auto;color:var(--on-var)}
+.tr .n{font-size:12px;color:var(--on-var);margin-left:auto}
+.ind{padding-left:22px}.ind2{padding-left:44px}
+.days{display:flex;gap:8px}
+.day{width:40px;height:40px;border-radius:50%;border:1px solid var(--outline-strong);display:grid;place-items:center;font-size:13px;font-weight:600;color:var(--on-var)}
+.day.sel{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.info{display:flex;gap:10px;padding:12px 14px;border-radius:16px;background:var(--tint-strong);font-size:13px;line-height:1.4}
+.scrim{position:absolute;inset:0;background:var(--scrim)}
+.sidesheet{position:absolute;top:0;bottom:0;right:0;background:var(--surface);border-radius:28px 0 0 28px;padding:24px;display:flex;flex-direction:column;gap:16px;overflow:hidden}
+.check{width:22px;height:22px;border-radius:6px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;flex:none}
+.check.off{background:transparent;border:1.5px solid var(--outline-strong)}
+.check svg{width:14px;height:14px;stroke-width:2.8}
+.hand{color:var(--on-var)}
+.badge-rm{position:absolute;top:-8px;left:-8px;width:26px;height:26px;border-radius:50%;background:var(--danger);color:var(--surface);display:grid;place-items:center;font-weight:700}
+.big{font-size:56px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--tint-strong);color:var(--accent);font-size:12px;font-weight:600}
+.empty{flex:1;display:grid;place-items:center;text-align:center;color:var(--on-var);gap:10px;align-content:center}
+.dlg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--surface);border-radius:32px;padding:26px;display:grid;gap:14px;width:560px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="rooms" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></symbol>
+  <symbol id="places" viewBox="0 0 24 24"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></symbol>
+  <symbol id="bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="plug" viewBox="0 0 24 24"><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/></symbol>
+  <symbol id="bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></symbol>
+  <symbol id="therm" viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/></symbol>
+  <symbol id="drop" viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></symbol>
+  <symbol id="door" viewBox="0 0 24 24"><path d="M6 21V4h12v17M4 21h16M14 12v.01"/></symbol>
+  <symbol id="walk" viewBox="0 0 24 24"><circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2-6-2-3 1-4 3 2 3 1M8 12l3-5"/></symbol>
+  <symbol id="close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="down" viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></symbol>
+  <symbol id="grip" viewBox="0 0 24 24"><path d="M9 6v.01M15 6v.01M9 12v.01M15 12v.01M9 18v.01M15 18v.01" stroke-width="3"/></symbol>
+  <symbol id="repeat" viewBox="0 0 24 24"><path d="M17 3l3 3-3 3M4 11V9a3 3 0 0 1 3-3h13M7 21l-3-3 3-3M20 13v2a3 3 0 0 1-3 3H4"/></symbol>
+  <symbol id="shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/></symbol>
+  <symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8v.01"/></symbol>
+</svg>
+<div class="wrap">
+<header class="page">
+  <h1>HAAC Tablet-Designkonzept: Mockups T-01 bis T-09</h1>
+  <p>Tablet im Querformat (1280 × 800 dp, Fensterklasse Expanded) und im Hochformat (800 × 1280 dp, Medium). Stil Salbei (Konzept 15.2), hell und dunkel nach Systemeinstellung. Texte sind Beispieldaten; die UI-Strings kommen englisch nach <code>strings.xml</code>, Deutsch in <code>values-de</code>. Die Rahmen sind hier verkleinert dargestellt; die PNGs zeigen sie in voller Größe.</p>
+</header>
+<div class="list" id="out"></div>
+</div>
+<script>
+const $=(s)=>`<svg class="i"><use href="#${s}"/></svg>`;
+const rail=(act,sched=true)=>`<nav class="rail"><div class="inst">H</div>
+ ${[['rooms','Räume','rooms'],['places','Orte','places'],['sched','Zeitpläne','clock']].map(([k,l,i])=>`<div class="it ${act==k?'act':''}">${$(i)}<span>${l}</span></div>`).join('')}
+ <div class="sp"></div><div class="it ${act=='set'?'act':''}">${$('gear')}<span>Einstellungen</span></div></nav>`;
+const ibtn=(i,x='')=>`<div class="ib ${x}">${$(i)}</div>`;
+const tile=(k,name,state,o={})=>{
+ const ic={sw:o.ic||'plug',se:o.ic||'therm',bi:o.ic||'door',cl:'therm'}[k];
+ const cls=['tile',o.on?'on':'',o.alarm?'alarm':'',o.w?'w':'',o.l?'l':'',o.sel?'sel':''].join(' ');
+ if(k=='cl')return `<div class="${cls}"><div class="row"><div class="ibox">${$('therm')}</div><span class="pill">Heizt</span></div>
+  <div style="display:grid;place-items:center"><svg width="120" height="64" viewBox="0 0 120 64"><path d="M10 60A50 50 0 0 1 110 60" fill="none" stroke="var(--track)" stroke-width="9" stroke-linecap="round"/><path d="M10 60A50 50 0 0 1 82 14" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round"/></svg>
+  <div style="font-size:30px;font-weight:700;margin-top:-30px">21,5°</div><div class="tstate">jetzt 20,8°</div></div>
+  <div class="row" style="align-items:center"><div class="tname">${name}</div><div style="display:flex;gap:8px"><div class="ib" style="width:34px;height:34px;border-radius:12px">${$('minus')}</div><div class="ib" style="width:34px;height:34px;border-radius:12px">${$('plus')}</div></div></div></div>`;
+ return `<div class="${cls}"><div class="row"><div class="ibox">${$(ic)}</div>${k=='sw'?`<div class="sw ${o.on?'on':''}"></div>`:''}</div><div><div class="tname">${name}</div><div class="tstate">${state}</div></div></div>`;
+};
+const room=(sel)=>[
+ tile('sw','Deckenlicht','An',{on:1,ic:'bulb'}),tile('sw','Stehlampe','An',{on:1,ic:'bulb'}),tile('cl','Heizung','',{l:1,sel:sel=='cl'}),
+ tile('sw','TV-Steckdose','Aus'),tile('se','Temperatur','21,4 °C'),tile('se','Luftfeuchte','48 %',{ic:'drop'}),
+ tile('bi','Terrassentür','Offen · seit 2 h',{w:1,on:1}),tile('bi','Bewegung','Keine',{ic:'walk'}),
+ tile('sw','Kaffeemaschine','Aus'),tile('sw','Ventilator','Aus'),tile('se','CO₂','612 ppm',{ic:'drop'}),tile('sw','Leseleuchte','Aus',{ic:'bulb'}),
+ tile('bi','Rauchmelder','Alles in Ordnung',{ic:'shield'}),tile('sw','Luftreiniger','An',{on:1}),tile('se','Helligkeit','120 lx',{ic:'bulb'}),tile('sw','Radio','Aus')
+];
+const tree=(room)=>`<aside class="pane tree"><div class="label" style="padding:0 10px 6px">Haus Hauptstraße</div>
+ <div class="tr">${$('home')}<b>Ganzes Haus</b></div>
+ <div class="tr ind"><span class="hand">${$('down')}</span><b>Erdgeschoss</b></div>
+ ${[['Wohnzimmer',9],['Küche',6],['Flur',3],['Esszimmer',4]].map(([n,c])=>`<div class="tr ind2 ${n==room?'sel':''}"><span style="${n==room?'font-weight:700':''}">${n}</span><span class="n">${c}</span></div>`).join('')}
+ <div class="tr ind"><span class="hand">${$('chev')}</span><b>Obergeschoss</b></div>
+ <div class="tr"><span style="width:20px"></span><b>Garten</b><span class="chev hand"></span></div>
+ <div class="sp" style="flex:1"></div><div class="tr" style="color:var(--accent);font-weight:600">${$('plus')} Ort anlegen</div></aside>`;
+const topbar=(t,sub,extra='')=>`<div class="hd"><div class="grow"><div class="label">${sub}</div><div class="title">${t}</div></div>${extra}${ibtn('bell','')}${ibtn('edit')}${ibtn('plus','fill')}</div>`;
+const detail=(close=1)=>`<div class="hd"><div class="grow"><div class="label">Heizung</div><div class="h2">Wohnzimmer</div></div>${ibtn('close')}</div>
+ <div style="display:grid;place-items:center;gap:2px;margin-top:6px"><svg width="260" height="140" viewBox="0 0 120 64"><path d="M10 60A50 50 0 0 1 110 60" fill="none" stroke="var(--track)" stroke-width="7" stroke-linecap="round"/><path d="M10 60A50 50 0 0 1 82 14" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/></svg>
+ <div class="big" style="margin-top:-56px">21,5°</div><div class="sub">jetzt 20,8° · heizt</div></div>
+ <div class="crow" style="justify-content:center;gap:20px">${ibtn('minus')}${ibtn('plus')}</div>
+ <div class="seg"><span class="sel">Heizen</span><span>Auto</span><span>Aus</span></div>
+ <div class="label">Verlauf · 24 Stunden</div>
+ <div class="card" style="padding:12px"><svg viewBox="0 0 300 120" width="100%" height="120"><g stroke="var(--outline)"><path d="M0 20H300M0 60H300M0 100H300"/></g>
+ <path d="M0 90C30 88 50 70 80 68S130 60 160 50 220 44 240 40 280 36 300 34" fill="none" stroke="#22A852" stroke-width="2.5"/><path d="M0 70H80V48H200V30H300" fill="none" stroke="#3987E5" stroke-width="2" stroke-dasharray="5 4"/></svg>
+ <div class="crow sub"><span style="color:#22A852">● Ist</span><span style="color:#3987E5">● Ziel</span><span style="margin-left:auto">06:00 – 12:00 – 18:00</span></div></div>
+ <div class="sub" style="font-family:var(--mono)">climate.wohnzimmer_heizung</div>`;
+const fig=(id,orient,name,cap,html)=>`<figure class="fig" id="${id}"><div class="scale" style="--z:${orient=='L'?.58:.45}"><div class="tab ${orient}">${html}</div></div><figcaption><b>${id.toUpperCase().replace('T','T-')} · ${orient=='L'?'Querformat':'Hochformat'}</b><span>${name}</span><small>${cap}</small></figcaption></figure>`;
+const F=[];
+// T-01
+F.push(fig('t01','L','Räume mit Ortsbaum','Rail, Ortsbaum und Raster mit 5 Spalten. Der Baum ersetzt Brotkrumen-Menü und Raumchips.',
+ rail('rooms')+tree('Wohnzimmer')+`<main class="pane main">${topbar('Wohnzimmer','Haus Hauptstraße · Erdgeschoss')}<div class="tgrid" style="--c:5">${room().join('')}</div></main>`));
+// T-02
+F.push(fig('t02','L','Räume mit Detailbereich','Langdruck → Details öffnet rechts einen festen Bereich (380 dp). Das Raster schrumpft auf 3 Spalten.',
+ rail('rooms')+tree('Wohnzimmer')+`<main class="pane main" style="padding:26px 24px">${topbar('Wohnzimmer','Haus Hauptstraße · Erdgeschoss')}<div class="tgrid" style="--c:3">${room('cl').slice(0,9).join('')}</div></main><aside class="pane det">${detail()}</aside>`));
+// T-03
+const chips=`<div class="chips">${['Wohnzimmer','Küche','Flur','Esszimmer'].map((n,i)=>`<div class="chip ${i==0?'sel':''}">${n}</div>`).join('')}</div>`;
+const ph=(t,s)=>`<div class="hd"><div class="grow"><div class="label" style="display:flex;gap:6px;align-items:center">${s} ${$('down')}</div><div class="title">${t}</div></div>${ibtn('bell')}${ibtn('edit')}${ibtn('plus','fill')}</div>`;
+F.push(fig('t03','P','Räume im Hochformat','Rail und ein Hauptbereich. Brotkrumen-Menü und Raumchips wie auf dem Telefon, Raster mit 4 Spalten.',
+ rail('rooms')+`<main class="pane main" style="padding:30px 28px">${ph('Wohnzimmer','Haus Hauptstraße · Erdgeschoss')}${chips}<div class="tgrid" style="--c:4">${room().join('')}</div></main>`));
+// T-04
+F.push(fig('t04','P','Details als Seitenblatt','In Medium öffnet das Detail modal von rechts (400 dp); das Raster bleibt dahinter unverändert.',
+ rail('rooms')+`<main class="pane main" style="padding:30px 28px">${ph('Wohnzimmer','Haus Hauptstraße · Erdgeschoss')}${chips}<div class="tgrid" style="--c:4">${room('cl').join('')}</div></main><div class="scrim"></div><aside class="sidesheet" style="width:400px">${detail()}</aside>`));
+// T-05
+const pl=(b,n,r,sel)=>`<div class="card ${sel?'sel':''}"><div class="crow"><span class="badge">${b}</span><div class="grow"><b style="font-size:17px">${n}</b></div><span class="sub">${r}</span></div></div>`;
+F.push(fig('t05','L','Orte: Liste und Formular','Liste links, Formular rechts. Das Erstellen-Menü wird ein Popup am Plus-Button.',
+ rail('places')+`<aside class="pane listp"><div class="hd"><div class="grow"><div class="title">Orte</div></div>${ibtn('plus','fill')}</div>
+ <div class="chips">${['Alle 8','Häuser 2','Ebenen 2','Räume 4'].map((c,i)=>`<div class="chip ${i==0?'sel':''}">${c}</div>`).join('')}</div>
+ ${pl('Haus','Haus Hauptstraße','2 Ebenen')}${pl('Ebene','Erdgeschoss','Haus Hauptstraße')}${pl('Ebene','Obergeschoss','Haus Hauptstraße',1)}${pl('Raum','Wohnzimmer','Erdgeschoss')}${pl('Raum','Küche','Erdgeschoss')}${pl('Raum','Bad','Obergeschoss')}${pl('Haus','Gartenhaus','Ohne Ebene')}</aside>
+ <section class="pane formp"><div class="label">Ebene bearbeiten</div><div class="title">Obergeschoss</div>
+ <div class="label">Gehört zu Haus</div><div class="chips"><div class="chip sel">Haus Hauptstraße</div><div class="chip">Gartenhaus</div></div>
+ <div class="label">Ebenennummer</div><div class="crow">${ibtn('minus')}<b style="font-size:24px;width:40px;text-align:center">1</b>${ibtn('plus')}</div>
+ <div class="label">Räume auf dieser Ebene</div>
+ <div class="card" style="gap:2px">${[['Bad','hier',1],['Schlafzimmer','hier',1],['Küche','wechselt von Erdgeschoss',0],['Flur','wechselt von Erdgeschoss',0]].map(([n,s,c])=>`<div class="tr"><span class="check ${c?'':'off'}">${c?$('check'):''}</span><b>${n}</b><span class="sub" style="margin-left:auto">${s}</span></div>`).join('')}</div>
+ <div style="flex:1"></div><div class="crow"><div class="btn s" style="color:var(--danger)">Ebene löschen</div><div style="flex:1"></div><div class="btn p" style="min-width:200px">Speichern</div></div></section>`));
+// T-06
+const sc=(t,d,n,on,sel,x='')=>`<div class="card ${sel?'sel':''}"><div class="crow"><div class="grow"><div style="font-size:26px;font-weight:700;font-variant-numeric:tabular-nums">${t}</div><div class="sub">${d}</div><b style="font-size:16px">${n}</b></div><div class="sw ${on?'on':''}"></div></div>${x}</div>`;
+F.push(fig('t06','L','Zeitpläne: Liste und Editor','Liste links, Editor oder Detail rechts. Zeit und Datum öffnen als Dialog.',
+ rail('sched')+`<aside class="pane listp"><div class="hd"><div class="grow"><div class="title">Zeitpläne</div></div>${ibtn('plus','fill')}</div>
+ <div class="info"><span style="color:var(--accent)">${$('clock')}</span><div><b>Als Nächstes</b><br>Heute 22:00 · Lichter aus</div></div>
+ ${sc('06:30','Mo–Fr','Heizung hoch',1,0)}${sc('22:00','Jeden Tag','Lichter aus',1,1)}${sc('Sonnenuntergang','−15 min · Jeden Tag','Außenlicht an',1,0)}${sc('08:00','Einmalig · 24.10.','Lüften erinnern',0,0)}</aside>
+ <section class="pane formp"><div class="label">Zeitplan bearbeiten</div><div class="field"><span class="sub">Name</span><b>Lichter aus</b></div>
+ <div class="crow"><div class="card" style="flex:1"><span class="sub">Uhrzeit</span><div style="font-size:38px;font-weight:700">22:00</div></div><div class="card" style="flex:1"><span class="sub">Wiederholen</span><div class="crow"><b style="font-size:20px">Jeden Tag</b>${$('repeat')}</div></div></div>
+ <div class="days">${['M','D','M','D','F','S','S'].map(d=>`<div class="day sel">${d}</div>`).join('')}</div>
+ <div class="seg"><span>Einschalten</span><span class="sel">Ausschalten</span><span>Umschalten</span></div>
+ <div class="label">Entitäten</div><div class="tgrid" style="--c:4;grid-auto-rows:96px">${[tile('sw','Deckenlicht','',{ic:'bulb'}),tile('sw','Stehlampe','',{ic:'bulb'}),tile('sw','Leseleuchte','',{ic:'bulb'}),`<div class="tile" style="border-style:dashed;align-items:center;justify-content:center;color:var(--accent);font-weight:600">${$('plus')} Hinzufügen</div>`].join('')}</div>
+ <div class="info">${$('info')}<div>Der Zeitplan läuft auf dem Home-Assistant-Server, auch wenn die App geschlossen ist.</div></div>
+ <div style="flex:1"></div><div class="crow"><div class="btn s" style="color:var(--danger)">Löschen</div><div style="flex:1"></div><div class="btn p" style="min-width:200px">Speichern</div></div></section>
+ <div class="scrim"></div><div class="dlg"><div class="h2">Ausführen um</div><div class="seg"><span class="sel">Uhrzeit</span><span>Sonnenaufgang</span><span>Sonnenuntergang</span></div>
+ <div class="crow" style="justify-content:center;gap:26px">${ibtn('minus')}<div class="big">22:00</div>${ibtn('plus')}</div><div class="chips" style="justify-content:center">${['06:00','07:30','18:00','22:00'].map((t,i)=>`<div class="chip ${i==3?'sel':''}">${t}</div>`).join('')}</div>
+ <div class="crow" style="justify-content:flex-end"><div class="btn s">Abbrechen</div><div class="btn p">Fertig</div></div></div>`));
+// T-07
+F.push(fig('t07','P','Zeitpläne im Hochformat','Liste (640 dp zentriert), Editor als Seitenblatt (480 dp).',
+ rail('sched')+`<main class="pane main" style="padding:30px 28px;align-items:center"><div style="width:100%;max-width:640px;display:grid;gap:14px"><div class="hd"><div class="grow"><div class="title">Zeitpläne</div></div>${ibtn('bell')}${ibtn('plus','fill')}</div>
+ <div class="info"><span style="color:var(--accent)">${$('clock')}</span><div><b>Als Nächstes</b><br>Heute 22:00 · Lichter aus</div></div>
+ ${sc('06:30','Mo–Fr','Heizung hoch',1,0)}${sc('22:00','Jeden Tag','Lichter aus',1,1)}${sc('Sonnenuntergang','−15 min · Jeden Tag','Außenlicht an',1,0)}${sc('08:00','Einmalig · 24.10.','Lüften erinnern',0,0)}</div></main>
+ <div class="scrim"></div><aside class="sidesheet" style="width:480px"><div class="hd"><div class="grow"><div class="label">Zeitplan bearbeiten</div></div>${ibtn('close')}</div>
+ <div class="field"><span class="sub">Name</span><b>Lichter aus</b></div><div class="card"><span class="sub">Uhrzeit</span><div style="font-size:38px;font-weight:700">22:00</div></div>
+ <div class="days">${['M','D','M','D','F','S','S'].map(d=>`<div class="day sel">${d}</div>`).join('')}</div><div class="seg"><span>Ein</span><span class="sel">Aus</span><span>Umschalten</span></div>
+ <div class="label">Entitäten</div><div class="card" style="gap:4px"><div class="tr"><b>Deckenlicht</b></div><div class="tr"><b>Stehlampe</b></div><div class="tr"><b>Leseleuchte</b></div></div>
+ <div style="flex:1"></div><div class="crow"><div class="btn s" style="color:var(--danger)">Löschen</div><div style="flex:1"></div><div class="btn p">Speichern</div></div></aside>`));
+// T-08
+const lr=(n,s,i)=>`<div class="card" style="padding:10px 12px"><div class="crow"><span class="hand">${$('grip')}</span><div class="grow"><b>${n}</b></div><span class="sub">${s}</span>${$('edit')}</div></div>`;
+const eg=room().slice(0,8).map((t,i)=>t.replace('<div class="tile','<div class="tile edit').replace(/(<div class="tile[^>]*>)/,`$1<div class="badge-rm">−</div>`));
+F.push(fig('t08','L','Layout bearbeiten','Raster und Liste stehen gleichzeitig nebeneinander; der Umschalter Raster/Liste entfällt.',
+ rail('rooms')+`<main class="pane main"><div class="hd"><div class="ib">${$('close')}</div><div class="grow"><div class="label">Layout bearbeiten</div><div class="title" style="font-size:28px">Wohnzimmer</div></div><div class="btn p">Fertig</div></div>
+ <div class="sub">Kacheln ziehen, um sie zu ordnen. Größe über das Label unter dem Namen.</div><div class="tgrid" style="--c:4">${eg.join('')}<div class="tile" style="border-style:dashed;align-items:center;justify-content:center;color:var(--accent);font-weight:600">${$('plus')} Entitäten hinzufügen</div></div></main>
+ <aside class="pane det" style="width:400px"><div class="label">Reihenfolge</div>${[['Deckenlicht','1×1'],['Stehlampe','1×1'],['Heizung','1×2'],['TV-Steckdose','1×1'],['Temperatur','1×1'],['Luftfeuchte','1×1'],['Terrassentür','2×1'],['Bewegung','1×1']].map(([n,s])=>lr(n,s)).join('')}</aside>`));
+// T-09
+F.push(fig('t09','L','Einstellungen','Links Kategorien, rechts Inhalt bis 640 dp.',
+ rail('set')+`<aside class="pane listp" style="width:300px"><div class="title">Einstellungen</div>${[['Instanzen',0],['Darstellung',1],['Schaltschutz',0],['Sicherheit',0],['Benachrichtigungen',0],['Diagnose',0],['Über',0]].map(([n,s])=>`<div class="tr ${s?'sel':''}" style="padding:12px 14px"><b>${n}</b><span class="chev hand">${$('chev')}</span></div>`).join('')}</aside>
+ <section class="pane formp"><div style="max-width:640px;display:grid;gap:16px"><div class="h2">Darstellung</div><div class="label">Design</div><div class="seg"><span class="sel">System</span><span>Hell</span><span>Dunkel</span></div>
+ <div class="card"><div class="crow"><div class="grow"><b>Gerätename</b><div class="sub">Wird bei Schalthandlungen an Home Assistant gesendet</div></div><b>Pixel Tablet</b></div></div>
+ <div class="card"><div class="crow"><div class="grow"><b>Fingerabdruck beim Start</b><div class="sub">Entsperrt die Anmeldung mit einem Klasse-3-Schlüssel</div></div><div class="sw on"></div></div></div>
+ <div class="card"><div class="crow"><div class="grow"><b>Entsperrfenster</b><div class="sub">Wie lange die App entsperrt bleibt</div></div><b>5 Minuten</b></div></div></div></section>`));
+document.getElementById('out').innerHTML=F.join('');
+if(location.search.includes('full'))document.body.classList.add('full');
+</script>
+</body></html>
