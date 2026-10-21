@@ -37,7 +37,10 @@ fun HaacSideSheet(onDismiss: () -> Unit, width: Dp = DetailSideSheetWidth, conte
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onDismiss() },
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                ) { onDismiss() },
         ) {
             Surface(
                 color = HaacColors.Surface,
