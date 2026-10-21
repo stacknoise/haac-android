@@ -17,9 +17,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.stacknoise.haac.R
+import com.stacknoise.haac.core.common.ui.EditorSideSheetWidth
+import com.stacknoise.haac.core.common.ui.HaacSideSheet
 import com.stacknoise.haac.core.common.ui.LocalWindowWidthClass
 import com.stacknoise.haac.core.common.ui.WindowWidthClass
 import com.stacknoise.haac.core.common.ui.argsViewModel
@@ -37,29 +40,39 @@ import com.stacknoise.haac.feature.schedules.ui.SchedulesScreen
 /** Width of the list beside its detail in landscape (concept 15.7). */
 private val ListWidth = 420.dp
 
-/** The list on the left and its detail or, without one, an empty state with [emptyText] on the right. */
+/**
+ * The list with its detail (concept 15.7): beside each other in Expanded, with an empty state with [emptyText] while
+ * nothing is open; in Medium the list alone and the detail in a side sheet of [sheetWidth]. [onDismiss] closes it.
+ */
 @Composable
-private fun ListDetailPane(
+private fun ListDetailHost(
     @StringRes emptyText: Int,
     detailOpen: Boolean,
+    sheetWidth: Dp,
+    onDismiss: () -> Unit,
     list: @Composable () -> Unit,
     detail: @Composable () -> Unit,
 ) {
-    Row(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.width(ListWidth).fillMaxHeight().border(1.dp, HaacColors.Outline)) { list() }
-        Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-            if (detailOpen) {
-                detail()
-            } else {
-                HaacEmptyState(painterResource(R.drawable.ic_nav_places), stringResource(emptyText))
+    if (LocalWindowWidthClass.current == WindowWidthClass.Expanded) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.width(ListWidth).fillMaxHeight().border(1.dp, HaacColors.Outline)) { list() }
+            Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                if (detailOpen) {
+                    detail()
+                } else {
+                    HaacEmptyState(painterResource(R.drawable.ic_nav_places), stringResource(emptyText))
+                }
             }
         }
+    } else {
+        list()
+        if (detailOpen) HaacSideSheet(onDismiss = onDismiss, width = sheetWidth) { detail() }
     }
 }
 
 /**
- * The Places tab (M-02): in Expanded width the list with the place form beside it (concept 15.7, T-05), else the
- * list that opens the form as a screen of its own.
+ * The Places tab (M-02): in Expanded width the list with the place form beside it (concept 15.7, T-05), in Medium
+ * the form in a side sheet, else the list that opens the form as a screen of its own.
  */
 @Composable
 internal fun PlacesRoute(navController: NavController) {
@@ -67,13 +80,15 @@ internal fun PlacesRoute(navController: NavController) {
     var placeId by rememberSaveable { mutableStateOf<String?>(null) }
     var opened by rememberSaveable { mutableIntStateOf(0) }
     val onImport = { navController.navigate(PlaceRoutes.IMPORT) }
-    if (LocalWindowWidthClass.current != WindowWidthClass.Expanded) {
+    if (LocalWindowWidthClass.current == WindowWidthClass.Compact) {
         PlacesScreen(onOpen = { k, id -> navController.navigate(PlaceRoutes.editor(k, id)) }, onImport = onImport)
         return
     }
-    ListDetailPane(
+    ListDetailHost(
         emptyText = R.string.list_detail_places_empty,
         detailOpen = kind != null,
+        sheetWidth = EditorSideSheetWidth,
+        onDismiss = { kind = null },
         list = {
             PlacesScreen(
                 onOpen = { k, id ->
@@ -103,15 +118,15 @@ private enum class ScheduleMode {
 }
 
 /**
- * The Schedules tab (M-10): in Expanded width the list with detail or editor beside it (concept 15.7, T-06), else
- * the list that opens them as screens of their own.
+ * The Schedules tab (M-10): in Expanded width the list with detail or editor beside it (concept 15.7, T-06), in
+ * Medium both in a side sheet, else the list that opens them as screens of their own.
  */
 @Composable
 internal fun SchedulesRoute(navController: NavController) {
     var mode by rememberSaveable { mutableStateOf(ScheduleMode.NONE) }
     var scheduleId by rememberSaveable { mutableStateOf<String?>(null) }
     var opened by rememberSaveable { mutableIntStateOf(0) }
-    if (LocalWindowWidthClass.current != WindowWidthClass.Expanded) {
+    if (LocalWindowWidthClass.current == WindowWidthClass.Compact) {
         SchedulesScreen(
             onOpen = { navController.navigate(ScheduleRoutes.detail(it)) },
             onCreate = { navController.navigate(ScheduleRoutes.editor()) },
@@ -123,9 +138,11 @@ internal fun SchedulesRoute(navController: NavController) {
         scheduleId = id
         opened++
     }
-    ListDetailPane(
+    ListDetailHost(
         emptyText = R.string.list_detail_schedules_empty,
         detailOpen = mode != ScheduleMode.NONE,
+        sheetWidth = EditorSideSheetWidth,
+        onDismiss = { show(ScheduleMode.NONE, null) },
         list = {
             SchedulesScreen(onOpen = { show(ScheduleMode.DETAIL, it) }, onCreate = { show(ScheduleMode.EDITOR, null) })
         },

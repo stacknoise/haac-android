@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.HaacSideSheet
 import com.stacknoise.haac.core.common.ui.LocalWindowWidthClass
 import com.stacknoise.haac.core.common.ui.PlaceIcon
 import com.stacknoise.haac.core.common.ui.WindowWidthClass
@@ -106,14 +107,19 @@ private fun RoomsContent(
     var sheet by remember { mutableStateOf<RoomSheet?>(null) }
     val groups = state.groups ?: return
     val room = state.room
-    val tree = LocalWindowWidthClass.current == WindowWidthClass.Expanded && room != null
+    val windowClass = LocalWindowWidthClass.current
+    val tree = windowClass == WindowWidthClass.Expanded && room != null
     val counts by viewModel.tileCounts.collectAsStateWithLifecycle()
     var detailId by rememberSaveable { mutableStateOf<String?>(null) }
-    val openEntity: (String) -> Unit = if (tree) ({ detailId = it }) else navigation.onOpenEntity
+    val openEntity: (String) -> Unit =
+        if (windowClass != WindowWidthClass.Compact) ({ detailId = it }) else navigation.onOpenEntity
     Row(modifier = Modifier.fillMaxSize()) {
         if (tree) PlaceTree(groups, room.id, counts, viewModel::onSelectRoom)
         RoomsColumn(state, groups, tree, navigation, viewModel, Modifier.weight(1f)) { sheet = it }
         detailId?.takeIf { tree }?.let { EntityDetailPane(it) { detailId = null } }
+    }
+    detailId?.takeIf { !tree && windowClass == WindowWidthClass.Medium }?.let {
+        HaacSideSheet(onDismiss = { detailId = null }) { EntityDetailContent(it) { detailId = null } }
     }
     sheet?.let { open ->
         Sheets(open, state.guards, viewModel, disable, openEntity, onChange = { sheet = it })
