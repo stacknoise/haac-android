@@ -10,4 +10,6 @@
     <string name="unlock_use_password">Use password</string>
     <string name="licenses_title">Open-source licenses</string>
     <string name="licenses_back">Back</string>
+    <string name="list_detail_places_empty">Select a place on the left or create a new one.</string>
+    <string name="list_detail_schedules_empty">Select a schedule on the left or create a new one.</string>
 </resources>
