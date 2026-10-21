@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.stacknoise.haac.core.common.ui.HaacSheet
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.MonoFontFamily
@@ -60,7 +60,7 @@ internal class SheetActions(
 @Composable
 internal fun RoomSheetContent(sheet: RoomSheet, actions: SheetActions) {
     if (sheet is RoomSheet.Rename || sheet is RoomSheet.Disable || sheet is RoomSheet.Guard) return
-    ModalBottomSheet(onDismissRequest = actions.onDismiss) {
+    HaacSheet(actions.onDismiss) {
         Column(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
             when (sheet) {
                 is RoomSheet.Menu -> {

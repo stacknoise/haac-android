@@ -14,7 +14,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -34,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stacknoise.haac.core.common.ui.HaacSheet
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
@@ -149,7 +149,7 @@ internal fun DisabledSheet(
     onDetails: (() -> Unit)?,
     onDismiss: () -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    HaacSheet(onDismiss) {
         Column(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
