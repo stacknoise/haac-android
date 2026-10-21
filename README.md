@@ -99,6 +99,7 @@ The first group shows the German interface of the app; the binary sensor images 
 
 **App**
 - Available in English and German (follows the system language; Home Assistant's own names such as HVAC and fan modes are shown as Home Assistant sends them).
+- Phones stay in portrait. Tablets rotate: a navigation rail replaces the bottom bar, lists open next to their details, the room grid gets more columns, and the place tree sits beside the rooms in landscape.
 - "Salbei" Material 3 theme in a light and a dark design (follows the phone or set under *Settings → Appearance*) with the Figtree font, flavors `play` and `sideload`, open-source licenses under *Settings → About*.
 
 ## Build
