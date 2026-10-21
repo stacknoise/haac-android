@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.centeredContent
 import com.stacknoise.haac.core.common.ui.theme.HaacCheckbox
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
@@ -61,6 +62,7 @@ fun AddEntitiesScreen(onClose: () -> Unit, viewModel: AddEntitiesViewModel = hil
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .imePadding()
+            .centeredContent()
             .padding(horizontal = 20.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {

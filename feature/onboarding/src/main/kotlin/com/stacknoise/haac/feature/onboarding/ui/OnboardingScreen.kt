@@ -39,11 +39,13 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stacknoise.haac.core.common.ui.CardContentWidth
 import com.stacknoise.haac.core.common.ui.CertificateDetails
 import com.stacknoise.haac.core.common.ui.CertificateDialog
 import com.stacknoise.haac.core.common.ui.CertificateDialogKind
 import com.stacknoise.haac.core.common.ui.ErrorMessage
 import com.stacknoise.haac.core.common.ui.SecureWindow
+import com.stacknoise.haac.core.common.ui.centeredContent
 import com.stacknoise.haac.core.common.ui.findActivity
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
@@ -121,6 +123,7 @@ fun OnboardingContent(state: OnboardingUiState, password: TextFieldState, action
             .background(MaterialTheme.colorScheme.background)
             .safeDrawingPadding()
             .imePadding()
+            .centeredContent(CardContentWidth)
             .padding(horizontal = 24.dp, vertical = 16.dp),
     ) {
         Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
