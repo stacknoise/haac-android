@@ -26,7 +26,9 @@ import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.LocalWindowWidthClass
 import com.stacknoise.haac.core.common.ui.SecureWindow
+import com.stacknoise.haac.core.common.ui.WindowWidthClass
 import com.stacknoise.haac.core.common.ui.centeredContent
 import com.stacknoise.haac.core.common.ui.findActivity
 import com.stacknoise.haac.core.common.ui.theme.HaacCard
@@ -91,6 +93,12 @@ fun SettingsContent(
     diagnostics: @Composable () -> Unit = {},
     about: @Composable () -> Unit = {},
 ) {
+    if (LocalWindowWidthClass.current == WindowWidthClass.Expanded) {
+        val demo = state.instance?.let { DemoInstance.isDemo(it.id) } ?: false
+        val sections = SettingsSections(instances, addresses, appearance, diagnostics, about)
+        SettingsPanes(state, demo, security, sections, onSignOut)
+        return
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -101,17 +109,8 @@ fun SettingsContent(
     ) {
         HaacScreenTitle(stringResource(R.string.settings_title))
         Spacer(Modifier.height(24.dp))
-        Text(stringResource(R.string.settings_instance).uppercase(), style = SectionLabelStyle)
-        Spacer(Modifier.height(8.dp))
         val instance = state.instance ?: return@Column
-        HaacCard {
-            Text(instance.name, style = MaterialTheme.typography.titleMedium)
-            Text(
-                stringResource(R.string.settings_signed_in_as, instance.userName),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+        InstanceCard(state)
         Spacer(Modifier.height(32.dp))
         instances()
         Spacer(Modifier.height(32.dp))
@@ -134,9 +133,25 @@ fun SettingsContent(
     }
 }
 
+/** The label *Instance* and the card with the name of the active instance and the signed-in user. */
+@Composable
+internal fun InstanceCard(state: SettingsUiState) {
+    val instance = state.instance ?: return
+    Text(stringResource(R.string.settings_instance).uppercase(), style = SectionLabelStyle)
+    Spacer(Modifier.height(8.dp))
+    HaacCard {
+        Text(instance.name, style = MaterialTheme.typography.titleMedium)
+        Text(
+            stringResource(R.string.settings_signed_in_as, instance.userName),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
 /** *Sign out* of the active instance. */
 @Composable
-private fun SignOutButton(busy: Boolean, onSignOut: () -> Unit) {
+internal fun SignOutButton(busy: Boolean, onSignOut: () -> Unit) {
     Spacer(Modifier.height(32.dp))
     OutlinedButton(
         onClick = onSignOut,
