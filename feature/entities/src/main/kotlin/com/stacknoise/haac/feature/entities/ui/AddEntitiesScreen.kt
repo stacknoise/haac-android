@@ -4,16 +4,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
@@ -21,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,10 +39,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
-import com.stacknoise.haac.core.common.ui.centeredContent
+import com.stacknoise.haac.core.common.ui.LocalWindowWidthClass
+import com.stacknoise.haac.core.common.ui.WindowWidthClass
 import com.stacknoise.haac.core.common.ui.theme.HaacCheckbox
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
@@ -52,19 +59,55 @@ import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.DomainLabels
 import com.stacknoise.haac.feature.entities.domain.PickerRow
 
-/** *Add entities* for one room (M-04, concept 7.1, 7.2); [onClose] after adding or on Back. */
+/**
+ * *Add entities* for one room (M-04, concept 7.1, 7.2); [onClose] after adding or on Back. From the medium class
+ * it is a centred dialog of at most 720 × 640 dp (concept 15.7).
+ */
 @Composable
 fun AddEntitiesScreen(onClose: () -> Unit, viewModel: AddEntitiesViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(state.status.done) { if (state.status.done) onClose() }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .imePadding()
-            .centeredContent()
-            .padding(horizontal = 20.dp),
-    ) {
+    if (LocalWindowWidthClass.current == WindowWidthClass.Compact) {
+        val background = MaterialTheme.colorScheme.background
+        AddEntitiesContent(state, viewModel, onClose, Modifier.fillMaxSize().background(background))
+    } else {
+        Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            Surface(
+                color = HaacColors.Surface,
+                shape = RoundedCornerShape(DialogCorner),
+                modifier = Modifier
+                    .fillMaxWidth(DialogFill)
+                    .widthIn(max = DialogWidth)
+                    .fillMaxHeight(DialogFill)
+                    .heightIn(max = DialogHeight),
+            ) {
+                AddEntitiesContent(state, viewModel, onClose, Modifier.fillMaxSize())
+            }
+        }
+    }
+}
+
+/** Width of the add-entities dialog (concept 15.7). */
+private val DialogWidth = 720.dp
+
+/** Height of the add-entities dialog (concept 15.7). */
+private val DialogHeight = 640.dp
+
+/** Share of a small window the add-entities dialog may fill. */
+private const val DialogFill = 0.9f
+
+/** Corner radius of the add-entities dialog. */
+private val DialogCorner = 28.dp
+
+/** Title, room, kind tabs, filter, the entities to pick and the *Add* button. */
+@Composable
+private fun AddEntitiesContent(
+    state: AddEntitiesUiState,
+    viewModel: AddEntitiesViewModel,
+    onClose: () -> Unit,
+    modifier: Modifier,
+) {
+    Column(modifier = modifier.imePadding().padding(horizontal = 20.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
             IconButton(onClick = onClose) {
                 Icon(painterResource(R.drawable.ic_entities_back), stringResource(R.string.add_back))
