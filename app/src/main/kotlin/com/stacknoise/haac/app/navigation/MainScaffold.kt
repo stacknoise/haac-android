@@ -50,6 +50,7 @@ import com.stacknoise.haac.core.common.ui.LocalWindowWidthClass
 import com.stacknoise.haac.core.common.ui.WindowWidthClass
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.error.ErrorAction
+import com.stacknoise.haac.feature.instance.ui.InstanceBadge
 import com.stacknoise.haac.feature.instance.ui.InstanceBar
 import com.stacknoise.haac.feature.instance.ui.InstanceSwitcherViewModel
 import com.stacknoise.haac.feature.instance.ui.InstancesSection
@@ -108,7 +109,7 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
         topBar = {
             // The bar draws under the status bar; the banner inside it then adds no second inset.
             Column(Modifier.statusBarsPadding()) {
-                InstanceBar(onSwitched = actions.instances.onSwitched, onAdd = actions.instances.onAdd)
+                if (!railShown) InstanceBar(onSwitched = actions.instances.onSwitched, onAdd = actions.instances.onAdd)
                 ConnectionBanner(
                     state = connectionState,
                     onRetry = connection::retry,
@@ -122,7 +123,15 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
         },
     ) { padding ->
         Row(Modifier.padding(padding)) {
-            if (railShown) NavRail(tabs, currentRoute, onOpen = navController::openTopLevel)
+            if (railShown) {
+                NavRail(tabs, currentRoute, onOpen = navController::openTopLevel) {
+                    InstanceBadge(
+                        onSwitched = actions.instances.onSwitched,
+                        onAdd = actions.instances.onAdd,
+                        modifier = Modifier.padding(bottom = 12.dp),
+                    )
+                }
+            }
             MainNavHost(navController, actions, connection, Modifier.weight(1f))
         }
     }
