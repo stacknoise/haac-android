@@ -30,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -107,12 +108,15 @@ private fun RoomsContent(
     val room = state.room
     val tree = LocalWindowWidthClass.current == WindowWidthClass.Expanded && room != null
     val counts by viewModel.tileCounts.collectAsStateWithLifecycle()
+    var detailId by rememberSaveable { mutableStateOf<String?>(null) }
+    val openEntity: (String) -> Unit = if (tree) ({ detailId = it }) else navigation.onOpenEntity
     Row(modifier = Modifier.fillMaxSize()) {
         if (tree) PlaceTree(groups, room.id, counts, viewModel::onSelectRoom)
         RoomsColumn(state, groups, tree, navigation, viewModel, Modifier.weight(1f)) { sheet = it }
+        detailId?.takeIf { tree }?.let { EntityDetailPane(it) { detailId = null } }
     }
     sheet?.let { open ->
-        Sheets(open, state.guards, viewModel, disable, navigation.onOpenEntity, onChange = { sheet = it })
+        Sheets(open, state.guards, viewModel, disable, openEntity, onChange = { sheet = it })
     }
     val prompt by viewModel.gate.prompt.collectAsStateWithLifecycle()
     prompt?.let { GuardConfirmDialog(it, onConfirm = viewModel.gate::confirm, onDismiss = viewModel.gate::dismiss) }
