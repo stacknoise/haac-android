@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Room grid (M-05, M-08). -->
+    <string name="rooms_place_tree">Orte</string>
     <string name="rooms_choose_group">Zuhause und Ebene wählen</string>
     <string name="rooms_add_entities">Entitäten hinzufügen</string>
     <string name="rooms_no_rooms">Noch keine Räume. Lege unter „Orte“ ein Zuhause und seine Räume an.</string>

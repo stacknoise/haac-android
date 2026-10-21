@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Room grid (M-05, M-08). -->
+    <string name="rooms_place_tree">Places</string>
     <string name="rooms_choose_group">Choose home and level</string>
     <string name="rooms_add_entities">Add entities</string>
     <string name="rooms_no_rooms">No rooms yet. Create a home and its rooms under Places.</string>

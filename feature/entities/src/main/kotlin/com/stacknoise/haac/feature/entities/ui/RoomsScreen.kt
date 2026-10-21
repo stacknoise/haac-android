@@ -43,7 +43,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.LocalWindowWidthClass
 import com.stacknoise.haac.core.common.ui.PlaceIcon
+import com.stacknoise.haac.core.common.ui.WindowWidthClass
 import com.stacknoise.haac.core.common.ui.theme.HaacEmptyState
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
@@ -95,7 +97,7 @@ internal fun FailureSnackbar(failed: Flow<HaacException>, snackbar: SnackbarHost
     }
 }
 
-/** Header, chips, banner and grid of the shown room. */
+/** The place tree (Expanded only) beside header, chips, banner and grid of the shown room, and the open sheet. */
 @Composable
 private fun RoomsContent(
     navigation: RoomsNavigation,
@@ -106,36 +108,61 @@ private fun RoomsContent(
     var sheet by remember { mutableStateOf<RoomSheet?>(null) }
     val groups = state.groups ?: return
     val room = state.room
+    val tree = LocalWindowWidthClass.current == WindowWidthClass.Expanded && room != null
+    val counts by viewModel.tileCounts.collectAsStateWithLifecycle()
+    Row(modifier = Modifier.fillMaxSize()) {
+        if (tree) PlaceTree(groups, room?.id, counts, viewModel::onSelectRoom)
+        RoomsColumn(state, groups, tree, navigation, viewModel, Modifier.weight(1f)) { sheet = it }
+    }
+    sheet?.let { open ->
+        Sheets(open, state.guards, viewModel, disable, navigation.onOpenEntity, onChange = { sheet = it })
+    }
+    val prompt by viewModel.gate.prompt.collectAsStateWithLifecycle()
+    prompt?.let { GuardConfirmDialog(it, onConfirm = viewModel.gate::confirm, onDismiss = viewModel.gate::dismiss) }
+}
+
+/** Header, chips (without the [tree]), banner and grid of the shown room; [onSheet] opens a sheet. */
+@Composable
+private fun RoomsColumn(
+    state: RoomsUiState,
+    groups: List<RoomGroup>,
+    tree: Boolean,
+    navigation: RoomsNavigation,
+    viewModel: RoomsViewModel,
+    modifier: Modifier,
+    onSheet: (RoomSheet) -> Unit,
+) {
+    val room = state.room
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp),
     ) {
-        Header(state, groups, navigation, viewModel::onSelectRoom)
+        Header(state, groups, tree, navigation, viewModel::onSelectRoom)
         state.error?.let { ErrorMessage(it) }
         if (room == null) {
             NoRooms(navigation.onOpenPlaces)
             return@Column
         }
-        RoomChips(state.group, room.id, viewModel::onSelectRoom)
+        if (!tree) RoomChips(state.group, room.id, viewModel::onSelectRoom)
         if (state.stale) StaleBanner()
         val withdrawn = state.tiles.filter { it.withdrawn }
-        if (withdrawn.isNotEmpty()) WithdrawnBanner(withdrawn.size) { sheet = RoomSheet.Review(withdrawn) }
+        if (withdrawn.isNotEmpty()) WithdrawnBanner(withdrawn.size) { onSheet(RoomSheet.Review(withdrawn)) }
         if (state.tiles.isEmpty()) {
             EmptyRoom { navigation.onAddEntities(room.id) }
         } else {
             val actions = TileActions(
                 onClick = { tile ->
                     when {
-                        tile.withdrawn -> sheet = RoomSheet.Withdrawn(tile)
-                        tile.disabled -> sheet = RoomSheet.Disable(tile)
+                        tile.withdrawn -> onSheet(RoomSheet.Withdrawn(tile))
+                        tile.disabled -> onSheet(RoomSheet.Disable(tile))
                         else -> viewModel.onToggle(tile)
                     }
                 },
                 onLongClick = { tile ->
-                    sheet = if (tile.withdrawn) RoomSheet.Withdrawn(tile) else RoomSheet.Menu(tile)
+                    onSheet(if (tile.withdrawn) RoomSheet.Withdrawn(tile) else RoomSheet.Menu(tile))
                 },
                 onToggle = viewModel::onToggle,
                 onStep = viewModel::onStep,
@@ -144,11 +171,6 @@ private fun RoomsContent(
             RoomGrid(state.tiles, state.connected, actions, if (state.stale) grid.alpha(StaleAlpha) else grid)
         }
     }
-    sheet?.let { open ->
-        Sheets(open, state.guards, viewModel, disable, navigation.onOpenEntity, onChange = { sheet = it })
-    }
-    val prompt by viewModel.gate.prompt.collectAsStateWithLifecycle()
-    prompt?.let { GuardConfirmDialog(it, onConfirm = viewModel.gate::confirm, onDismiss = viewModel.gate::dismiss) }
 }
 
 /** The open sheet or rename dialog; [onChange] switches to another one or closes it (null). */
@@ -189,18 +211,19 @@ private fun Sheets(
     }
 }
 
-/** *Home · Level* with its menu, the header actions, *Add entities* and the room name as title. */
+/** *Home · Level* with its menu (not with the place [tree]), the header actions, *Add entities* and the room title. */
 @Composable
 private fun Header(
     state: RoomsUiState,
     groups: List<RoomGroup>,
+    tree: Boolean,
     navigation: RoomsNavigation,
     onSelect: (String) -> Unit,
 ) {
     var menu by remember { mutableStateOf(false) }
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
         Box(modifier = Modifier.weight(1f)) {
-            state.group?.let { group ->
+            state.group?.takeIf { !tree }?.let { group ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.clickable { menu = true }.padding(vertical = 8.dp),
