@@ -111,7 +111,7 @@ private fun RoomsContent(
     val tree = LocalWindowWidthClass.current == WindowWidthClass.Expanded && room != null
     val counts by viewModel.tileCounts.collectAsStateWithLifecycle()
     Row(modifier = Modifier.fillMaxSize()) {
-        if (tree) PlaceTree(groups, room?.id, counts, viewModel::onSelectRoom)
+        if (tree) PlaceTree(groups, room.id, counts, viewModel::onSelectRoom)
         RoomsColumn(state, groups, tree, navigation, viewModel, Modifier.weight(1f)) { sheet = it }
     }
     sheet?.let { open ->
