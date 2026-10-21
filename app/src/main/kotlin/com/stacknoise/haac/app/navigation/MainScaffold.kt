@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -45,6 +46,8 @@ import com.stacknoise.haac.app.connection.ConnectionViewModel
 import com.stacknoise.haac.app.licenses.LicensesScreen
 import com.stacknoise.haac.app.shortcut.PendingSwitchViewModel
 import com.stacknoise.haac.core.common.ui.DemoBanner
+import com.stacknoise.haac.core.common.ui.LocalWindowWidthClass
+import com.stacknoise.haac.core.common.ui.WindowWidthClass
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.error.ErrorAction
 import com.stacknoise.haac.feature.instance.ui.InstanceBar
@@ -54,9 +57,9 @@ import com.stacknoise.haac.feature.notifications.ui.NotificationsScreen
 import com.stacknoise.haac.feature.settings.ui.SettingsScreen
 
 /**
- * Main area after sign-in: instance switcher (concept 4.4), bottom bar with Rooms, Places, Settings (15.2) and the
- * live connection of the active instance (11.4). Another active instance discards the open screens: its own
- * home view opens (4.4).
+ * Main area after sign-in: instance switcher (concept 4.4), bottom bar with Rooms, Places, Settings (15.2) or, from
+ * 600 dp window width, a rail (15.7), and the live connection of the active instance (11.4). Another active
+ * instance discards the open screens: its own home view opens (4.4).
  */
 @Composable
 fun MainScaffold(actions: MainActions, connection: ConnectionViewModel = hiltViewModel()) {
@@ -98,6 +101,9 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
     val schedulesShown by connection.schedulesShown.collectAsStateWithLifecycle()
     val demo by connection.isDemo.collectAsStateWithLifecycle()
     val tabs = TopLevelDestination.entries.filter { it != TopLevelDestination.SCHEDULES || schedulesShown }
+    // Forms and the notification list use the whole screen (M-03, M-09).
+    val onTab = TopLevelDestination.entries.any { it.route == currentRoute }
+    val railShown = onTab && LocalWindowWidthClass.current != WindowWidthClass.Compact
     Scaffold(
         topBar = {
             // The bar draws under the status bar; the banner inside it then adds no second inset.
@@ -112,44 +118,55 @@ private fun MainContent(actions: MainActions, connection: ConnectionViewModel) {
             }
         },
         bottomBar = {
-            // Forms and the notification list use the whole screen (M-03, M-09).
-            if (TopLevelDestination.entries.any { it.route == currentRoute }) {
-                BottomBar(tabs, currentRoute, onOpen = navController::openTopLevel)
-            }
+            if (onTab && !railShown) BottomBar(tabs, currentRoute, onOpen = navController::openTopLevel)
         },
     ) { padding ->
-        NavHost(
-            navController = navController,
-            startDestination = TopLevelDestination.ROOMS.route,
-            modifier = Modifier.padding(padding),
-        ) {
-            roomsDestination(navController)
-            placeDestinations(navController)
-            entityDestinations(navController)
-            scheduleDestinations(navController)
-            composable(TopLevelDestination.SETTINGS.route) {
-                SettingsScreen(
-                    onSignedOut = actions.onSignedOut,
-                    onOpenLicenses = { navController.navigate(LicensesRoute) },
-                    instances = { InstancesSection(actions.instances) },
-                )
-            }
-            composable(LicensesRoute) { LicensesScreen(onBack = { navController.popBackStack() }) }
-            composable(NotificationsRoute) {
-                NotificationsScreen(
-                    onBack = { navController.popBackStack() },
-                    onErrorAction = { action, serverId ->
-                        when (action) {
-                            ErrorAction.RETRY -> connection.retry()
-                            ErrorAction.SIGN_IN -> serverId?.let(actions.onSignedOut)
-                            ErrorAction.OPEN_SETTINGS -> navController.openTopLevel(TopLevelDestination.SETTINGS)
-                            ErrorAction.NONE -> Unit
-                        }
-                    },
-                    onAddToRoom = { ids -> navController.navigate(EntityRoutes.assign(ids)) },
-                    onOpenSchedule = { id -> navController.navigate(ScheduleRoutes.detail(id)) },
-                )
-            }
+        Row(Modifier.padding(padding)) {
+            if (railShown) NavRail(tabs, currentRoute, onOpen = navController::openTopLevel)
+            MainNavHost(navController, actions, connection, Modifier.weight(1f))
+        }
+    }
+}
+
+/** The navigation graph of one instance: the tabs, forms, notifications and licenses. */
+@Composable
+private fun MainNavHost(
+    navController: NavHostController,
+    actions: MainActions,
+    connection: ConnectionViewModel,
+    modifier: Modifier = Modifier,
+) {
+    NavHost(
+        navController = navController,
+        startDestination = TopLevelDestination.ROOMS.route,
+        modifier = modifier,
+    ) {
+        roomsDestination(navController)
+        placeDestinations(navController)
+        entityDestinations(navController)
+        scheduleDestinations(navController)
+        composable(TopLevelDestination.SETTINGS.route) {
+            SettingsScreen(
+                onSignedOut = actions.onSignedOut,
+                onOpenLicenses = { navController.navigate(LicensesRoute) },
+                instances = { InstancesSection(actions.instances) },
+            )
+        }
+        composable(LicensesRoute) { LicensesScreen(onBack = { navController.popBackStack() }) }
+        composable(NotificationsRoute) {
+            NotificationsScreen(
+                onBack = { navController.popBackStack() },
+                onErrorAction = { action, serverId ->
+                    when (action) {
+                        ErrorAction.RETRY -> connection.retry()
+                        ErrorAction.SIGN_IN -> serverId?.let(actions.onSignedOut)
+                        ErrorAction.OPEN_SETTINGS -> navController.openTopLevel(TopLevelDestination.SETTINGS)
+                        ErrorAction.NONE -> Unit
+                    }
+                },
+                onAddToRoom = { ids -> navController.navigate(EntityRoutes.assign(ids)) },
+                onOpenSchedule = { id -> navController.navigate(ScheduleRoutes.detail(id)) },
+            )
         }
     }
 }

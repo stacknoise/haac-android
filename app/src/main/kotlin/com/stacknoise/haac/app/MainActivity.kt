@@ -1,6 +1,8 @@
 package com.stacknoise.haac.app
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
@@ -16,6 +18,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.stacknoise.haac.app.navigation.HaacNavHost
 import com.stacknoise.haac.app.shortcut.PendingInstanceSwitch
+import com.stacknoise.haac.core.common.ui.MediumMinWidthDp
+import com.stacknoise.haac.core.common.ui.ProvideWindowWidthClass
 import com.stacknoise.haac.core.common.ui.theme.DarkHaacPalette
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.LightHaacPalette
@@ -44,6 +48,7 @@ class MainActivity : FragmentActivity() {
         // The splash screen stays until the stored mode is read, so a chosen design never flashes the other one.
         installSplashScreen().setKeepOnScreenCondition { !themeLoaded }
         super.onCreate(savedInstanceState)
+        keepPhonesInPortrait()
         // A recreated activity gets the same intent again; only the first start counts as a request.
         if (savedInstanceState == null) requestSwitchOf(intent)
         setContent {
@@ -62,8 +67,18 @@ class MainActivity : FragmentActivity() {
                 onDispose {}
             }
             HaacTheme(palette = if (dark) DarkHaacPalette else LightHaacPalette) {
-                HaacNavHost()
+                ProvideWindowWidthClass { HaacNavHost() }
             }
+        }
+    }
+
+    /** Phones (smallest width below 600 dp) stay in portrait; tablets rotate freely (concept 15.7). */
+    @SuppressLint("SourceLockedOrientationActivity")
+    private fun keepPhonesInPortrait() {
+        requestedOrientation = if (resources.configuration.smallestScreenWidthDp < MediumMinWidthDp) {
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
     }
 
