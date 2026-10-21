@@ -1,6 +1,7 @@
 package com.stacknoise.haac.feature.entities.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,17 +11,16 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,7 +44,8 @@ import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
-import com.stacknoise.haac.core.common.ui.theme.haacSegmentedColors
+import com.stacknoise.haac.core.common.ui.theme.haacFilterChipBorder
+import com.stacknoise.haac.core.common.ui.theme.haacFilterChipColors
 import com.stacknoise.haac.core.common.ui.theme.haacTextFieldColors
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.DomainLabels
@@ -93,7 +94,7 @@ fun AddEntitiesScreen(onClose: () -> Unit, viewModel: AddEntitiesViewModel = hil
 
 /**
  * *Switch 12 · Sensor 24 · Climate 3* (M-04). With only one kind of entity there is nothing to switch between, so
- * the tabs give way to a plain caption *Switch · 2*.
+ * the chips give way to a plain caption *Switch · 2*.
  */
 @Composable
 private fun DomainTabs(
@@ -111,14 +112,19 @@ private fun DomainTabs(
         return
     }
     if (state.domains.isEmpty()) return
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth().padding(top = 16.dp).height(44.dp)) {
-        state.domains.forEachIndexed { index, domain ->
-            SegmentedButton(
-                selected = domain == state.input.domain,
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+    ) {
+        items(state.domains) { domain ->
+            val selected = domain == state.input.domain
+            FilterChip(
+                selected = selected,
                 onClick = { onSelect(domain) },
-                shape = SegmentedButtonDefaults.itemShape(index, state.domains.size, HaacShapes.Small),
-                colors = haacSegmentedColors(),
                 label = { Text("${domainLabel(domain, labels)} ${state.counts[domain] ?: 0}", maxLines = 1) },
+                colors = haacFilterChipColors(),
+                border = haacFilterChipBorder(enabled = true, selected = selected),
+                modifier = Modifier.height(40.dp),
             )
         }
     }
