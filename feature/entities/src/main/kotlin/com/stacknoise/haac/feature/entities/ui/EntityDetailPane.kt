@@ -1,5 +1,7 @@
 package com.stacknoise.haac.feature.entities.ui
 
+import android.os.Bundle
+
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -8,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.core.os.bundleOf
 import androidx.lifecycle.DEFAULT_ARGS_KEY
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.ViewModelStoreOwner
@@ -43,6 +44,6 @@ internal fun EntityDetailPane(entityId: String, onClose: () -> Unit) {
 private fun ViewModelStoreOwner.extrasWith(entityId: String): CreationExtras {
     val base = (this as? HasDefaultViewModelProviderFactory)?.defaultViewModelCreationExtras ?: CreationExtras.Empty
     return MutableCreationExtras(base).apply {
-        set(DEFAULT_ARGS_KEY, bundleOf(EntityDetailViewModel.ENTITY_ARG to entityId))
+        set(DEFAULT_ARGS_KEY, Bundle().apply { putString(EntityDetailViewModel.ENTITY_ARG, entityId) })
     }
 }
