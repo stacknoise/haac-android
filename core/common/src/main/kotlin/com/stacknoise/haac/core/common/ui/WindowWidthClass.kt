@@ -6,7 +6,11 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.platform.LocalWindowInfo
 
 /** Width class of the app window: phone, tablet in portrait, tablet in landscape (concept 15.7). */
-enum class WindowWidthClass { Compact, Medium, Expanded }
+enum class WindowWidthClass {
+    Compact,
+    Medium,
+    Expanded,
+}
 
 /** Smallest window width in dp of the class [WindowWidthClass.Medium] (concept 15.7). */
 const val MediumMinWidthDp = 600
