@@ -2,6 +2,8 @@
 <resources>
     <string name="notifications_title">Notifications</string>
     <string name="notifications_back">Back</string>
+    <string name="notifications_close">Close</string>
+    <string name="notifications_detail_empty">Select an error on the left to see its details.</string>
     <string name="notifications_mark_all_read">Mark all read</string>
     <string name="notifications_today">Today</string>
     <string name="notifications_yesterday">Yesterday</string>

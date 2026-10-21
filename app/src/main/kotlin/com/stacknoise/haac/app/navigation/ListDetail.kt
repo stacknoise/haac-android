@@ -23,6 +23,7 @@ import androidx.navigation.NavController
 import com.stacknoise.haac.R
 import com.stacknoise.haac.core.common.ui.EditorSideSheetWidth
 import com.stacknoise.haac.core.common.ui.HaacSideSheet
+import com.stacknoise.haac.core.common.ui.ListPaneWidth
 import com.stacknoise.haac.core.common.ui.LocalWindowWidthClass
 import com.stacknoise.haac.core.common.ui.WindowWidthClass
 import com.stacknoise.haac.core.common.ui.argsViewModel
@@ -36,9 +37,6 @@ import com.stacknoise.haac.feature.schedules.ui.ScheduleDetailViewModel
 import com.stacknoise.haac.feature.schedules.ui.ScheduleEditorScreen
 import com.stacknoise.haac.feature.schedules.ui.ScheduleEditorViewModel
 import com.stacknoise.haac.feature.schedules.ui.SchedulesScreen
-
-/** Width of the list beside its detail in landscape (concept 15.7). */
-private val ListWidth = 420.dp
 
 /**
  * The list with its detail (concept 15.7): beside each other in Expanded, with an empty state with [emptyText] while
@@ -55,7 +53,7 @@ private fun ListDetailHost(
 ) {
     if (LocalWindowWidthClass.current == WindowWidthClass.Expanded) {
         Row(modifier = Modifier.fillMaxSize()) {
-            Box(modifier = Modifier.width(ListWidth).fillMaxHeight().border(1.dp, HaacColors.Outline)) { list() }
+            Box(modifier = Modifier.width(ListPaneWidth).fillMaxHeight().border(1.dp, HaacColors.Outline)) { list() }
             Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
                 if (detailOpen) {
                     detail()

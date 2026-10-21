@@ -4,9 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -36,7 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.ListPaneWidth
+import com.stacknoise.haac.core.common.ui.LocalWindowWidthClass
+import com.stacknoise.haac.core.common.ui.WindowWidthClass
 import com.stacknoise.haac.core.common.ui.centeredContent
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacEmptyState
 import com.stacknoise.haac.core.common.ui.theme.HaacScreenTitle
 import com.stacknoise.haac.core.common.ui.theme.HaacTheme
@@ -68,32 +74,50 @@ fun NotificationsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
-    Box(modifier = Modifier.fillMaxSize()) {
-        NotificationsContent(
-        state = state,
-        actions = NotificationActions(
-            onBack = onBack,
-            onOpen = viewModel::onOpen,
-            onMarkAllRead = viewModel::onMarkAllRead,
-            onResolve = viewModel::onResolve,
-            onErrorAction = { item -> item.error?.let { onErrorAction(it.action, item.serverId) } },
-            onAddToRoom = { item ->
-                viewModel.onResolve(item)
-                onAddToRoom(item.unassigned)
-            },
-            onOpenSchedule = { item ->
-                viewModel.onResolve(item)
-                item.run?.scheduleId?.let(onOpenSchedule)
-            },
-            onRemoveTiles = viewModel::onRemoveTiles,
-            onDelete = viewModel::onDelete,
-            onDeleteAll = viewModel::onDeleteAll,
-        ),
-        )
-        SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding())
+    val expanded = LocalWindowWidthClass.current == WindowWidthClass.Expanded
+    Row(Modifier.fillMaxSize()) {
+        Box(modifier = if (expanded) Modifier.width(ListPaneWidth).fillMaxHeight() else Modifier.fillMaxSize()) {
+            NotificationsContent(
+                state = state,
+                actions = NotificationActions(
+                    onBack = onBack,
+                    onOpen = viewModel::onOpen,
+                    onMarkAllRead = viewModel::onMarkAllRead,
+                    onResolve = viewModel::onResolve,
+                    onErrorAction = { item -> item.error?.let { onErrorAction(it.action, item.serverId) } },
+                    onAddToRoom = { item ->
+                        viewModel.onResolve(item)
+                        onAddToRoom(item.unassigned)
+                    },
+                    onOpenSchedule = { item ->
+                        viewModel.onResolve(item)
+                        item.run?.scheduleId?.let(onOpenSchedule)
+                    },
+                    onRemoveTiles = viewModel::onRemoveTiles,
+                    onDelete = viewModel::onDelete,
+                    onDeleteAll = viewModel::onDeleteAll,
+                ),
+            )
+            SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding())
+        }
+        if (expanded) {
+            Box(Modifier.weight(1f).fillMaxHeight().background(HaacColors.Surface)) {
+                val detail = state.detail
+                if (detail == null) {
+                    HaacEmptyState(
+                        painterResource(R.drawable.ic_notifications_bell),
+                        stringResource(R.string.notifications_detail_empty),
+                    )
+                } else {
+                    ErrorDetailPane(detail, state.instanceName, onClose = viewModel::onCloseDetail)
+                }
+            }
+        }
     }
     UndoSnackbar(state.undo, snackbar, viewModel::onUndo, viewModel::onUndoClosed)
-    state.detail?.let { ErrorDetailSheet(it, state.instanceName, onDismiss = viewModel::onCloseDetail) }
+    if (!expanded) {
+        state.detail?.let { ErrorDetailSheet(it, state.instanceName, onDismiss = viewModel::onCloseDetail) }
+    }
 }
 
 /** Offers *Undo* for the last deletion in [snackbar]; [onClosed] when the offer ran out or was replaced by none. */
