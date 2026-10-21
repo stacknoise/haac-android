@@ -189,7 +189,7 @@ Suggested answers:
 | App icon | 512 × 512 PNG, up to 1 MB | Ready: `docs/icons/playstore-icon-512.png` |
 | Phone screenshots | 2 to 8; JPEG or 24-bit PNG; each side 320 to 3840 px; the longer side at most twice the shorter | Ready, German: six files in `docs/play/de/screenshots` (1100 × 2150, 24-bit PNG): rooms, places, add entities, edit layout, schedules, sign in. There is no English set yet |
 | Feature graphic | 1024 × 500 JPEG or 24-bit PNG | Ready, German: `docs/play/de/feature-graphic.png` |
-| 7-inch / 10-inch tablet screenshots | Optional | Tablet and landscape are not designed (concept 15.4) |
+| 7-inch / 10-inch tablet screenshots | Optional; 2 to 8 each, same file rules as phone | Tablet and landscape are built (concept 15.7). Waiting for real screenshots of the built app (rooms, places, add entities, edit layout, notifications, sign in; landscape and portrait) |
 
 Screenshots to submit, in this order: Rooms, Places, Add entities, Edit layout, Schedules, Sign in. Do not show real names or addresses. The files are generated from phone screenshots taken in the German app (the IP address on the sign-in screen is pixelated) (headline above the unchanged screen, 2:1 limit respected); the generated PNGs are the ones to upload.
 
