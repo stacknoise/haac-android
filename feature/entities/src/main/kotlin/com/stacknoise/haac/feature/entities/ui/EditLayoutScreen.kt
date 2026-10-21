@@ -1,14 +1,18 @@
 package com.stacknoise.haac.feature.entities.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -36,6 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.LocalWindowWidthClass
+import com.stacknoise.haac.core.common.ui.WindowWidthClass
+import com.stacknoise.haac.core.common.ui.theme.HaacColors
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
 import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.core.common.ui.theme.haacSegmentedColors
@@ -69,27 +76,64 @@ fun EditLayoutScreen(
     )
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         TopBar(state, onClose = close, onDone = viewModel::onDone)
-        Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
-            ModeRow(state.mode, viewModel::onMode)
-            state.error?.let { ErrorMessage(it) }
-            val hint = if (state.mode == ArrangeMode.GRID) R.string.edit_hint_grid else R.string.edit_hint_list
-            Text(
-                stringResource(hint),
-                style = MaterialTheme.typography.bodyMedium,
-                color = secondaryColor(),
-                modifier = Modifier.padding(vertical = 12.dp),
-            )
-            if (draft != null && draft.tiles.isEmpty() && state.mode == ArrangeMode.LIST) {
-                Text(stringResource(R.string.edit_empty), style = MaterialTheme.typography.bodyLarge)
-            }
-            draft?.let {
-                if (state.mode == ArrangeMode.GRID) EditGrid(it.tiles, actions) else ArrangeList(it.tiles, actions)
+        if (LocalWindowWidthClass.current == WindowWidthClass.Expanded) {
+            GridAndList(state, actions)
+        } else {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
+                ModeRow(state.mode, viewModel::onMode)
+                state.error?.let { ErrorMessage(it) }
+                val hint = if (state.mode == ArrangeMode.GRID) R.string.edit_hint_grid else R.string.edit_hint_list
+                ArrangeHint(hint)
+                if (draft != null && draft.tiles.isEmpty() && state.mode == ArrangeMode.LIST) {
+                    Text(stringResource(R.string.edit_empty), style = MaterialTheme.typography.bodyLarge)
+                }
+                draft?.let {
+                    if (state.mode == ArrangeMode.GRID) EditGrid(it.tiles, actions) else ArrangeList(it.tiles, actions)
+                }
             }
         }
     }
     val renamed = draft?.tiles?.firstOrNull { it.entityId == renaming }
     renamed?.let { tile -> Rename(tile, viewModel) { renaming = null } }
     if (asking) DiscardDialog(onDiscard = onClose, onKeep = { asking = false })
+}
+
+/** Expanded (concept 15.7): the grid on the left and the list beside it for good, so there is no Grid/List switch. */
+@Composable
+private fun GridAndList(state: EditLayoutUiState, actions: EditActions) {
+    val tiles = state.draft?.tiles
+    Row(Modifier.fillMaxSize()) {
+        Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
+            state.error?.let { ErrorMessage(it) }
+            ArrangeHint(R.string.edit_hint_grid)
+            tiles?.let { EditGrid(it, actions) }
+        }
+        Box(Modifier.width(1.dp).fillMaxHeight().background(HaacColors.Outline))
+        Column(
+            modifier = Modifier
+                .width(DetailPaneWidth)
+                .fillMaxHeight()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp),
+        ) {
+            ArrangeHint(R.string.edit_hint_list)
+            if (tiles != null && tiles.isEmpty()) {
+                Text(stringResource(R.string.edit_empty), style = MaterialTheme.typography.bodyLarge)
+            }
+            tiles?.let { ArrangeList(it, actions) }
+        }
+    }
+}
+
+/** The one-line instruction above the grid or the list. */
+@Composable
+private fun ArrangeHint(@StringRes text: Int) {
+    Text(
+        stringResource(text),
+        style = MaterialTheme.typography.bodyMedium,
+        color = secondaryColor(),
+        modifier = Modifier.padding(vertical = 12.dp),
+    )
 }
 
 /** *Close*, "Edit Living room" and *Done*. */
