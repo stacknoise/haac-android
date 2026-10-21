@@ -49,13 +49,13 @@ class LayoutDraftTest {
 
     @Test
     fun `the grid geometry packs tiles like the room grid`() {
-        val rects = GridGeometry(width = 212, gap = 12, rowHeight = 100).rects(
+        val rects = GridGeometry(width = 212, gap = 12, rowHeight = 100, columns = 2).rects(
             listOf(TileSize.LARGE, TileSize.SMALL, TileSize.SMALL, TileSize.WIDE),
         )
         assertEquals(listOf(0, 0, 100, 212), rects[0].let { listOf(it.left, it.top, it.right, it.bottom) })
         assertEquals(listOf(112, 0), rects[1].let { listOf(it.left, it.top) })
         assertEquals(listOf(112, 112), rects[2].let { listOf(it.left, it.top) })
         assertEquals(listOf(0, 224, 212, 324), rects[3].let { listOf(it.left, it.top, it.right, it.bottom) })
-        assertEquals(324, GridGeometry(212, 12, 100).height(rects))
+        assertEquals(324, GridGeometry(212, 12, 100, 2).height(rects))
     }
 }
