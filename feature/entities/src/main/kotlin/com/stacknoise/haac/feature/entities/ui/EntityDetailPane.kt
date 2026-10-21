@@ -20,13 +20,19 @@ internal val DetailPaneWidth = 380.dp
  */
 @Composable
 internal fun EntityDetailPane(entityId: String, onClose: () -> Unit) {
-    val args = Bundle().apply { putString(EntityDetailViewModel.ENTITY_ARG, entityId) }
     Box(
         modifier = Modifier
             .width(DetailPaneWidth)
             .fillMaxHeight()
             .border(1.dp, HaacColors.Outline),
     ) {
-        EntityDetailScreen(onClose, argsViewModel(EntityDetailViewModel::class.java, entityId, args))
+        EntityDetailContent(entityId, onClose)
     }
+}
+
+/** The detail screen of [entityId] inside a pane or side sheet; its view model reads the entity as an argument. */
+@Composable
+internal fun EntityDetailContent(entityId: String, onClose: () -> Unit) {
+    val args = Bundle().apply { putString(EntityDetailViewModel.ENTITY_ARG, entityId) }
+    EntityDetailScreen(onClose, argsViewModel(EntityDetailViewModel::class.java, entityId, args))
 }
