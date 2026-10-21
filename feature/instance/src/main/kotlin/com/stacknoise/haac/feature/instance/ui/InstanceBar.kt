@@ -28,7 +28,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.stacknoise.haac.core.network.connection.ConnectionState
 import com.stacknoise.haac.feature.instance.R
+import com.stacknoise.haac.feature.instance.domain.InstanceItem
 import com.stacknoise.haac.feature.instance.domain.SwitchStep
 
 /**
@@ -63,24 +65,86 @@ fun InstanceBar(
             stringResource(R.string.instance_switcher),
             Modifier.padding(start = 4.dp),
         )
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            items.forEach { item ->
-                DropdownMenuItem(
-                    text = { InstanceRow(item, connection) },
-                    onClick = {
-                        open = false
-                        viewModel.onSelect(item.id) { step -> onSwitched(item.id, step) }
-                    },
-                )
-            }
-            HorizontalDivider()
+        InstanceMenu(
+            expanded = open,
+            items = items,
+            connection = connection,
+            onDismiss = { open = false },
+            onSelect = { id -> viewModel.onSelect(id) { step -> onSwitched(id, step) } },
+            onAdd = onAdd,
+        )
+    }
+}
+
+/**
+ * The instance switcher in the head of the navigation rail (concept 15.7): a circle in the accent colour of the
+ * active instance with its initial. Nothing is shown while only one instance exists. Parameters as [InstanceBar].
+ */
+@Composable
+fun InstanceBadge(
+    onSwitched: (String, SwitchStep) -> Unit,
+    onAdd: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: InstanceSwitcherViewModel = hiltViewModel(),
+) {
+    val items by viewModel.items.collectAsStateWithLifecycle()
+    val connection by viewModel.connection.collectAsStateWithLifecycle()
+    var open by remember { mutableStateOf(false) }
+    val current = items.firstOrNull { it.active }
+    if (items.size < 2 || current == null) return
+    Box(modifier) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(Color(current.accent))
+                .clickable(onClickLabel = stringResource(R.string.instance_switcher)) { open = true },
+        ) {
+            Text(
+                current.name.take(1).uppercase(),
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White,
+            )
+        }
+        InstanceMenu(
+            expanded = open,
+            items = items,
+            connection = connection,
+            onDismiss = { open = false },
+            onSelect = { id -> viewModel.onSelect(id) { step -> onSwitched(id, step) } },
+            onAdd = onAdd,
+        )
+    }
+}
+
+/** The dropdown of all [items] and *Add instance*, shared by the bar and the rail badge. */
+@Composable
+private fun InstanceMenu(
+    expanded: Boolean,
+    items: List<InstanceItem>,
+    connection: ConnectionState,
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit,
+    onAdd: () -> Unit,
+) {
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
+        items.forEach { item ->
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.instance_add)) },
+                text = { InstanceRow(item, connection) },
                 onClick = {
-                    open = false
-                    onAdd()
+                    onDismiss()
+                    onSelect(item.id)
                 },
             )
         }
+        HorizontalDivider()
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.instance_add)) },
+            onClick = {
+                onDismiss()
+                onAdd()
+            },
+        )
     }
 }

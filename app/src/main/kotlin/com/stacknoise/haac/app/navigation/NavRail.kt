@@ -26,17 +26,24 @@ import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
 
 /**
- * Navigation rail of tablets (concept 15.7): the [tabs] above, Settings at the bottom, [currentRoute] selected.
+ * Navigation rail of tablets (concept 15.7): the [head] (instance switcher), the [tabs] below it, Settings at the
+ * bottom, [currentRoute] selected.
  * Draws an accent bar at the left edge, not the M3 pill, and a border at its right edge.
  */
 @Composable
-internal fun NavRail(tabs: List<TopLevelDestination>, currentRoute: String?, onOpen: (TopLevelDestination) -> Unit) {
+internal fun NavRail(
+    tabs: List<TopLevelDestination>,
+    currentRoute: String?,
+    onOpen: (TopLevelDestination) -> Unit,
+    head: @Composable () -> Unit = {},
+) {
     val (settings, others) = tabs.partition { it == TopLevelDestination.SETTINGS }
     Row(Modifier.fillMaxHeight().background(HaacColors.NavBackground)) {
         Column(
             modifier = Modifier.width(RailWidth).fillMaxHeight().padding(vertical = 12.dp).selectableGroup(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            head()
             others.forEach { RailItem(it, selected = currentRoute == it.route) { onOpen(it) } }
             Spacer(Modifier.weight(1f))
             settings.forEach { RailItem(it, selected = currentRoute == it.route) { onOpen(it) } }
