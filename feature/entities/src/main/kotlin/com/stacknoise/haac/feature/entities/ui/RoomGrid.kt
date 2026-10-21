@@ -5,16 +5,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.database.assignment.TileSize
-import com.stacknoise.haac.feature.entities.domain.GridColumns
 import com.stacknoise.haac.feature.entities.domain.Tile
+import com.stacknoise.haac.feature.entities.domain.gridColumns
 import com.stacknoise.haac.feature.entities.domain.packGrid
 
 /**
- * The two-column room grid (concept 7.2, M-05): tiles in their order, placed densely by [packGrid]; a 1×1 tile
- * is one column wide and one row high. Controls work only while [enabled].
+ * The room grid (concept 7.2, M-05, 15.7): two columns on a phone, more on a tablet; tiles in their order, placed
+ * densely by [packGrid]; a 1×1 tile is one column wide and one row high. Controls work only while [enabled].
  */
 @Composable
 internal fun RoomGrid(tiles: List<Tile>, enabled: Boolean, actions: TileActions, modifier: Modifier = Modifier) {
@@ -23,7 +24,7 @@ internal fun RoomGrid(tiles: List<Tile>, enabled: Boolean, actions: TileActions,
         content = { tiles.forEach { tile -> TileCard(tile, enabled, actions) } },
         modifier = modifier,
     ) { measurables, constraints ->
-        val grid = GridGeometry(constraints.maxWidth, GridGap.roundToPx(), GridRowHeight.roundToPx())
+        val grid = gridGeometry(constraints.maxWidth)
         val rects = grid.rects(sizes)
         val placeables = measurables.mapIndexed { index, measurable ->
             measurable.measure(Constraints.fixed(rects[index].width, rects[index].height))
@@ -34,13 +35,26 @@ internal fun RoomGrid(tiles: List<Tile>, enabled: Boolean, actions: TileActions,
     }
 }
 
-/** Pixel geometry of the room grid of [width] with [gap] between tiles and rows of [rowHeight]. */
-internal class GridGeometry(private val width: Int, private val gap: Int, private val rowHeight: Int) {
+/** The geometry of a room grid that is [width] pixels wide; its column count follows the width (concept 15.7). */
+internal fun Density.gridGeometry(width: Int): GridGeometry = GridGeometry(
+    width = width,
+    gap = GridGap.roundToPx(),
+    rowHeight = GridRowHeight.roundToPx(),
+    columns = gridColumns((width / density).toInt()),
+)
+
+/** Pixel geometry of the room grid of [width] with [columns] columns, [gap] between tiles and rows of [rowHeight]. */
+internal class GridGeometry(
+    private val width: Int,
+    private val gap: Int,
+    private val rowHeight: Int,
+    private val columns: Int,
+) {
     /** Width of one column. */
-    private val columnWidth: Int get() = (width - gap * (GridColumns - 1)) / GridColumns
+    private val columnWidth: Int get() = (width - gap * (columns - 1)) / columns
 
     /** The rectangle of every tile of [sizes], packed densely in their order (concept 7.2). */
-    fun rects(sizes: List<TileSize>): List<IntRect> = packGrid(sizes).zip(sizes) { cell, size ->
+    fun rects(sizes: List<TileSize>): List<IntRect> = packGrid(sizes, columns).zip(sizes) { cell, size ->
         val left = cell.column * (columnWidth + gap)
         val top = cell.row * (rowHeight + gap)
         IntRect(

@@ -25,4 +25,28 @@ class GridPackingTest {
         val sizes = listOf(TileSize.SMALL, TileSize.WIDE, TileSize.SMALL, TileSize.LARGE)
         assertEquals(listOf(GridCell(0, 0), GridCell(0, 1), GridCell(1, 0), GridCell(0, 2)), packGrid(sizes))
     }
+
+    @Test
+    fun `more columns take more small tiles per row, a wide tile still spans two`() {
+        val sizes = listOf(TileSize.SMALL, TileSize.SMALL, TileSize.WIDE, TileSize.SMALL, TileSize.SMALL)
+        val expected = listOf(GridCell(0, 0), GridCell(1, 0), GridCell(2, 0), GridCell(0, 1), GridCell(1, 1))
+        assertEquals(expected, packGrid(sizes, columns = 4))
+    }
+
+    @Test
+    fun `a tall tile of a four column grid leaves its neighbours free`() {
+        val sizes = listOf(TileSize.LARGE, TileSize.SMALL, TileSize.SMALL, TileSize.SMALL, TileSize.SMALL)
+        val expected = listOf(GridCell(0, 0), GridCell(1, 0), GridCell(2, 0), GridCell(3, 0), GridCell(1, 1))
+        assertEquals(expected, packGrid(sizes, columns = 4))
+    }
+
+    @Test
+    fun `the column count follows the width and never drops below two`() {
+        assertEquals(2, gridColumns(371))
+        assertEquals(2, gridColumns(200))
+        assertEquals(3, gridColumns(508))
+        assertEquals(4, gridColumns(680))
+        assertEquals(5, gridColumns(880))
+        assertEquals(6, gridColumns(1144))
+    }
 }
