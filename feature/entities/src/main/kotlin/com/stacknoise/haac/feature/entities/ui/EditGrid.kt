@@ -55,9 +55,7 @@ import kotlin.math.roundToInt
 internal fun EditGrid(tiles: List<Tile>, actions: EditActions) {
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val density = LocalDensity.current
-        val grid = with(density) {
-            GridGeometry(constraints.maxWidth, GridGap.roundToPx(), GridRowHeight.roundToPx())
-        }
+        val grid = density.gridGeometry(constraints.maxWidth)
         val labels = moveLabels()
         val accent = MaterialTheme.colorScheme.primary
         val rects = grid.rects(tiles.map { it.size } + TileSize.SMALL)
