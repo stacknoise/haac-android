@@ -68,7 +68,8 @@ fun AddEntitiesScreen(onClose: () -> Unit, viewModel: AddEntitiesViewModel = hil
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(state.status.done) { if (state.status.done) onClose() }
     if (LocalWindowWidthClass.current == WindowWidthClass.Compact) {
-        AddEntitiesContent(state, viewModel, onClose, Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
+        val background = MaterialTheme.colorScheme.background
+        AddEntitiesContent(state, viewModel, onClose, Modifier.fillMaxSize().background(background))
     } else {
         Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
             Surface(
