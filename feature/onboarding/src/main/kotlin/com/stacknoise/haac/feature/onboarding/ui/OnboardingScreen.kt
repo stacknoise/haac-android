@@ -2,9 +2,11 @@ package com.stacknoise.haac.feature.onboarding.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -40,11 +41,10 @@ import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.stacknoise.haac.core.common.ui.CardContentWidth
-import com.stacknoise.haac.core.common.ui.CertificateDetails
-import com.stacknoise.haac.core.common.ui.CertificateDialog
-import com.stacknoise.haac.core.common.ui.CertificateDialogKind
 import com.stacknoise.haac.core.common.ui.ErrorMessage
+import com.stacknoise.haac.core.common.ui.LocalWindowWidthClass
 import com.stacknoise.haac.core.common.ui.SecureWindow
+import com.stacknoise.haac.core.common.ui.WindowWidthClass
 import com.stacknoise.haac.core.common.ui.centeredContent
 import com.stacknoise.haac.core.common.ui.findActivity
 import com.stacknoise.haac.core.common.ui.theme.HaacShapes
@@ -52,9 +52,7 @@ import com.stacknoise.haac.core.common.ui.theme.HaacTheme
 import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.network.discovery.DiscoveredServer
-import com.stacknoise.haac.core.network.endpoint.AddressSlot
 import com.stacknoise.haac.feature.onboarding.R
-import com.stacknoise.haac.feature.onboarding.domain.SignInResult
 /** M-01: pick a HA server, sign in, optional MFA code (concept 4.2, 5.1, 15.3); [onSignedIn] after success. */
 @Composable
 fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hiltViewModel()) {
@@ -114,49 +112,74 @@ fun OnboardingScreen(onSignedIn: () -> Unit, viewModel: OnboardingViewModel = hi
 /** Copies the characters without creating a String (concept 5.1). */
 private fun CharSequence.copyChars(): CharArray = CharArray(length) { this[it] }
 
-/** Stateless layout of M-01. */
+/** Stateless layout of M-01: one card from the medium class on, greeting and card side by side when expanded. */
 @Composable
 fun OnboardingContent(state: OnboardingUiState, password: TextFieldState, actions: OnboardingActions) {
-    Column(
+    val expanded = LocalWindowWidthClass.current == WindowWidthClass.Expanded
+    Row(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .safeDrawingPadding()
-            .imePadding()
-            .centeredContent(CardContentWidth)
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .imePadding(),
     ) {
-        Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
-            Spacer(Modifier.height(48.dp))
-            Text(stringResource(R.string.onboarding_hello), style = MaterialTheme.typography.displayLarge)
-            Spacer(Modifier.height(16.dp))
-            Text(
-                stringResource(R.string.onboarding_intro),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(32.dp))
-            when (state.stage) {
-                SignInStage.CREDENTIALS -> {
-                    ServerSection(state, actions)
-                    CredentialFields(state, password, actions)
+        if (expanded) {
+            Box(Modifier.weight(1f).fillMaxHeight().padding(48.dp), contentAlignment = Alignment.CenterStart) {
+                Greeting()
+            }
+        }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .centeredContent(CardContentWidth)
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+        ) {
+            Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+                if (!expanded) {
+                    Spacer(Modifier.height(48.dp))
+                    Greeting()
+                    Spacer(Modifier.height(32.dp))
                 }
-                SignInStage.CODE -> CodeSection(state, actions)
-                SignInStage.BRIDGE -> BridgeHint()
+                SignInStep(state, password, actions)
             }
-            state.error?.let { ErrorMessage(it) }
-        }
-        if (state.stage != SignInStage.CREDENTIALS) {
-            TextButton(onClick = actions.onStartOver, enabled = !state.busy) {
-                Text(stringResource(R.string.onboarding_start_over))
+            if (state.stage != SignInStage.CREDENTIALS) {
+                TextButton(onClick = actions.onStartOver, enabled = !state.busy) {
+                    Text(stringResource(R.string.onboarding_start_over))
+                }
             }
+            PrimaryAction(state, actions)
         }
-        PrimaryAction(state, actions)
     }
-    state.cleartextWarningFor?.let { url -> CleartextDialog(url, actions) }
-    state.certificateOffer?.let { offer -> TrustDialog(offer, actions) }
-    state.addressOffer?.let { offer -> AddressOfferDialog(offer, actions) }
-    if (state.fingerprintOffer != null) FingerprintDialog(state.busy, actions)
+    OnboardingDialogs(state, actions)
+}
+
+/** The large greeting and the short introduction of M-01. */
+@Composable
+private fun Greeting() {
+    Column {
+        Text(stringResource(R.string.onboarding_hello), style = MaterialTheme.typography.displayLarge)
+        Spacer(Modifier.height(16.dp))
+        Text(
+            stringResource(R.string.onboarding_intro),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** The fields of the current sign-in stage and its error. */
+@Composable
+private fun SignInStep(state: OnboardingUiState, password: TextFieldState, actions: OnboardingActions) {
+    when (state.stage) {
+        SignInStage.CREDENTIALS -> {
+            ServerSection(state, actions)
+            CredentialFields(state, password, actions)
+        }
+        SignInStage.CODE -> CodeSection(state, actions)
+        SignInStage.BRIDGE -> BridgeHint()
+    }
+    state.error?.let { ErrorMessage(it) }
 }
 
 /** Sign in, Verify or Try again, depending on the stage. */
@@ -196,70 +219,6 @@ private fun PrimaryButton(label: String, enabled: Boolean, busy: Boolean, onClic
     }
 }
 
-/** Warning before an unencrypted connection to a private address (concept 4.3). */
-@Composable
-private fun CleartextDialog(url: String, actions: OnboardingActions) {
-    AlertDialog(
-        onDismissRequest = actions.onCleartextDismissed,
-        title = { Text(stringResource(R.string.onboarding_cleartext_title)) },
-        text = { Text(stringResource(R.string.onboarding_cleartext_text, url)) },
-        confirmButton = {
-            TextButton(onClick = actions.onCleartextConfirmed) {
-                Text(stringResource(R.string.onboarding_cleartext_confirm))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = actions.onCleartextDismissed) {
-                Text(stringResource(R.string.onboarding_cleartext_cancel))
-            }
-        },
-    )
-}
-
-/** The server already belongs to a stored instance: add the address to it instead (concept 4.5). */
-@Composable
-private fun AddressOfferDialog(offer: SignInResult.SameInstance, actions: OnboardingActions) {
-    val internal = offer.slot == AddressSlot.INTERNAL
-    val slot = stringResource(if (internal) R.string.onboarding_slot_internal else R.string.onboarding_slot_external)
-    val text = stringResource(R.string.onboarding_address_offer_text, offer.displayName, slot)
-    val replaces = offer.replaces?.let { stringResource(R.string.onboarding_address_offer_replaces, it) }
-    AlertDialog(
-        onDismissRequest = actions.onAddressOfferDismissed,
-        title = { Text(stringResource(R.string.onboarding_address_offer_title)) },
-        text = { Text(listOfNotNull(text, replaces).joinToString("\n\n")) },
-        confirmButton = {
-            TextButton(onClick = actions.onAddAddress) {
-                Text(stringResource(R.string.onboarding_address_offer_confirm))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = actions.onAddressOfferDismissed) {
-                Text(stringResource(R.string.onboarding_cleartext_cancel))
-            }
-        },
-    )
-}
-
-/** Offers fingerprint unlock for the new instance; either answer opens it (concept 4.4, 5.4). */
-@Composable
-private fun FingerprintDialog(busy: Boolean, actions: OnboardingActions) {
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text(stringResource(R.string.onboarding_fingerprint_title)) },
-        text = { Text(stringResource(R.string.onboarding_fingerprint_text)) },
-        confirmButton = {
-            TextButton(onClick = actions.onEnableFingerprint, enabled = !busy) {
-                Text(stringResource(R.string.onboarding_fingerprint_enable))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = actions.onSkipFingerprint, enabled = !busy) {
-                Text(stringResource(R.string.onboarding_fingerprint_skip))
-            }
-        },
-    )
-}
-
 /** Preview with two discovered servers, the first selected. */
 @Preview
 @Composable
@@ -278,21 +237,4 @@ private fun OnboardingPreview() {
             actions = OnboardingActions(),
         )
     }
-}
-
-/** Asks whether to trust the self-signed certificate of the server on first use (concept 4.3). */
-@Composable
-private fun TrustDialog(offer: CertificateOffer, actions: OnboardingActions) {
-    val certificate = offer.certificate
-    CertificateDialog(
-        details = CertificateDetails(
-            offer.url.host,
-            certificate.fingerprint,
-            certificate.subject,
-            certificate.expiresAt,
-        ),
-        kind = CertificateDialogKind.TRUST_NEW,
-        onConfirm = actions.onCertificateTrusted,
-        onDismiss = actions.onCertificateDismissed,
-    )
 }
