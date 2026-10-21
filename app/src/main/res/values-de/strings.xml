@@ -9,4 +9,6 @@
     <string name="unlock_use_password">Passwort verwenden</string>
     <string name="licenses_title">Open-Source-Lizenzen</string>
     <string name="licenses_back">Zurück</string>
+    <string name="list_detail_places_empty">Wähle links einen Ort oder lege einen neuen an.</string>
+    <string name="list_detail_schedules_empty">Wähle links einen Zeitplan oder lege einen neuen an.</string>
 </resources>

@@ -18,13 +18,11 @@ import com.stacknoise.haac.feature.entities.ui.RoomsScreen
 import com.stacknoise.haac.feature.layout.ui.AreaImportScreen
 import com.stacknoise.haac.feature.layout.ui.PlaceEditorScreen
 import com.stacknoise.haac.feature.layout.ui.PlaceEditorViewModel
-import com.stacknoise.haac.feature.layout.ui.PlacesScreen
 import com.stacknoise.haac.feature.notifications.ui.NotificationBell
 import com.stacknoise.haac.feature.schedules.ui.ScheduleDetailScreen
 import com.stacknoise.haac.feature.schedules.ui.ScheduleDetailViewModel
 import com.stacknoise.haac.feature.schedules.ui.ScheduleEditorScreen
 import com.stacknoise.haac.feature.schedules.ui.ScheduleEditorViewModel
-import com.stacknoise.haac.feature.schedules.ui.SchedulesScreen
 
 /** The Rooms tab (M-05) with the notification bell in its header (M-08). */
 internal fun NavGraphBuilder.roomsDestination(navController: NavController) {
@@ -44,10 +42,7 @@ internal fun NavGraphBuilder.roomsDestination(navController: NavController) {
 /** The Places tab (M-02) and the place form (M-03). */
 internal fun NavGraphBuilder.placeDestinations(navController: NavController) {
     composable(TopLevelDestination.PLACES.route) {
-        PlacesScreen(
-            onOpen = { kind, id -> navController.navigate(PlaceRoutes.editor(kind, id)) },
-            onImport = { navController.navigate(PlaceRoutes.IMPORT) },
-        )
+        PlacesRoute(navController)
     }
     composable(PlaceRoutes.IMPORT) { AreaImportScreen(onClose = { navController.popBackStack() }) }
     composable(
@@ -104,10 +99,7 @@ internal fun NavGraphBuilder.entityDestinations(navController: NavController) {
 /** The Schedules tab (M-10, M-11, M-16), the detail screen (M-15, M-17) and the editor (M-12 to M-14, M-18). */
 internal fun NavGraphBuilder.scheduleDestinations(navController: NavController) {
     composable(TopLevelDestination.SCHEDULES.route) {
-        SchedulesScreen(
-            onOpen = { scheduleId -> navController.navigate(ScheduleRoutes.detail(scheduleId)) },
-            onCreate = { navController.navigate(ScheduleRoutes.editor()) },
-        )
+        SchedulesRoute(navController)
     }
     composable(
         ScheduleRoutes.DETAIL,
