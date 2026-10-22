@@ -10,7 +10,7 @@ The official Home Assistant Companion App shows everything the signed-in user ca
 
 This limits what the app shows and controls. It is not a Home Assistant permission: someone holding a user's access token can still use Home Assistant's standard API directly. Use a dedicated non-admin user per person (see the [bridge README](https://github.com/stacknoise/haac-bridge#security-note)).
 
-**Status:** version 0.7.0, available as a signed sideload APK on GitHub Releases (not on Google Play yet). Feature complete for v1, plus schedules, binary sensors, a dark design and a demo mode.
+**Status:** version 0.8.0, available as a signed sideload APK on GitHub Releases (not on Google Play yet). Feature complete for v1, plus schedules, binary sensors, a dark design, a demo mode and tablet layouts.
 
 - Supported entity domains: switch, sensor, binary sensor (read-only), climate.
 - Android 9 (API 28) or newer.
