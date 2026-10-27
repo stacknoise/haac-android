@@ -75,4 +75,14 @@ class TokenClientTest {
         assertEquals("/auth/revoke", request.url.encodedPath)
         assertEquals("token=ref", request.body!!.utf8())
     }
+
+    @Test
+    fun `refresh sends the fixed client_id whatever the base URL`() = runTest {
+        respond(200, """{"access_token":"acc2","token_type":"Bearer","expires_in":1800}""")
+        tokens.refresh(server.url("/ha/"), "ref")
+        assertEquals(
+            "grant_type=refresh_token&refresh_token=ref&client_id=https%3A%2F%2Fstacknoise.com%2Fhaac%2F",
+            server.takeRequest().body!!.utf8(),
+        )
+    }
 }
