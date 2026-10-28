@@ -1,6 +1,8 @@
 package com.stacknoise.haac.core.network.di
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.net.nsd.NsdManager
 import com.stacknoise.haac.core.common.dispatch.MainDispatcher
 import dagger.Module
@@ -14,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
+import com.stacknoise.haac.core.network.http.UserAgentInterceptor
 import com.stacknoise.haac.core.network.tls.PinRegistry
 import com.stacknoise.haac.core.network.tls.pinnedBy
 import okhttp3.OkHttpClient
@@ -27,12 +30,25 @@ object NetworkModule {
     /** The one client of the app; trusts by pin or by system certificates (concept 4.3). */
     @Provides
     @Singleton
-    fun provideOkHttpClient(pins: PinRegistry): OkHttpClient = OkHttpClient.Builder()
+    fun provideOkHttpClient(pins: PinRegistry, userAgent: UserAgentInterceptor): OkHttpClient = OkHttpClient.Builder()
         .pinnedBy(pins)
+        .addInterceptor(userAgent)
         .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .followRedirects(false)
         .build()
+
+    /** Names the app in HA's log: `HAAC/<version> (Android <sdk>)`. */
+    @Provides
+    @Singleton
+    fun provideUserAgentInterceptor(@ApplicationContext context: Context): UserAgentInterceptor {
+        val version = try {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        } catch (_: PackageManager.NameNotFoundException) {
+            null
+        }
+        return UserAgentInterceptor(version ?: "unknown", Build.VERSION.SDK_INT)
+    }
 
     /** JSON that tolerates new fields from future HA versions. */
     @Provides

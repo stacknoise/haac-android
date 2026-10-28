@@ -9,6 +9,8 @@ import com.stacknoise.haac.core.network.auth.TokenClient
 import com.stacknoise.haac.core.network.http.HaHttpClient
 import com.stacknoise.haac.core.security.token.TokenProtection
 import com.stacknoise.haac.core.security.token.TokenStore
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import mockwebserver3.MockResponse
@@ -108,5 +110,21 @@ class InstanceSessionTest {
         assertFalse(session.signOut())
         assertFalse("s1" in stored)
         assertEquals(0, server.requestCount)
+    }
+
+    @Test
+    fun `after a revoked token no further request goes to HA`() = runTest {
+        server.enqueue(MockResponse.Builder().code(400).body("""{"error":"invalid_grant"}""").build())
+        assertThrows<AuthException> { session.accessToken() }
+        assertEquals(ErrorCode.AUTH_SESSION_EXPIRED, assertThrows<AuthException> { session.accessToken() }.code)
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test
+    fun `parallel calls with an expired access token refresh only once`() = runTest {
+        accessToken("a1")
+        val results = (1..5).map { async { session.accessToken() } }.awaitAll()
+        assertEquals(List(5) { "a1" }, results)
+        assertEquals(1, server.requestCount)
     }
 }
