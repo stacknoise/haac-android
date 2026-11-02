@@ -19,6 +19,7 @@ Requirements:
 ./gradlew lint detekt        # Android Lint and Detekt
 ./gradlew codeIndex          # regenerate docs/code-index.md and docs/error-codes.md
 ./gradlew codeIndexCheck     # fail if those files are outdated or a KDoc summary is missing
+python3 scripts/build_dependencies.py --check   # fail if docs/review is outdated (CI runs it)
 ./gradlew -p build-logic test   # tests of the code index generator
 python3 scripts/build_dependencies.py   # regenerate docs/review/ with every code change (dependency map; Python 3, no packages needed)
 ```

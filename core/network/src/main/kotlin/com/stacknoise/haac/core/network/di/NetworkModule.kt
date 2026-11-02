@@ -35,6 +35,7 @@ object NetworkModule {
         .addInterceptor(userAgent)
         .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .followRedirects(false)
         .build()
 
