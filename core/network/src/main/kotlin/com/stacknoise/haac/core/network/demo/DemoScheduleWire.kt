@@ -42,6 +42,15 @@ internal object DemoScheduleWire {
         put("blocked_by", JsonArray(blockedBy(schedule, disabled).map(::JsonPrimitive)))
         put("expired", planned.expired)
         put("next_runs", JsonArray(planned.nextRuns.map(::JsonPrimitive)))
+        put("skipped_dates", JsonArray(schedule.skipped.map(::JsonPrimitive)))
+        put("upcoming_runs", JsonArray(planned.upcoming.map(::upcoming)))
+    }
+
+    /** One entry of `upcoming_runs` (concept 19.12). */
+    private fun upcoming(run: DemoUpcoming): JsonObject = buildJsonObject {
+        put("at", run.at)
+        put("date", run.date)
+        put("skipped", run.skipped)
     }
 
     /** The `repeat` object of a schedule; a one-off schedule has no interval and no end date (concept 19.10). */
@@ -52,11 +61,12 @@ internal object DemoScheduleWire {
         rule.endDate?.let { put("end_date", it) }
     }
 
-    /** SHA-256 over `id`, `updated_at` and `last_run.at` of the schedules and the scope, as stable as the data. */
+    /** SHA-256 over `id`, `updated_at`, `last_run.at` and the skipped dates of the schedules and the scope. */
     fun revision(schedules: List<DemoSchedule>): String {
         val digest = MessageDigest.getInstance("SHA-256")
         schedules.sortedBy { it.id }.forEach {
-            digest.update("${it.id}\t${it.updatedAt}\t${it.lastRun?.at.orEmpty()}\n".toByteArray())
+            val parts = listOf(it.id, it.updatedAt, it.lastRun?.at.orEmpty(), it.skipped.joinToString(","))
+            digest.update((parts.joinToString("\t") + "\n").toByteArray())
         }
         digest.update(SCOPE.toByteArray())
         return digest.digest().joinToString("") { "%02x".format(it) }

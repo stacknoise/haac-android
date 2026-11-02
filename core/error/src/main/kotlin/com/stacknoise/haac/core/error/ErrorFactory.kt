@@ -80,6 +80,7 @@ class DefaultErrorFactory @Inject constructor() : ErrorFactory {
             "HAB-SCH-007" to ErrorCode.BRG_ACTION_FAILED,
             "HAB-SCH-008" to ErrorCode.SCH_BLOCKED,
             "HAB-SCH-009" to ErrorCode.SCH_DATE_PAST,
+            "HAB-SCH-010" to ErrorCode.SCH_SKIP_INVALID,
             "HAB-WS-001" to ErrorCode.BRG_ACTION_FAILED,
             "HAB-INT-000" to ErrorCode.BRG_ACTION_FAILED,
         )

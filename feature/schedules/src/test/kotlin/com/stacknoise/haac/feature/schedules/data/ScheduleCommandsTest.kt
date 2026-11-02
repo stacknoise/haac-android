@@ -86,6 +86,30 @@ class ScheduleCommandsTest {
     }
 
     @Test
+    fun `skipping a run names the schedule and the date and caches the answer`() = runTest {
+        reply = reply.replace(""""next_run":null""", """"next_run":null,"skipped_dates":["2026-11-04"]""")
+        commands.skipRun("s1", cached(), "2026-11-04", skip = true)
+        val (type, fields) = sent.single()
+        assertEquals("haac_bridge/schedules/skip_run", type)
+        assertEquals(setOf("schedule_id", "date", "skip"), fields.keys)
+        assertEquals("2026-11-04", fields.getValue("date").jsonPrimitive.content)
+        assertEquals("true", fields.getValue("skip").jsonPrimitive.content)
+        assertEquals(listOf("a"), cache.keys.toList())
+    }
+
+    @Test
+    fun `a run that cannot be skipped is HAAC-SCH-010`() = runTest {
+        val failing = object : BridgeChannel by channel {
+            override suspend fun request(type: String, fields: JsonObject): JsonElement =
+                throw DefaultErrorFactory().fromBridgeError("HAB-SCH-010")
+        }
+        connection.value = failing
+        val failure = runCatching { commands.skipRun("s1", cached(), "2026-11-04", skip = true) }.exceptionOrNull()
+        assertEquals(ErrorCode.SCH_SKIP_INVALID, (failure as HaacException).code)
+        assertEquals(emptyMap<String, ScheduleEntity>(), cache)
+    }
+
+    @Test
     fun `nothing is sent when nothing changed`() = runTest {
         val original = cached()
         commands.save("s1", original, ScheduleDraft.of(original))

@@ -2,6 +2,7 @@ package com.stacknoise.haac.feature.schedules.domain
 
 import com.stacknoise.haac.core.database.schedule.ScheduleEntity
 import java.time.LocalTime
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
@@ -46,13 +47,20 @@ data class LastRun(val at: Long, val result: String, val code: String?) {
 }
 
 /**
+ * One of the next runs of a schedule (concept 19.12): when it happens, [date] (`YYYY-MM-DD` in HA's time zone, the
+ * key of `skip_run`) and whether the user [skipped] it.
+ */
+data class UpcomingRun(val at: Long, val date: String, val skipped: Boolean = false)
+
+/**
  * One cached schedule as the screens use it (concept 19.2, 19.7). [days] are 0 (Monday) to 6 (Sunday), [time] is set
  * for fixed times and [offsetMin] for sun events. [updatedAt] is the bridge's own text, sent back with an edit.
  * [pausedReason] is set while the server has paused the schedule; [nextRun] is empty while it is off or paused.
  * [repeat] is the date rule (concept 19.10), [notify] the opt-in for run notifications (19.11), [expired] tells that
  * a one-off or ending schedule has no run left and [nextRuns] are the next three runs the bridge computed.
  * [blockedBy] are the entities of the schedule that the user deactivated: while there is one, the schedule cannot
- * be switched on (concept 7.5); [offReason] is `entity_disabled` if a deactivation switched it off.
+ * be switched on (concept 7.5); [offReason] is `entity_disabled` if a deactivation switched it off. [upcomingRuns]
+ * are the next runs with the skipped ones between them (19.12); empty for a bridge without `schedule_skip`.
  */
 data class ScheduleItem(
     val id: String,
@@ -76,6 +84,7 @@ data class ScheduleItem(
     val nextRuns: List<Long> = emptyList(),
     val blockedBy: List<String> = emptyList(),
     val offReason: String? = null,
+    val upcomingRuns: List<UpcomingRun> = emptyList(),
 ) {
     /** True while the server has paused the schedule (concept 19.6). */
     val paused: Boolean get() = pausedReason != null
@@ -110,6 +119,7 @@ fun ScheduleEntity.toItem(): ScheduleItem = ScheduleItem(
     nextRuns = decodeIds(nextRuns).mapNotNull(::isoEpochMillis),
     blockedBy = decodeIds(blockedBy),
     offReason = offReason,
+    upcomingRuns = decodeUpcoming(upcomingRuns),
 )
 
 /** `HH:MM` as a time of day, or null if it is malformed. */
@@ -125,3 +135,16 @@ private fun decodeIds(json: String): List<String> = try {
 } catch (_: IllegalArgumentException) {
     emptyList()
 }
+
+/** The upcoming runs of column `upcoming_runs`; a damaged value shows none. */
+private fun decodeUpcoming(json: String): List<UpcomingRun> = try {
+    Json.decodeFromString(ListSerializer(UpcomingRunWire.serializer()), json).mapNotNull { wire ->
+        isoEpochMillis(wire.at)?.let { UpcomingRun(it, wire.date, wire.skipped) }
+    }
+} catch (_: IllegalArgumentException) {
+    emptyList()
+}
+
+/** The stored form of an upcoming run: the time stays the bridge's ISO text, like in `next_runs`. */
+@Serializable
+private class UpcomingRunWire(val at: String, val date: String, val skipped: Boolean = false)

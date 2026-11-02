@@ -253,6 +253,12 @@ enum class ErrorCode(
         ErrorAction.NONE,
         "Date or time of a one-off or ending schedule is in the past or allows no run (HAB-SCH-009, concept 19.10)",
     ),
+    SCH_SKIP_INVALID(
+        "HAAC-SCH-010",
+        R.string.error_sch_skip_invalid,
+        ErrorAction.NONE,
+        "The run cannot be skipped: not one of the next runs, or no run would be left (HAB-SCH-010, concept 19.12)",
+    ),
     APP_UNEXPECTED(
         "HAAC-APP-000",
         R.string.error_app_unexpected,

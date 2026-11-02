@@ -1,5 +1,6 @@
 package com.stacknoise.haac.feature.schedules.data
 
+import com.stacknoise.haac.feature.schedules.domain.toItem
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -41,6 +42,24 @@ class ScheduleWireTest {
         assertEquals("entity_disabled", row.offReason)
         assertEquals("""["switch.a"]""", row.blockedBy)
         assertEquals("""["2026-11-15T06:30:00+01:00"]""", row.nextRuns)
+    }
+
+    @Test
+    fun `upcoming runs reach the cache row and the item, a bridge without them shows none`() {
+        assertEquals("[]", row("").upcomingRuns)
+        val row = row(
+            ""","upcoming_runs":[{"at":"2026-11-02T06:45:00+00:00","date":"2026-11-02","skipped":true},
+            {"at":"2026-11-03T06:45:00+00:00","date":"2026-11-03"}]""",
+        )
+        val runs = row.toItem().upcomingRuns
+        assertEquals(listOf("2026-11-02", "2026-11-03"), runs.map { it.date })
+        assertEquals(listOf(true, false), runs.map { it.skipped })
+        assertEquals(listOf(1_793_601_900_000L, 1_793_688_300_000L), runs.map { it.at })
+    }
+
+    @Test
+    fun `a damaged list of upcoming runs shows none`() {
+        assertEquals(emptyList<Any>(), row("").copy(upcomingRuns = "oops").toItem().upcomingRuns)
     }
 
     @Test

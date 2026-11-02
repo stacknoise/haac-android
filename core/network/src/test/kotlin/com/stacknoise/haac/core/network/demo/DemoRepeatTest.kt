@@ -131,4 +131,37 @@ class DemoRepeatTest {
         assertTrue(once !in ids)
         assertTrue(weekly in ids)
     }
+
+    private fun upcoming(reply: JsonObject) = reply["upcoming_runs"]!!.jsonArray.map { it.jsonObject }
+
+    private fun skip(id: String, date: String, skip: Boolean) = demo.request(
+        "haac_bridge/schedules/skip_run",
+        """{"schedule_id":"$id","date":"$date","skip":$skip}""",
+    )
+
+    @Test
+    fun `a skipped run stays in the upcoming runs but not in the next runs`() {
+        val daily = """{"freq":"daily","interval":1,"start_date":"2026-10-02"}"""
+        val created = demo.result(create(repeat(daily, time = "21:00"))).jsonObject
+        assertEquals(listOf("2026-10-02", "2026-10-03", "2026-10-04"), upcoming(created).map { it.str("date") })
+
+        val skipped = demo.result(skip(created.str("id"), "2026-10-03", true)).jsonObject
+        assertEquals(listOf("false", "true", "false", "false"), upcoming(skipped).map { it.str("skipped") })
+        assertEquals(listOf("2026-10-02 21:00", "2026-10-04 21:00", "2026-10-05 21:00"), runs(skipped))
+
+        val taken = demo.result(skip(created.str("id"), "2026-10-03", false)).jsonObject
+        assertEquals(listOf("2026-10-02 21:00", "2026-10-03 21:00", "2026-10-04 21:00"), runs(taken))
+    }
+
+    @Test
+    fun `only one of the next runs can be skipped and one-off schedules never`() {
+        val daily = """{"freq":"daily","interval":1,"start_date":"2026-10-02"}"""
+        val id = demo.result(create(repeat(daily, time = "21:00"))).jsonObject.str("id")
+        assertEquals("HAB-SCH-010", demo.code(skip(id, "2027-06-01", true)))
+        assertEquals("HAB-SCH-010", demo.code(skip(id, "2026-09-01", true)))
+        val once = """{"freq":"once","start_date":"2026-10-03"}"""
+        val onceId = demo.result(create(repeat(once, time = "21:00"))).jsonObject.str("id")
+        assertEquals("HAB-SCH-010", demo.code(skip(onceId, "2026-10-03", true)))
+        assertEquals("HAB-SCH-003", demo.code(skip("missing", "2026-10-03", true)))
+    }
 }

@@ -10,8 +10,19 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlinx.serialization.json.JsonObject
 
-/** The planned runs of a schedule as the bridge reports them (concept 19.10): ISO times, and whether none is left. */
-internal class Planned(val nextRun: String?, val nextRuns: List<String>, val expired: Boolean)
+/** One of the upcoming runs (concept 19.12): ISO time, local date and whether the user skipped it. */
+internal class DemoUpcoming(val at: String, val date: String, val skipped: Boolean)
+
+/**
+ * The planned runs of a schedule as the bridge reports them (concept 19.10, 19.12): ISO times, whether none is left
+ * and the [upcoming] runs including the skipped ones.
+ */
+internal class Planned(
+    val nextRun: String?,
+    val nextRuns: List<String>,
+    val expired: Boolean,
+    val upcoming: List<DemoUpcoming> = emptyList(),
+)
 
 /**
  * The schedule rules of the demo bridge (concept 19, 20.3): validation, limits, optimistic concurrency, the planned
@@ -46,9 +57,27 @@ internal class DemoSchedules(private val clock: Clock) {
     } else {
         DemoScheduleRules.plan(fields, current, entities, LocalDate.now(clock)).then { plan ->
             val version = version(current.updatedAt)
-            val built = build(current.id, plan, current.createdAt, version, current.lastRun)
+            val keep = if (fields.containsKey("when") || fields.containsKey("repeat")) emptyList() else current.skipped
+            val built = build(current.id, plan, current.createdAt, version, current.lastRun).copy(skipped = keep)
             val reopened = fields.containsKey("repeat") || (plan.enabled && !current.enabled)
             if (reopened) checked(built) else DemoOutcome.Ok(built)
+        }
+    }
+
+    /**
+     * [schedule] with the run of [date] skipped or taken up again (concept 19.12); HAB-SCH-010 unless [date] is one
+     * of the next runs and another run stays.
+     */
+    fun skipRun(schedule: DemoSchedule, date: String, skip: Boolean): DemoOutcome<DemoSchedule> {
+        val today = LocalDate.now(clock).toString()
+        val dates = runs(schedule, UPCOMING_LIMIT).map { it.toLocalDate().toString() }
+        val kept = schedule.skipped.filter { it >= today }
+        val skipped = if (skip) (kept + date).distinct() else kept - date
+        val valid = !skip || (date in dates && dates.any { it !in skipped })
+        return if (valid) {
+            DemoOutcome.Ok(schedule.copy(skipped = skipped.sorted()))
+        } else {
+            DemoOutcome.Failed(DemoCodes.SCH_SKIP_INVALID, "This run cannot be skipped")
         }
     }
 
@@ -80,10 +109,26 @@ internal class DemoSchedules(private val clock: Clock) {
      * rule, the weekdays and the time (sun events: the fixed demo times plus the offset); none while it is off.
      */
     fun planned(schedule: DemoSchedule): Planned {
-        val all = runs(schedule, NEXT_RUNS)
-        val shown = if (schedule.enabled) all.map { DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(it) } else emptyList()
-        return Planned(shown.firstOrNull(), shown, expired = all.isEmpty())
+        val all = runs(schedule, UPCOMING_LIMIT)
+        val skipped = schedule.skipped.toSet()
+        val happening = all.filter { it.toLocalDate().toString() !in skipped }.take(NEXT_RUNS)
+        val shown = if (schedule.enabled) happening.map(::iso) else emptyList()
+        val upcoming = if (schedule.enabled) upcoming(all, skipped) else emptyList()
+        return Planned(shown.firstOrNull(), shown, expired = all.isEmpty(), upcoming = upcoming)
     }
+
+    /** The runs up to the [NEXT_RUNS]-th that happens, with the skipped ones between them (concept 19.12). */
+    private fun upcoming(all: List<ZonedDateTime>, skipped: Set<String>): List<DemoUpcoming> {
+        var happening = 0
+        return all.asSequence()
+            .takeWhile { happening < NEXT_RUNS }
+            .onEach { if (it.toLocalDate().toString() !in skipped) happening++ }
+            .map { DemoUpcoming(iso(it), it.toLocalDate().toString(), it.toLocalDate().toString() in skipped) }
+            .toList()
+    }
+
+    /** [time] as an ISO time with offset. */
+    private fun iso(time: ZonedDateTime): String = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(time)
 
     /** The first [count] runs after now that the date rule hits from its start date on, on or off. */
     private fun runs(schedule: DemoSchedule, count: Int): List<ZonedDateTime> {
@@ -130,6 +175,7 @@ internal class DemoSchedules(private val clock: Clock) {
     private companion object {
         const val SEARCH_DAYS = 800L
         const val NEXT_RUNS = 3
+        const val UPCOMING_LIMIT = 14
         const val PREVIEW_ID = "preview"
         val SUNRISE: LocalTime = LocalTime.of(6, 30)
         val SUNSET: LocalTime = LocalTime.of(19, 30)

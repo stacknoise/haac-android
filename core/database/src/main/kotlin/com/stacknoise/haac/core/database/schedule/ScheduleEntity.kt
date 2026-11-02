@@ -23,7 +23,8 @@ import com.stacknoise.haac.core.database.server.ServerEntity
  * because an edit must send it back unchanged (19.4). [own] tells whether the user owns the schedule; foreign ones
  * exist only for admins. [entityIds] is a JSON list; times are epoch milliseconds. The repeat rule ([repeatFreq],
  * [repeatInterval], [startDate], [endDate] as `YYYY-MM-DD`), [notify], [offReason], [expired] and the JSON lists
- * [blockedBy] and [nextRuns] (ISO times) come from concept 7.5, 19.10 and 19.11.
+ * [blockedBy] and [nextRuns] (ISO times) come from concept 7.5, 19.10 and 19.11; [upcomingRuns] is the JSON list of the
+ * next runs with their date and skip flag (19.12).
  */
 data class ScheduleEntity(
     @ColumnInfo(name = "server_id") val serverId: String,
@@ -57,6 +58,7 @@ data class ScheduleEntity(
     @ColumnInfo(name = "blocked_by", defaultValue = "'[]'") val blockedBy: String = "[]",
     @ColumnInfo(defaultValue = "0") val expired: Boolean = false,
     @ColumnInfo(name = "next_runs", defaultValue = "'[]'") val nextRuns: String = "[]",
+    @ColumnInfo(name = "upcoming_runs", defaultValue = "'[]'") val upcomingRuns: String = "[]",
 ) {
     /** Values shared with the migration. */
     companion object {

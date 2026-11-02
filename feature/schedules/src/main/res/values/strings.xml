@@ -19,6 +19,7 @@
     <string name="schedules_enabled">Enabled</string>
     <string name="schedules_enabled_off">Off. It will not run until you turn it on.</string>
     <string name="schedules_next_runs">NEXT RUNS</string>
+    <string name="schedules_run_skipped">Skipped</string>
     <string name="schedules_no_next_runs">No upcoming runs.</string>
     <string name="schedules_last_run">LAST RUN</string>
     <string name="schedules_never_run">Has not run yet.</string>

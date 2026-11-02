@@ -47,6 +47,13 @@ internal class RepeatDescriptor(
     @SerialName("end_date") val endDate: String? = null,
 )
 
+/**
+ * One of the next runs of a schedule (concept 19.12): the time [at] (ISO), the local [date] in HA's time zone that
+ * `skip_run` names it by, and whether the user [skipped] it.
+ */
+@Serializable
+internal class UpcomingRunDescriptor(val at: String, val date: String, val skipped: Boolean = false)
+
 /** A pause the system set (concept 19.6). */
 @Serializable
 internal class PausedDescriptor(val reason: String, val at: String)
@@ -78,6 +85,7 @@ internal class ScheduleDescriptor(
     @SerialName("blocked_by") val blockedBy: List<String> = emptyList(),
     val expired: Boolean = false,
     @SerialName("next_runs") val nextRuns: List<String> = emptyList(),
+    @SerialName("upcoming_runs") val upcomingRuns: List<UpcomingRunDescriptor> = emptyList(),
 ) {
     /** The cache row of instance [serverId]; without [own] the schedule is the caller's if the [scope] is `own`. */
     fun toRow(serverId: String, scope: String, syncedAt: Long): ScheduleEntity = ScheduleEntity(
@@ -112,6 +120,7 @@ internal class ScheduleDescriptor(
         blockedBy = Json.encodeToString(ENTITY_IDS, blockedBy),
         expired = expired,
         nextRuns = Json.encodeToString(ENTITY_IDS, nextRuns),
+        upcomingRuns = Json.encodeToString(UPCOMING_RUNS, upcomingRuns),
     )
 }
 
@@ -149,3 +158,6 @@ internal class RunEntry(
 
 /** The JSON list of entity ids of column `entity_ids`. */
 private val ENTITY_IDS = ListSerializer(String.serializer())
+
+/** The JSON list of upcoming runs of column `upcoming_runs`. */
+private val UPCOMING_RUNS = ListSerializer(UpcomingRunDescriptor.serializer())

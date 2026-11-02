@@ -19,6 +19,7 @@
     <string name="schedules_enabled">Aktiviert</string>
     <string name="schedules_enabled_off">Aus. Der Zeitplan läuft nicht, bis du ihn einschaltest.</string>
     <string name="schedules_next_runs">NÄCHSTE LÄUFE</string>
+    <string name="schedules_run_skipped">Übersprungen</string>
     <string name="schedules_no_next_runs">Keine anstehenden Läufe.</string>
     <string name="schedules_last_run">LETZTER LAUF</string>
     <string name="schedules_never_run">Noch nicht gelaufen.</string>

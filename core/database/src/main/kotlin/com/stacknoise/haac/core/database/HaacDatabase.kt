@@ -39,7 +39,7 @@ import com.stacknoise.haac.core.database.server.ServerEntity
         ScheduleEntity::class,
         EntityGuard::class,
     ],
-    version = 8,
+    version = 9,
     exportSchema = true,
 )
 /**

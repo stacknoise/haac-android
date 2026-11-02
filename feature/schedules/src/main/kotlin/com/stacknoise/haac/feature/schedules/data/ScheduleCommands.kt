@@ -8,6 +8,7 @@ import com.stacknoise.haac.core.network.connection.requireOpen
 import com.stacknoise.haac.core.network.http.decodeOrUnexpected
 import com.stacknoise.haac.feature.schedules.domain.ScheduleDraft
 import com.stacknoise.haac.feature.schedules.domain.ScheduleItem
+import com.stacknoise.haac.feature.schedules.domain.UpcomingRun
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json
@@ -34,6 +35,19 @@ class ScheduleCommands @Inject constructor(
     /** Turns the run notifications of [item] on or off (`notify`, concept 19.11); only its owner may. */
     suspend fun setNotify(serverId: String, item: ScheduleItem, notify: Boolean) =
         setFlag(serverId, item, "notify", notify)
+
+    /**
+     * Skips the run of [date] (`YYYY-MM-DD` in HA's time zone, from [UpcomingRun.date]) of [item] or takes it up
+     * again (concept 19.12) and caches the schedule the bridge answers with. A skip does not change the version.
+     */
+    suspend fun skipRun(serverId: String, item: ScheduleItem, date: String, skip: Boolean) {
+        val fields = buildJsonObject {
+            put("schedule_id", item.id)
+            put("date", date)
+            put("skip", skip)
+        }
+        cache(serverId, live.requireOpen().request(SKIP_RUN, fields), item.own)
+    }
 
     /** Updates the boolean [field] of [item] and caches the schedule the bridge answers with. */
     private suspend fun setFlag(serverId: String, item: ScheduleItem, field: String, value: Boolean) {
@@ -86,6 +100,7 @@ class ScheduleCommands @Inject constructor(
         const val CREATE = "haac_bridge/schedules/create"
         const val UPDATE = "haac_bridge/schedules/update"
         const val DELETE = "haac_bridge/schedules/delete"
+        const val SKIP_RUN = "haac_bridge/schedules/skip_run"
         const val SCOPE_ALL = "all"
     }
 }

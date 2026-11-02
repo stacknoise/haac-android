@@ -41,6 +41,7 @@
     <string name="error_sch_run_incomplete">Beim letzten Lauf konnten nicht alle Geräte geschaltet werden.</string>
     <string name="error_sch_blocked">Dieser Zeitplan nutzt ein deaktiviertes Gerät. Aktiviere zuerst das Gerät.</string>
     <string name="error_sch_date_past">Wähle ein Datum und eine Uhrzeit in der Zukunft.</string>
+    <string name="error_sch_skip_invalid">Dieser Lauf kann nicht übersprungen werden. Lade den Zeitplan neu und versuche es erneut.</string>
     <string name="error_app_unexpected">Etwas ist schiefgelaufen.</string>
     <!-- Action buttons of ErrorAction (concept 17.4). -->
     <string name="error_action_retry">Erneut versuchen</string>
