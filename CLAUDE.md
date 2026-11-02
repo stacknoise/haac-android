@@ -97,6 +97,7 @@ LICENSE  NOTICE        # Apache-2.0 (concept 16.2)
 **Code index (17.5)**
 - Every class and every function, including private ones, has a one-line KDoc summary.
 - After adding, renaming or removing a class or function, run `./gradlew codeIndex` and commit the regenerated `docs/code-index.md` and `docs/error-codes.md` in the same commit. Never edit these files by hand. CI (`codeIndexCheck`, CPD) fails otherwise.
+- With every code change (also one that moves no import), run `python3 scripts/build_dependencies.py` and commit the regenerated `docs/review/` in the same commit, like the code index. Never edit those files by hand.
 
 ## Non-negotiable rules
 

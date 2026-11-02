@@ -20,7 +20,7 @@ Requirements:
 ./gradlew codeIndex          # regenerate docs/code-index.md and docs/error-codes.md
 ./gradlew codeIndexCheck     # fail if those files are outdated or a KDoc summary is missing
 ./gradlew -p build-logic test   # tests of the code index generator
-python3 scripts/build_dependencies.py   # regenerate docs/review/ (dependency map; Python 3, no packages needed)
+python3 scripts/build_dependencies.py   # regenerate docs/review/ with every code change (dependency map; Python 3, no packages needed)
 ```
 
 Before every pull request this must pass:
