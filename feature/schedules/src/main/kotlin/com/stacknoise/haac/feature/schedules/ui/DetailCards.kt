@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.stacknoise.haac.core.common.ui.theme.HaacCard
 import com.stacknoise.haac.core.common.ui.theme.HaacColors
@@ -28,6 +29,7 @@ import com.stacknoise.haac.core.common.ui.theme.haacSwitchColors
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.feature.schedules.R
 import com.stacknoise.haac.feature.schedules.domain.LastRun
+import com.stacknoise.haac.feature.schedules.domain.UpcomingRun
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -142,6 +144,50 @@ internal fun NextRuns(runs: List<Long>) {
                 Text(clockOf(millis), style = style)
             }
         }
+    }
+}
+
+/**
+ * *NEXT RUNS* with a switch per row (concept 19.12, M-25): on means the run happens, off means it is skipped. A skipped
+ * row is struck through, muted and says *Skipped*. [onSkip] gets the run and the new skip flag; the switches work only
+ * while [editable].
+ */
+@Composable
+internal fun UpcomingRuns(runs: List<UpcomingRun>, editable: Boolean, onSkip: (UpcomingRun, Boolean) -> Unit) {
+    Label(R.string.schedules_next_runs)
+    HaacCard(contentPadding = PaddingValues(horizontal = 16.dp)) {
+        runs.forEachIndexed { index, run ->
+            if (index > 0) HorizontalDivider(color = HaacColors.Outline)
+            UpcomingRunRow(run, editable) { onSkip(run, it) }
+        }
+    }
+}
+
+/** One row of [UpcomingRuns]: date, time, the *Skipped* note and the switch. */
+@Composable
+private fun UpcomingRunRow(run: UpcomingRun, editable: Boolean, onChange: (Boolean) -> Unit) {
+    val style = MaterialTheme.typography.titleSmall
+    val color = if (run.skipped) secondary() else Color.Unspecified
+    val decoration = if (run.skipped) TextDecoration.LineThrough else TextDecoration.None
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        Column(Modifier.weight(1f)) {
+            Text(shortDate(dateOf(run.at)), style = style, color = color, textDecoration = decoration)
+            if (run.skipped) {
+                Text(
+                    stringResource(R.string.schedules_run_skipped),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = secondary(),
+                )
+            }
+        }
+        Text(clockOf(run.at), style = style, color = color, textDecoration = decoration)
+        Switch(
+            checked = !run.skipped,
+            onCheckedChange = onChange,
+            enabled = editable,
+            colors = haacSwitchColors(),
+            modifier = Modifier.padding(start = 12.dp),
+        )
     }
 }
 

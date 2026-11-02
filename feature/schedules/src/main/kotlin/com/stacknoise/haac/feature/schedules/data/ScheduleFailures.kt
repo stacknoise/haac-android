@@ -8,8 +8,8 @@ import javax.inject.Singleton
 
 /**
  * Runs a schedule command for a screen and turns a failure into its error code (concept 17.4, 19.7): the error
- * also goes to the notification list, and a schedule that was changed somewhere else (HAAC-SCH-004) makes the
- * sync read the list again.
+ * also goes to the notification list, and a schedule that was changed somewhere else (HAAC-SCH-004) or a run that
+ * cannot be skipped (HAAC-SCH-010) makes the sync read the list again.
  */
 @Singleton
 class ScheduleFailures @Inject constructor(
@@ -22,7 +22,7 @@ class ScheduleFailures @Inject constructor(
         null
     } catch (e: HaacException) {
         reporter.report(e, serverId)
-        if (e.code == ErrorCode.SCH_CONFLICT) sync.recheck()
+        if (e.code == ErrorCode.SCH_CONFLICT || e.code == ErrorCode.SCH_SKIP_INVALID) sync.recheck()
         e.code
     }
 }

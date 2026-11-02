@@ -60,6 +60,7 @@ Schedules
 • "Every weekday at 06:45 turn the light on": turn on, turn off or toggle, at a fixed time on chosen weekdays or at sunrise or sunset with an offset.
 • Schedules run on your Home Assistant server, so they work with the app closed or the phone off.
 • Repeat daily, weekly, monthly or yearly, or run once, with a preview of the next runs and optional notifications after each run.
+• Skip a single run, for example on a public holiday, with one switch in the list of upcoming runs.
 • Administrators see and manage all schedules.
 
 Control

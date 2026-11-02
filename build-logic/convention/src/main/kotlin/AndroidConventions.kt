@@ -18,6 +18,12 @@ internal object AndroidSdk {
     val JVM = JvmTarget.JVM_17
 }
 
+/**
+ * Lint checks that only say a newer library or plugin version exists. They are informational: with
+ * `warningsAsErrors` a new upstream release would otherwise turn every build red.
+ */
+internal val UpdateHintLintChecks = setOf("NewerVersionAvailable", "GradleDependency", "AndroidGradlePluginVersion")
+
 /** Root package; module namespaces are derived from the Gradle path (concept 17.1). */
 internal const val ROOT_PACKAGE = "com.stacknoise.haac"
 

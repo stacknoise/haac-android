@@ -3,21 +3,30 @@ package com.stacknoise.haac.core.network.demo
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlinx.serialization.json.JsonObject
 
-/** The planned runs of a schedule as the bridge reports them (concept 19.10): ISO times, and whether none is left. */
-internal class Planned(val nextRun: String?, val nextRuns: List<String>, val expired: Boolean)
+/** One of the upcoming runs (concept 19.12): ISO time, local date and whether the user skipped it. */
+internal class DemoUpcoming(val at: String, val date: String, val skipped: Boolean)
+
+/**
+ * The planned runs of a schedule as the bridge reports them (concept 19.10, 19.12): ISO times, whether none is left
+ * and the [upcoming] runs including the skipped ones.
+ */
+internal class Planned(
+    val nextRun: String?,
+    val nextRuns: List<String>,
+    val expired: Boolean,
+    val upcoming: List<DemoUpcoming> = emptyList(),
+)
 
 /**
  * The schedule rules of the demo bridge (concept 19, 20.3): validation, limits, optimistic concurrency, the planned
  * next runs and the effect of *Run now*. Schedules never fire by themselves in the demo.
  */
 internal class DemoSchedules(private val clock: Clock) {
+    private val times = DemoRunTimes(clock)
+
     /** A new schedule from the fields of `schedules/create`; HAB-SCH-001 if invalid, HAB-SCH-005 at the limit. */
     fun create(
         fields: JsonObject,
@@ -46,11 +55,16 @@ internal class DemoSchedules(private val clock: Clock) {
     } else {
         DemoScheduleRules.plan(fields, current, entities, LocalDate.now(clock)).then { plan ->
             val version = version(current.updatedAt)
-            val built = build(current.id, plan, current.createdAt, version, current.lastRun)
+            val keep = if (fields.containsKey("when") || fields.containsKey("repeat")) emptyList() else current.skipped
+            val built = build(current.id, plan, current.createdAt, version, current.lastRun).copy(skipped = keep)
             val reopened = fields.containsKey("repeat") || (plan.enabled && !current.enabled)
             if (reopened) checked(built) else DemoOutcome.Ok(built)
         }
     }
+
+    /** [schedule] with the run of [date] skipped or taken up again; see [DemoRunTimes.skipRun]. */
+    fun skipRun(schedule: DemoSchedule, date: String, skip: Boolean): DemoOutcome<DemoSchedule> =
+        times.skipRun(schedule, date, skip)
 
     /** The next runs of the draft in [fields] of `schedules/preview`: ISO times, none for a draft that cannot run. */
     fun preview(fields: JsonObject): DemoOutcome<List<String>> =
@@ -60,7 +74,7 @@ internal class DemoSchedules(private val clock: Clock) {
 
     /** [schedule], or HAB-SCH-009 if its date rule leaves no run in the future. */
     private fun checked(schedule: DemoSchedule): DemoOutcome<DemoSchedule> =
-        if (runs(schedule, 1).isEmpty()) {
+        if (times.runs(schedule, 1).isEmpty()) {
             DemoOutcome.Failed(DemoCodes.SCH_DATE_PAST, "The date or time is in the past")
         } else {
             DemoOutcome.Ok(schedule)
@@ -80,32 +94,12 @@ internal class DemoSchedules(private val clock: Clock) {
      * rule, the weekdays and the time (sun events: the fixed demo times plus the offset); none while it is off.
      */
     fun planned(schedule: DemoSchedule): Planned {
-        val all = runs(schedule, NEXT_RUNS)
-        val shown = if (schedule.enabled) all.map { DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(it) } else emptyList()
-        return Planned(shown.firstOrNull(), shown, expired = all.isEmpty())
-    }
-
-    /** The first [count] runs after now that the date rule hits from its start date on, on or off. */
-    private fun runs(schedule: DemoSchedule, count: Int): List<ZonedDateTime> {
-        val today = LocalDate.now(clock)
-        val from = maxOf(today.minusDays(1), schedule.repeat.startDate?.let(LocalDate::parse) ?: today)
-        return (0L..SEARCH_DAYS).asSequence()
-            .map { runOn(schedule, from.plusDays(it), clock.zone) }
-            .filter { it.toInstant().isAfter(clock.instant()) }
-            .filter { DemoRecurrence.matches(schedule.repeat, schedule.days, it.toLocalDate()) }
-            .take(count)
-            .toList()
-    }
-
-
-    /** The planned time of [schedule] on [date]; a time inside a DST gap moves to the first minute after it. */
-    private fun runOn(schedule: DemoSchedule, date: LocalDate, zone: ZoneId): ZonedDateTime {
-        val base = when (schedule.whenType) {
-            "sunrise" -> SUNRISE
-            "sunset" -> SUNSET
-            else -> LocalTime.parse(schedule.time)
-        }
-        return ZonedDateTime.of(date, base, zone).plusMinutes((schedule.offsetMin ?: 0).toLong())
+        val all = times.runs(schedule, DemoRunTimes.UPCOMING_LIMIT)
+        val skipped = schedule.skipped.toSet()
+        val happening = all.filter { it.toLocalDate().toString() !in skipped }.take(DemoRunTimes.NEXT_RUNS)
+        val shown = if (schedule.enabled) happening.map(times::iso) else emptyList()
+        val upcoming = if (schedule.enabled) times.upcoming(all, skipped) else emptyList()
+        return Planned(shown.firstOrNull(), shown, expired = all.isEmpty(), upcoming = upcoming)
     }
 
     /** [entity] after the schedule action [action], or null if the action does not apply to it. */
@@ -126,12 +120,8 @@ internal class DemoSchedules(private val clock: Clock) {
         return DemoTimes.iso(maxOf(now, earliest ?: now).toEpochMilli())
     }
 
-    /** Search range of the next runs in days, their number and the fixed sun times of the demo (concept 20.3). */
+    /** The id the preview of a draft is built with. */
     private companion object {
-        const val SEARCH_DAYS = 800L
-        const val NEXT_RUNS = 3
         const val PREVIEW_ID = "preview"
-        val SUNRISE: LocalTime = LocalTime.of(6, 30)
-        val SUNSET: LocalTime = LocalTime.of(19, 30)
     }
 }

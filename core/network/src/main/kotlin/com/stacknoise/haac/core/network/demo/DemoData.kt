@@ -53,7 +53,8 @@ data class DemoRepeat(
 
 /**
  * A schedule of the demo user (concept 19.2); the times are ISO strings as the bridge sends them. [offReason] is
- * `entity_disabled` while it is off because the user deactivated one of its entities (concept 7.5).
+ * `entity_disabled` while it is off because the user deactivated one of its entities (concept 7.5). [skipped] are the
+ * local dates (`YYYY-MM-DD`) of the runs the user skipped (concept 19.12).
  */
 @Serializable
 data class DemoSchedule(
@@ -72,6 +73,7 @@ data class DemoSchedule(
     val repeat: DemoRepeat = DemoRepeat(),
     val notify: Boolean = false,
     val offReason: String? = null,
+    val skipped: List<String> = emptyList(),
 )
 
 /** Everything `demo-world.json` holds (concept 20.5); [disabled] are the entities the demo user deactivated (7.5). */

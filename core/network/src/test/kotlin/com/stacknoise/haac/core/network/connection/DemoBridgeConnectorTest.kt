@@ -64,7 +64,14 @@ class DemoBridgeConnectorTest {
         val connection = connector.connect(DemoInstance.SERVER_ID, connector.select(DemoInstance.SERVER_ID), scope)
         assertEquals(DemoInstance.ADDRESS.toHttpUrl(), connection.url)
         assertEquals(DemoInstance.INSTANCE_ID, connection.info.instanceId)
-        val features = setOf("schedules", "schedule_repeat", "schedule_runs", "entity_disable", "client_info")
+        val features = setOf(
+            "schedules",
+            "schedule_repeat",
+            "schedule_runs",
+            "schedule_skip",
+            "entity_disable",
+            "client_info",
+        )
         assertEquals(features, connection.features)
         val info = withTimeout(REAL_TIME_LIMIT_MS) { connection.request("haac_bridge/info") }.jsonObject
         assertEquals("1", info["api_version"]!!.jsonPrimitive.content)

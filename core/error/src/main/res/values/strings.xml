@@ -41,6 +41,7 @@
     <string name="error_sch_run_incomplete">The last run could not switch every device.</string>
     <string name="error_sch_blocked">This schedule uses a deactivated device. Activate the device first.</string>
     <string name="error_sch_date_past">Pick a date and time in the future.</string>
+    <string name="error_sch_skip_invalid">This run cannot be skipped. Reload the schedule and try again.</string>
     <string name="error_app_unexpected">Something went wrong.</string>
     <!-- Action buttons of ErrorAction (concept 17.4). -->
     <string name="error_action_retry">Try again</string>

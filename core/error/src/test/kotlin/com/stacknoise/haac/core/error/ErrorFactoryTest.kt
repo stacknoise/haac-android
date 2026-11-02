@@ -82,6 +82,7 @@ class ErrorFactoryTest {
         "HAB-SCH-002, HAAC-BRG-005",
         "HAB-SCH-008, HAAC-SCH-008",
         "HAB-SCH-009, HAAC-SCH-009",
+        "HAB-SCH-010, HAAC-SCH-010",
         "HAB-XYZ-999, HAAC-BRG-005",
     )
     fun `bridge codes map to app codes`(hab: String, haac: String) {

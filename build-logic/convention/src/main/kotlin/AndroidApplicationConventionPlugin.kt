@@ -39,6 +39,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             lint {
                 warningsAsErrors = true
                 abortOnError = true
+                informational += UpdateHintLintChecks
             }
         }
         configureKotlin()

@@ -44,6 +44,7 @@ import com.stacknoise.haac.core.common.ui.theme.SectionLabelStyle
 import com.stacknoise.haac.feature.schedules.R
 import com.stacknoise.haac.feature.schedules.data.ScheduleView
 import com.stacknoise.haac.feature.schedules.domain.RepeatFreq
+import com.stacknoise.haac.feature.schedules.domain.UpcomingRun
 import com.stacknoise.haac.feature.schedules.domain.WhenType
 import com.stacknoise.haac.feature.schedules.domain.nextRuns
 
@@ -78,7 +79,16 @@ fun ScheduleDetailScreen(
             TopRow(onClose, onEdit = view?.let { { onEdit(it.item.id) } })
             when {
                 view != null ->
-                    DetailContent(view, state, viewModel::onEnabled, viewModel::onNotify, viewModel::onDelete)
+                    DetailContent(
+                        view,
+                        state,
+                        DetailActions(
+                            viewModel::onEnabled,
+                            viewModel::onNotify,
+                            viewModel::onSkip,
+                            viewModel::onDelete,
+                        ),
+                    )
                 state.loaded -> HaacEmptyState(
                     painterResource(R.drawable.ic_schedules_warning),
                     stringResource(R.string.schedules_not_found),
@@ -107,15 +117,17 @@ private fun TopRow(onClose: () -> Unit, onEdit: (() -> Unit)?) {
     }
 }
 
+/** What the switches and buttons of the detail screen do. */
+private class DetailActions(
+    val onEnabled: (Boolean) -> Unit,
+    val onNotify: (Boolean) -> Unit,
+    val onSkip: (UpcomingRun, Boolean) -> Unit,
+    val onDelete: () -> Unit,
+)
+
 /** Everything below the top row. */
 @Composable
-private fun DetailContent(
-    view: ScheduleView,
-    state: ScheduleDetailUiState,
-    onEnabled: (Boolean) -> Unit,
-    onNotify: (Boolean) -> Unit,
-    onDelete: () -> Unit,
-) {
+private fun DetailContent(view: ScheduleView, state: ScheduleDetailUiState, actions: DetailActions) {
     val item = view.item
     var confirming by rememberSaveable { mutableStateOf(false) }
     Column(
@@ -151,8 +163,14 @@ private fun DetailContent(
         view.entityNames.forEach { name -> ActionCard(name, actionVerb(item.action)) }
         if (!item.own) LockedHint()
         val notify = item.notify.takeIf { state.features.runs && item.own }
-        EnabledCard(item.enabled, state.editable, onEnabled, notify, onNotify)
-        NextRuns(nextRuns(item, System.currentTimeMillis()))
+        EnabledCard(item.enabled, state.editable, actions.onEnabled, notify, actions.onNotify)
+        val now = System.currentTimeMillis()
+        val skippable = item.upcomingRuns.filter { it.at > now }
+        if (state.features.skip && !item.repeat.once && skippable.isNotEmpty()) {
+            UpcomingRuns(skippable, state.editable, actions.onSkip)
+        } else {
+            NextRuns(nextRuns(item, now))
+        }
         LastRunRow(item.lastRun)
         TextButton(onClick = { confirming = true }, enabled = state.editable) {
             Icon(
@@ -170,7 +188,11 @@ private fun DetailContent(
         }
     }
     if (confirming) {
-        DeleteDialog(item.name, onConfirm = { confirming = false; onDelete() }, onDismiss = { confirming = false })
+        DeleteDialog(
+            item.name,
+            onConfirm = { confirming = false; actions.onDelete() },
+            onDismiss = { confirming = false },
+        )
     }
 }
 

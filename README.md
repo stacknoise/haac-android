@@ -81,8 +81,9 @@ The first group shows the German interface of the app; the binary sensor images 
 - A *Schedules* tab (shown only if the bridge supports schedules) with a *Next up* banner, an on/off switch per schedule, a detail screen with the next runs and the last run, and an editor with weekday presets and a *Run at* sheet.
 - Home Assistant administrators also see all schedules (filter *All* / *Mine*) and can change or delete a foreign schedule, but only its owner changes its entities.
 - Repeat a schedule daily, weekly, monthly or yearly with an interval, a start date and an optional end date, or run it once; a one-time schedule and a repeating one after its last run are removed by the bridge. The editor shows a preview of the next runs, the detail screen the upcoming ones.
+- Skip single runs of a repeating schedule, for example a public holiday in the middle of a weekday series: every upcoming run in the detail screen has a switch. A skipped run is struck through and does not happen; turn the switch on again to take it back. The schedule itself does not change.
 - A schedule with the *Notify* switch on adds an entry to the notification list after every run (success or failure, also when the bridge removed it after the last run).
-- Needs HAAC Bridge 0.2.1 or newer (0.2.2 or newer also puts the owner into the names of the schedule entities in Home Assistant). Repeat rules, the preview and run notifications need HAAC Bridge 0.4.0 or newer; without it these parts stay hidden.
+- Needs HAAC Bridge 0.2.1 or newer (0.2.2 or newer also puts the owner into the names of the schedule entities in Home Assistant). Repeat rules, the preview and run notifications need HAAC Bridge 0.4.0 or newer, skipping single runs HAAC Bridge 0.7.0 or newer; without it these parts stay hidden.
 
 **Deactivate and protect**
 - *Deactivate* an entity (long-press menu): it is dimmed, cannot be controlled and cannot be used in new schedules; your schedules that use it are switched off and switch back on when you activate it again. The state is kept in HAAC Bridge per user (bridge 0.4.0 or newer).

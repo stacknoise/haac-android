@@ -14,6 +14,8 @@ internal class DemoScheduleCommands(
     private val schedules: DemoSchedules,
     private val emit: (JsonObject) -> Unit,
 ) {
+    private val skips = DemoSkipCommand(world, schedules, emit, ::descriptor)
+
     /** Answers [type] for message [id] and returns true; false if [type] is not a schedule command. */
     fun handle(type: String, id: Int, message: JsonObject): Boolean {
         when (type) {
@@ -24,6 +26,7 @@ internal class DemoScheduleCommands(
             "haac_bridge/schedules/delete" -> delete(id, message)
             "haac_bridge/schedules/run_now" -> runNow(id, message)
             "haac_bridge/schedules/preview" -> preview(id, message)
+            "haac_bridge/schedules/skip_run" -> skips.handle(id, message)
             else -> return false
         }
         return true

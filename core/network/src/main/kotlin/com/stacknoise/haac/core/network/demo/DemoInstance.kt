@@ -30,7 +30,7 @@ object DemoInstance {
 
     /**
      * The `haac_bridge/info` of the demo: API version 1, features `schedules`, `schedule_repeat`, `schedule_runs`,
-     * `entity_disable` and `client_info` (the demo accepts the device name and ignores it).
+     * `schedule_skip`, `entity_disable` and `client_info` (the demo accepts the device name and ignores it).
      */
     val info = BridgeInfo(
         bridgeVersion = "demo",
@@ -39,7 +39,14 @@ object DemoInstance {
         haVersion = "demo",
         instanceId = INSTANCE_ID,
         urls = BridgeUrls(),
-        features = listOf("schedules", "schedule_repeat", "schedule_runs", "entity_disable", "client_info"),
+        features = listOf(
+            "schedules",
+            "schedule_repeat",
+            "schedule_runs",
+            "schedule_skip",
+            "entity_disable",
+            "client_info",
+        ),
     )
 
     /** True for the server ID of the demo. */

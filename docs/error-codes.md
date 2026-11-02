@@ -46,4 +46,5 @@ Every error of the app carries one of these codes (format `HAAC-<AREA>-<NNN>`) a
 | HAAC-SCH-007 | The last run could not switch every device. | NONE | Last run result partial or failed (HAB-SCH-002 in last_run); shown in the detail screen only |
 | HAAC-SCH-008 | This schedule uses a deactivated device. Activate the device first. | NONE | The schedule contains a deactivated entity and cannot be switched on or run (HAB-SCH-008, concept 7.5) |
 | HAAC-SCH-009 | Pick a date and time in the future. | NONE | Date or time of a one-off or ending schedule is in the past or allows no run (HAB-SCH-009, concept 19.10) |
+| HAAC-SCH-010 | This run cannot be skipped. Reload the schedule and try again. | NONE | The run cannot be skipped: not one of the next runs, or no run would be left (HAB-SCH-010, concept 19.12) |
 | HAAC-APP-000 | Something went wrong. | NONE | Exception without an error code reached ErrorFactory |

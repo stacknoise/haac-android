@@ -14,6 +14,7 @@ import com.stacknoise.haac.feature.schedules.data.ScheduleFailures
 import com.stacknoise.haac.feature.schedules.data.ScheduleFeatures
 import com.stacknoise.haac.feature.schedules.data.ScheduleRepository
 import com.stacknoise.haac.feature.schedules.data.ScheduleView
+import com.stacknoise.haac.feature.schedules.domain.UpcomingRun
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -89,6 +90,13 @@ class ScheduleDetailViewModel @Inject constructor(
         val id = serverId.value ?: return
         val view = state.value.view ?: return
         viewModelScope.launch { failure.value = failures.run(id) { commands.setNotify(id, view.item, notify) } }
+    }
+
+    /** The switch of a row of *Next runs*: [skip] leaves the run of [run] out or takes it up again (19.12). */
+    fun onSkip(run: UpcomingRun, skip: Boolean) {
+        val id = serverId.value ?: return
+        val view = state.value.view ?: return
+        viewModelScope.launch { failure.value = failures.run(id) { commands.skipRun(id, view.item, run.date, skip) } }
     }
 
     /** *Delete schedule*, confirmed. */

@@ -17,6 +17,7 @@ import com.stacknoise.haac.core.database.migration.Migration4To5
 import com.stacknoise.haac.core.database.migration.Migration5To6
 import com.stacknoise.haac.core.database.migration.Migration6To7
 import com.stacknoise.haac.core.database.migration.Migration7To8
+import com.stacknoise.haac.core.database.migration.Migration8To9
 import com.stacknoise.haac.core.database.notification.NotificationDao
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.settings.ActiveInstanceStore
@@ -76,6 +77,7 @@ abstract class DatabaseModule {
                     Migration5To6,
                     Migration6To7,
                     Migration7To8,
+                    Migration8To9,
                 )
                 .addCallback(LayoutTriggerCallback)
                 .build()
