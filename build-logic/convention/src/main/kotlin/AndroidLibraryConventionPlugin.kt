@@ -20,6 +20,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             lint {
                 warningsAsErrors = true
                 abortOnError = true
+                informational += UpdateHintLintChecks
             }
             // A module opts in to shared test code by having a `src/testFixtures` folder.
             testFixtures.enable = target.file("src/testFixtures").exists()
