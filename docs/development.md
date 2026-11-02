@@ -19,7 +19,9 @@ Requirements:
 ./gradlew lint detekt        # Android Lint and Detekt
 ./gradlew codeIndex          # regenerate docs/code-index.md and docs/error-codes.md
 ./gradlew codeIndexCheck     # fail if those files are outdated or a KDoc summary is missing
+python3 scripts/build_dependencies.py --check   # fail if docs/review is outdated (CI runs it)
 ./gradlew -p build-logic test   # tests of the code index generator
+python3 scripts/build_dependencies.py   # regenerate docs/review/ with every code change (dependency map; Python 3, no packages needed)
 ```
 
 Before every pull request this must pass:
@@ -54,6 +56,7 @@ build-logic/          convention plugins and the code index generator
 config/detekt/        Detekt overrides
 gradle/libs.versions.toml   all versions; modules never declare versions themselves
 docs/                 concept.md, code-index.md, error-codes.md, mockups, icons, screenshots
+docs/review/          GENERATED dependency map (dependencies.html, dependency-graph.html) by scripts/build_dependencies.py
 .github/workflows/    ci.yml, release.yml, codeql.yml
 ```
 

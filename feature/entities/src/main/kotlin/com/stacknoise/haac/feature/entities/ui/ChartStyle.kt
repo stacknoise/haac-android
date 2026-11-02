@@ -1,5 +1,6 @@
 package com.stacknoise.haac.feature.entities.ui
 
+import android.text.format.DateFormat
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -8,9 +9,10 @@ import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.EntityDomains
 import com.stacknoise.haac.feature.entities.domain.PhaseKind
 import com.stacknoise.haac.feature.entities.domain.SeriesKind
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Locale
 
 /** Height of a chart's plot area. */
@@ -67,17 +69,17 @@ internal fun phaseLabel(kind: PhaseKind): String =
 /** A time for axis and readout: hours and minutes up to two days, else day and month (and hour for readouts). */
 internal fun chartTime(at: Long, windowLength: Long, withHour: Boolean = false): String {
     val format = when {
-        windowLength <= TwoDaysMs -> DateFormat.getTimeInstance(DateFormat.SHORT)
+        windowLength <= TwoDaysMs -> DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
         withHour -> localPattern("dMMMjmm")
         else -> localPattern("dMMM")
     }
-    return format.format(Date(at))
+    return format.format(Instant.ofEpochMilli(at).atZone(ZoneId.systemDefault()))
 }
 
 /** A date format for the fields of [skeleton] in the device's language and order. */
-private fun localPattern(skeleton: String): DateFormat {
+private fun localPattern(skeleton: String): DateTimeFormatter {
     val locale = Locale.getDefault()
-    return SimpleDateFormat(android.text.format.DateFormat.getBestDateTimePattern(locale, skeleton), locale)
+    return DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, skeleton), locale)
 }
 
 /** Two days in milliseconds: shorter windows label hours. */

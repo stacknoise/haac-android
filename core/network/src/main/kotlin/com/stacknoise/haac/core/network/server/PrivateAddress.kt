@@ -23,8 +23,8 @@ object PrivateAddress {
 
     /** RFC 1918, loopback 127/8 and link-local 169.254/16. */
     private fun isPrivateIpv4(host: String): Boolean {
-        val octets = ipv4.matchEntire(host)!!.groupValues.drop(1).map { it.toInt() }
-        if (octets.any { it > 255 }) return false
+        val octets = ipv4.matchEntire(host)?.groupValues?.drop(1)?.map { it.toInt() }.orEmpty()
+        if (octets.size != 4 || octets.any { it > 255 }) return false
         val (a, b) = octets
         return a == 10 || a == 127 || (a == 172 && b in 16..31) || (a == 192 && b == 168) || (a == 169 && b == 254)
     }
