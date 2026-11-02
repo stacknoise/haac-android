@@ -14,6 +14,8 @@ internal class DemoScheduleCommands(
     private val schedules: DemoSchedules,
     private val emit: (JsonObject) -> Unit,
 ) {
+    private val skips = DemoSkipCommand(world, schedules, emit, ::descriptor)
+
     /** Answers [type] for message [id] and returns true; false if [type] is not a schedule command. */
     fun handle(type: String, id: Int, message: JsonObject): Boolean {
         when (type) {
@@ -24,7 +26,7 @@ internal class DemoScheduleCommands(
             "haac_bridge/schedules/delete" -> delete(id, message)
             "haac_bridge/schedules/run_now" -> runNow(id, message)
             "haac_bridge/schedules/preview" -> preview(id, message)
-            "haac_bridge/schedules/skip_run" -> skipRun(id, message)
+            "haac_bridge/schedules/skip_run" -> skips.handle(id, message)
             else -> return false
         }
         return true
@@ -74,26 +76,6 @@ internal class DemoScheduleCommands(
             is DemoOutcome.Ok -> {
                 emit(DemoReplies.result(id, descriptor(outcome.value)))
                 world.setSchedules(snapshot.schedules.map { if (it.id == outcome.value.id) outcome.value else it })
-            }
-        }
-    }
-
-    /** Skips the run of `date` or takes it up again: HAB-SCH-003 for an unknown schedule, HAB-SCH-010 (19.12). */
-    private fun skipRun(id: Int, message: JsonObject) {
-        val current = find(message)
-        val date = message.text("date")
-        val skip = (message["skip"] as? JsonPrimitive)?.booleanOrNull
-        val outcome = when {
-            current == null -> NotFound
-            date == null || skip == null -> DemoOutcome.Failed(DemoCodes.WS_INVALID_REQUEST, "Invalid request")
-            else -> schedules.skipRun(current, date, skip)
-        }
-        when (outcome) {
-            is DemoOutcome.Failed -> emit(DemoReplies.failure(id, outcome))
-            is DemoOutcome.Ok -> {
-                emit(DemoReplies.result(id, descriptor(outcome.value)))
-                val all = world.snapshot().schedules
-                world.setSchedules(all.map { if (it.id == outcome.value.id) outcome.value else it })
             }
         }
     }
