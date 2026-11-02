@@ -158,7 +158,7 @@ internal fun UpcomingRuns(runs: List<UpcomingRun>, editable: Boolean, onSkip: (U
     HaacCard(contentPadding = PaddingValues(horizontal = 16.dp)) {
         runs.forEachIndexed { index, run ->
             if (index > 0) HorizontalDivider(color = HaacColors.Outline)
-            UpcomingRunRow(run, editable) { onSkip(run, it) }
+            UpcomingRunRow(run, editable) { checked -> onSkip(run, !checked) }
         }
     }
 }
