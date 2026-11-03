@@ -2,7 +2,7 @@ package com.stacknoise.haac.core.network.tls
 
 import com.stacknoise.haac.core.database.server.ServerDao
 import com.stacknoise.haac.core.database.server.ServerEntity
-import com.stacknoise.haac.core.network.di.ConnectionScope
+import com.stacknoise.haac.core.network.scope.ConnectionScope
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope

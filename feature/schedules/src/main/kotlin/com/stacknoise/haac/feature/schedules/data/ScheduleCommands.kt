@@ -22,12 +22,18 @@ import kotlinx.serialization.json.put
  * not take. Bridge errors arrive as `HaacException` (18.3).
  */
 @Singleton
-class ScheduleCommands @Inject constructor(
+class ScheduleCommands internal constructor(
     private val live: LiveConnection,
     private val schedules: ScheduleDao,
     private val json: Json,
     private val errors: ErrorFactory,
+    private val clock: () -> Long,
 ) {
+    /** Uses the wall clock. */
+    @Inject
+    constructor(live: LiveConnection, schedules: ScheduleDao, json: Json, errors: ErrorFactory) :
+        this(live, schedules, json, errors, System::currentTimeMillis)
+
     /** Turns [item] on or off (`enabled`) and caches the schedule the bridge answers with. */
     suspend fun setEnabled(serverId: String, item: ScheduleItem, enabled: Boolean) =
         setFlag(serverId, item, "enabled", enabled)
@@ -63,7 +69,7 @@ class ScheduleCommands @Inject constructor(
     private suspend fun cache(serverId: String, reply: JsonElement, own: Boolean) {
         val updated = json.decodeOrUnexpected(ScheduleDescriptor.serializer(), reply)
         val scope = if (own) ScheduleList.SCOPE_OWN else SCOPE_ALL
-        errors.database { schedules.upsert(listOf(updated.toRow(serverId, scope, System.currentTimeMillis()))) }
+        errors.database { schedules.upsert(listOf(updated.toRow(serverId, scope, clock()))) }
     }
 
     /**

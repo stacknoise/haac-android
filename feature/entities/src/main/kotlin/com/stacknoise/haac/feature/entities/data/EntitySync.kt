@@ -155,7 +155,7 @@ class EntitySync internal constructor(
             errors.database { entities.markSynced(serverId, revision, now) }
             _status.value = SyncStatus(SyncResult(), now)
             // The deactivation is no input of the revision, so a change made elsewhere is read from the list.
-            if (EntityDisableFeature in channel.features) disabled.refresh(serverId, channel, now)
+            if (EntityDisableFeature in channel.features) refreshDisabled(serverId, channel, now)
             return revision
         }
         val list = json.decodeOrUnexpected(EntityList.serializer(), channel.request(LIST))
@@ -170,6 +170,16 @@ class EntitySync internal constructor(
         // On the first sync every entity is new; the list would only repeat the picker.
         if (cached.isNotEmpty()) report(serverId, change.result)
         return list.revision
+    }
+
+    /**
+     * Reads the entity list over [channel] and applies its deactivations; for a connection whose exposure did not
+     * change, so a deactivation made on another device while the app was away still arrives (concept 7.5).
+     */
+    private suspend fun refreshDisabled(serverId: String, channel: BridgeChannel, at: Long) {
+        val list = json.decodeOrUnexpected(EntityList.serializer(), channel.request(LIST))
+        val listed = list.entities.filter { it.disabled }.map { it.entityId }
+        disabled.fromList(serverId, listed, list.entities.mapTo(HashSet()) { it.entityId }, at)
     }
 
     /** Adds the entries for [result] to the notification list, if anything was added or withdrawn (concept 9.1). */

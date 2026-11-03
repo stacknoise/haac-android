@@ -40,9 +40,9 @@ import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.disable.domain.DisablePreview
 import com.stacknoise.haac.feature.entities.domain.Tile
-import com.stacknoise.haac.feature.entities.ui.iconOf
-import com.stacknoise.haac.feature.entities.ui.secondaryColor
-import com.stacknoise.haac.feature.entities.ui.stateText
+import com.stacknoise.haac.feature.entities.ui.tile.iconOf
+import com.stacknoise.haac.feature.entities.ui.tile.secondaryColor
+import com.stacknoise.haac.feature.entities.ui.tile.stateText
 
 /**
  * The dialog *Deactivate?* (M-20) for an active tile, or the sheet with *Activate* (M-21) for a deactivated one

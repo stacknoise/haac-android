@@ -1,6 +1,5 @@
 package com.stacknoise.haac.feature.entities.ui
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,6 +55,8 @@ import com.stacknoise.haac.feature.entities.domain.Tile
 import com.stacknoise.haac.feature.entities.domain.TileContent
 import com.stacknoise.haac.feature.entities.domain.TileIcon
 import com.stacknoise.haac.feature.entities.guard.GuardShield
+import com.stacknoise.haac.feature.entities.ui.tile.iconOf
+import com.stacknoise.haac.feature.entities.ui.tile.stateText
 
 
 /**
@@ -234,42 +235,6 @@ private fun TileName(name: String, secondary: Boolean = false) {
         overflow = TextOverflow.Ellipsis,
     )
 }
-
-/** On, Off, Unavailable, a sensor value with unit or a plain state; also used by the picker (M-04). */
-@Composable
-internal fun stateText(tile: Tile): String {
-    if (!tile.available) return stringResource(R.string.tile_unavailable)
-    return when (val content = tile.content) {
-        is TileContent.Switch -> stringResource(if (content.on == true) R.string.tile_on else R.string.tile_off)
-        is TileContent.Sensor -> listOfNotNull(content.value, content.unit).joinToString(" ")
-        is TileContent.Timestamp -> relativeTime(content.at)
-        is TileContent.Climate -> content.target ?: content.current.orEmpty()
-        is TileContent.Binary -> stringResource(content.text)
-        is TileContent.Other -> content.state
-    }
-}
-
-/** Drawable of a [TileIcon]. */
-@DrawableRes
-internal fun iconOf(icon: TileIcon): Int = when (icon) {
-    TileIcon.SWITCH -> R.drawable.ic_entities_switch
-    TileIcon.OUTLET -> R.drawable.ic_entities_outlet
-    TileIcon.SENSOR -> R.drawable.ic_entities_sensor
-    TileIcon.TEMPERATURE, TileIcon.CLIMATE -> R.drawable.ic_entities_temperature
-    TileIcon.HUMIDITY -> R.drawable.ic_entities_humidity
-    TileIcon.POWER, TileIcon.ENERGY -> R.drawable.ic_entities_power
-    TileIcon.BATTERY -> R.drawable.ic_entities_battery
-    TileIcon.BINARY -> R.drawable.ic_entities_binary
-    TileIcon.DOOR -> R.drawable.ic_entities_door
-    TileIcon.MOTION -> R.drawable.ic_entities_motion
-    TileIcon.MOISTURE -> R.drawable.ic_entities_water
-    TileIcon.LOCK -> R.drawable.ic_entities_lock
-    TileIcon.ALARM -> R.drawable.ic_entities_warning
-}
-
-/** Secondary text colour of a tile. */
-@Composable
-internal fun secondaryColor(): Color = MaterialTheme.colorScheme.onSurfaceVariant
 
 /** Dash and gap of the removed-entity border, in px. */
 private val DashPattern = floatArrayOf(12f, 8f)

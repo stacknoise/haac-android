@@ -127,7 +127,7 @@ class EntitySyncTest {
         { error, _ -> reportedErrors += error.code },
         { _, added, removed -> reportedChanges += added to removed },
         live,
-        DisabledSync(dao, disabledDao, json, DefaultErrorFactory()),
+        DisabledSync(dao, disabledDao, DefaultErrorFactory()),
         testDispatcher,
         FLUSH_MS,
     ) { now }

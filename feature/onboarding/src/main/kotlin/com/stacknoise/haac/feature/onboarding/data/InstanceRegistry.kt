@@ -22,13 +22,24 @@ import javax.inject.Inject
 import okhttp3.HttpUrl
 
 /** Stores a signed-in instance: `server` row, encrypted refresh token and `activeServerId` (concept 4.4, 5.3, 12). */
-class InstanceRegistry @Inject constructor(
+class InstanceRegistry internal constructor(
     private val servers: ServerDao,
     private val tokens: TokenStore,
     private val active: ActiveInstanceStore,
     private val errors: ErrorFactory,
     private val pins: PinRegistry,
+    private val clock: () -> Long,
 ) {
+    /** Uses the wall clock. */
+    @Inject
+    constructor(
+        servers: ServerDao,
+        tokens: TokenStore,
+        active: ActiveInstanceStore,
+        errors: ErrorFactory,
+        pins: PinRegistry,
+    ) : this(servers, tokens, active, errors, pins, System::currentTimeMillis)
+
     /** The stored instance [id], or null. */
     suspend fun find(id: String): ServerEntity? = errors.database { servers.get(id) }
 
@@ -41,7 +52,7 @@ class InstanceRegistry @Inject constructor(
      * A new instance whose row cannot be written loses its token again, so nothing half-saved remains.
      */
     suspend fun save(target: SignInTarget, username: String, bridge: BridgeInfo, refreshToken: String): String {
-        val now = System.currentTimeMillis()
+        val now = clock()
         val existing = target.serverId?.let { find(it) }
         val id = existing?.id ?: UUID.randomUUID().toString()
         tokens.save(id, refreshToken)
@@ -98,7 +109,7 @@ class InstanceRegistry @Inject constructor(
         val saveToken = !tokens.contains(id)
         if (saveToken) tokens.save(id, refreshToken)
         val addresses = server.addresses.with(AddressSlot.of(url), url)
-        val updated = server.withAddresses(addresses).pinnedBy(pins).copy(lastActiveAt = System.currentTimeMillis())
+        val updated = server.withAddresses(addresses).pinnedBy(pins).copy(lastActiveAt = clock())
         errors.database { servers.update(updated) }
         active.setActive(id)
         return saveToken
@@ -114,7 +125,7 @@ class InstanceRegistry @Inject constructor(
         haUserName = DemoInstance.DISPLAY_NAME,
         haVersion = DemoInstance.info.haVersion,
         bridgeApiVersion = DemoInstance.info.apiVersion,
-        lastActiveAt = System.currentTimeMillis(),
+        lastActiveAt = clock(),
     )
 
     /** Row of a new instance with the next accent colour and the addresses of concept 4.5. */

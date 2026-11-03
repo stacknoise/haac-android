@@ -1,4 +1,4 @@
-package com.stacknoise.haac.core.network.di
+package com.stacknoise.haac.core.network.scope
 
 import javax.inject.Qualifier
 

@@ -45,6 +45,7 @@ import com.stacknoise.haac.core.database.assignment.TileSize
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.Tile
 import kotlin.math.roundToInt
+import com.stacknoise.haac.feature.entities.ui.tile.secondaryColor
 
 /**
  * The grid preview of the edit layout (M-06): tiles as in the room, each with handle, remove badge, pencil and

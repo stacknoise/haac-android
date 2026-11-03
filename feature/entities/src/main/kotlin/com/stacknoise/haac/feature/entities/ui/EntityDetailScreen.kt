@@ -47,6 +47,8 @@ import com.stacknoise.haac.feature.entities.domain.TileContent
 import com.stacknoise.haac.feature.entities.guard.GuardConfirmDialog
 import com.stacknoise.haac.feature.entities.guard.GuardSettingsSheet
 import com.stacknoise.haac.feature.entities.guard.guardable
+import com.stacknoise.haac.feature.entities.ui.tile.iconOf
+import com.stacknoise.haac.feature.entities.ui.tile.secondaryColor
 
 /**
  * The detail screen of one entity (concept 8.1, 15.4): name and `entity_id`, current state, readings, the

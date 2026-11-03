@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
 import com.stacknoise.haac.core.network.http.UserAgentInterceptor
+import com.stacknoise.haac.core.network.scope.ConnectionScope
 import com.stacknoise.haac.core.network.tls.PinRegistry
 import com.stacknoise.haac.core.network.tls.pinnedBy
 import okhttp3.OkHttpClient
