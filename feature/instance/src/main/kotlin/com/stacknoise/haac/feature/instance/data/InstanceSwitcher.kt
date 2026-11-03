@@ -11,13 +11,24 @@ import com.stacknoise.haac.feature.instance.domain.SwitchStep
 import javax.inject.Inject
 
 /** Makes another instance the active one (concept 4.4): only an instance whose token is usable is activated. */
-class InstanceSwitcher @Inject constructor(
+class InstanceSwitcher internal constructor(
     private val active: ActiveInstanceStore,
     private val servers: ServerDao,
     private val tokens: TokenStore,
     private val unlocked: UnlockedTokens,
     private val errors: ErrorFactory,
+    private val clock: () -> Long,
 ) {
+    /** Uses the wall clock. */
+    @Inject
+    constructor(
+        active: ActiveInstanceStore,
+        servers: ServerDao,
+        tokens: TokenStore,
+        unlocked: UnlockedTokens,
+        errors: ErrorFactory,
+    ) : this(active, servers, tokens, unlocked, errors, System::currentTimeMillis)
+
     /** Activates [id] if its token is usable now; otherwise tells what is missing and changes nothing. */
     suspend fun switchTo(id: String): SwitchStep {
         val step = step(id)
@@ -35,7 +46,7 @@ class InstanceSwitcher @Inject constructor(
     /** Makes [id] the active instance and remembers when it was used. */
     suspend fun activate(id: String) {
         errors.database {
-            servers.touch(id, System.currentTimeMillis())
+            servers.touch(id, clock())
             active.setActive(id)
         }
     }
