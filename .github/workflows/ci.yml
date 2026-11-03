@@ -43,6 +43,8 @@ jobs:
         run: ./gradlew codeIndexCheck
       - name: Dependency map up to date (docs/review)
         run: python3 scripts/build_dependencies.py --check
+      - name: Code documentation up to date (docs/code-doku)
+        run: python3 scripts/build_code_doku.py --check
       - name: Build-logic tests (code index generator)
         run: ./gradlew -p build-logic test
       - name: Upload reports

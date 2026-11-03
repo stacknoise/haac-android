@@ -20,8 +20,10 @@ Requirements:
 ./gradlew codeIndex          # regenerate docs/code-index.md and docs/error-codes.md
 ./gradlew codeIndexCheck     # fail if those files are outdated or a KDoc summary is missing
 python3 scripts/build_dependencies.py --check   # fail if docs/review is outdated (CI runs it)
+python3 scripts/build_code_doku.py --check   # fail if docs/code-doku is outdated (CI runs it)
 ./gradlew -p build-logic test   # tests of the code index generator
 python3 scripts/build_dependencies.py   # regenerate docs/review/ with every code change (dependency map; Python 3, no packages needed)
+python3 scripts/build_code_doku.py   # regenerate docs/code-doku/ with every code change (code documentation; Python 3, no packages needed)
 ```
 
 Before every pull request this must pass:
@@ -57,6 +59,7 @@ config/detekt/        Detekt overrides
 gradle/libs.versions.toml   all versions; modules never declare versions themselves
 docs/                 concept.md, code-index.md, error-codes.md, mockups, icons, screenshots
 docs/review/          GENERATED dependency map (dependencies.html, dependency-graph.html) by scripts/build_dependencies.py
+docs/code-doku/        GENERATED code documentation (index.html) by scripts/build_code_doku.py
 .github/workflows/    ci.yml, release.yml, codeql.yml
 ```
 
@@ -196,6 +199,8 @@ NET_UNREACHABLE(
 - After adding, renaming or removing a class or function: `./gradlew codeIndex`, and commit the regenerated `docs/code-index.md` and `docs/error-codes.md` **in the same commit**. CI (`codeIndexCheck`) fails otherwise.
 - Never edit the two files by hand. After a merge or rebase conflict in `docs/code-index.md`, take either side and regenerate it; never merge it by hand.
 - The generator lives in `build-logic` (`codeindex`, task registered by `CodeIndexConventionPlugin`) and has its own tests (`./gradlew -p build-logic test`).
+
+`docs/code-doku/index.html` is the code documentation: one self-contained page (open it in a browser) with an explorer (module, package, class, function) showing metrics, the KDoc and the source text, and a dependency map between packages and classes. **The documentation must be updated with every code change**: run `python3 scripts/build_code_doku.py` and commit the page in the same commit; CI (`--check`) fails if it is outdated. The page shows the KDoc, so change it when the behaviour changes. Metrics (lines, complexity, maintainability, Ca/Ce) are approximations of a source scanner, not a compiler analysis. The page template is `scripts/code_doku_template.html`; the same script and template are used in `stacknoise/haac-bridge`, keep them identical.
 
 ## 6. No duplicate code (concept 17.6)
 
