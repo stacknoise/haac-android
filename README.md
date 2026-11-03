@@ -14,7 +14,7 @@ This limits what the app shows and controls. It is not a Home Assistant permissi
 
 - Supported entity domains: switch, sensor, binary sensor (read-only), climate.
 - Android 9 (API 28) or newer.
-- Requires Home Assistant 2026.9.0 or newer with HAAC Bridge installed.
+- Requires Home Assistant 2026.9.0 or newer with HAAC Bridge installed. Install the bridge first, through HACS (official list, no custom repository): [![Open HAAC Bridge in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=stacknoise&repository=haac-bridge&category=integration) Then share entities per user as described in the [bridge README](https://github.com/stacknoise/haac-bridge#installation-hacs).
 - With HAAC Bridge 0.6.0 or newer the app sends a device name (Settings → Device, the phone model by default, can be changed or left empty) with every switching action, so Home Assistant's log and Activity page show which device switched.
 - Install: download `haac-vX.Y.Z-sideload.apk` from the [latest GitHub Release](https://github.com/stacknoise/haac-android/releases/latest), compare its SHA-256 with the `.sha256` file next to it and open it on the phone (allow installs from this source once).
 
