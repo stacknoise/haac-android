@@ -11,6 +11,7 @@ import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.BinaryLevel
 import com.stacknoise.haac.feature.entities.domain.Tile
 import com.stacknoise.haac.feature.entities.domain.TileContent
+import com.stacknoise.haac.feature.entities.ui.tile.secondaryColor
 
 /** The level a binary sensor tile is lit with, or null while it is off, not available or withdrawn (concept 8.6). */
 internal fun Tile.litLevel(): BinaryLevel? = (content as? TileContent.Binary)?.level?.takeIf { active }

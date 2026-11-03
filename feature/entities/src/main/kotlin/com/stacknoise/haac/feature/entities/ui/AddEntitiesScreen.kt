@@ -58,6 +58,7 @@ import com.stacknoise.haac.core.common.ui.theme.haacTextFieldColors
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.DomainLabels
 import com.stacknoise.haac.feature.entities.domain.PickerRow
+import com.stacknoise.haac.feature.entities.ui.tile.stateText
 
 /**
  * *Add entities* for one room (M-04, concept 7.1, 7.2); [onClose] after adding or on Back. From the medium class

@@ -3,7 +3,6 @@ package com.stacknoise.haac.feature.entities.disable.data
 import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.core.network.connection.requireOpen
 import com.stacknoise.haac.core.network.http.decodeOrUnexpected
-import com.stacknoise.haac.feature.entities.data.SetDisabledReply
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.json.Json

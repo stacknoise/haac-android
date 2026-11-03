@@ -35,6 +35,7 @@ import com.stacknoise.haac.core.common.ui.theme.haacSegmentedColors
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.HistoryChart
 import com.stacknoise.haac.feature.entities.domain.HistoryPreset
+import com.stacknoise.haac.feature.entities.ui.tile.secondaryColor
 
 /**
  * History of the detail screen (concept 8.1 – 8.4): *24 h*, *7 days* or *Custom* (a range of days), then the

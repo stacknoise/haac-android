@@ -32,6 +32,7 @@ import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.EntityControl
 import com.stacknoise.haac.feature.entities.domain.Tile
 import com.stacknoise.haac.feature.entities.domain.TileContent
+import com.stacknoise.haac.feature.entities.ui.tile.secondaryColor
 
 /**
  * The climate tile (M-05, concept 8.4): name, heating mark, target temperature on an arc from `min_temp` to

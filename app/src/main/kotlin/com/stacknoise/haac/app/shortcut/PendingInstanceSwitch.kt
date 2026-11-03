@@ -2,7 +2,6 @@ package com.stacknoise.haac.app.shortcut
 
 import android.content.Context
 import android.content.Intent
-import com.stacknoise.haac.app.MainActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,7 +34,8 @@ class PendingInstanceSwitch @Inject constructor(
     }
 
     /** The intent of the shortcut for instance [serverId]. */
-    suspend fun intent(serverId: String): Intent = Intent(context, MainActivity::class.java)
+    suspend fun intent(serverId: String): Intent = Intent()
+        .setClassName(context, MAIN_ACTIVITY)
         .setAction(ACTION)
         .putExtra(EXTRA_SERVER_ID, serverId)
         .putExtra(EXTRA_KEY, shortcutKey.get())
@@ -45,8 +45,9 @@ class PendingInstanceSwitch @Inject constructor(
         ?.takeIf { it.action == ACTION && it.getStringExtra(EXTRA_KEY) == shortcutKey.get() }
         ?.getStringExtra(EXTRA_SERVER_ID)
 
-    /** Intent action and extras of the shortcut intents. */
+    /** Intent action, extras and target activity (`app.MainActivity`, named so that this package stays below it). */
     private companion object {
+        const val MAIN_ACTIVITY = "com.stacknoise.haac.app.MainActivity"
         const val ACTION = "com.stacknoise.haac.action.SWITCH_INSTANCE"
         const val EXTRA_SERVER_ID = "server_id"
         const val EXTRA_KEY = "shortcut_key"

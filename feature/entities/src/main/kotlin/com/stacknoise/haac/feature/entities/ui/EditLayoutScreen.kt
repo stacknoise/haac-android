@@ -48,6 +48,7 @@ import com.stacknoise.haac.core.common.ui.theme.haacButtonColors
 import com.stacknoise.haac.core.common.ui.theme.haacSegmentedColors
 import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.Tile
+import com.stacknoise.haac.feature.entities.ui.tile.secondaryColor
 
 /**
  * Edit layout of a room (M-06, M-07, concept 7.2): *Close* discards (after asking when something changed), *Done*

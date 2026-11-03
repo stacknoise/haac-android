@@ -1,5 +1,6 @@
 package com.stacknoise.haac.feature.entities.data
 
+import com.stacknoise.haac.feature.entities.disable.data.SetDisabledReply
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse

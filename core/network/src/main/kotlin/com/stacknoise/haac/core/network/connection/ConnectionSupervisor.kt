@@ -3,7 +3,7 @@ package com.stacknoise.haac.core.network.connection
 import com.stacknoise.haac.core.error.ErrorCode
 import com.stacknoise.haac.core.error.ErrorReporter
 import com.stacknoise.haac.core.error.HaacException
-import com.stacknoise.haac.core.network.di.ConnectionScope
+import com.stacknoise.haac.core.network.scope.ConnectionScope
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope

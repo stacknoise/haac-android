@@ -9,7 +9,7 @@ import com.stacknoise.haac.core.network.connection.LiveConnection
 import com.stacknoise.haac.core.network.connection.connected
 import com.stacknoise.haac.core.network.connection.requireOpen
 import com.stacknoise.haac.core.network.connection.stale
-import com.stacknoise.haac.core.network.di.ConnectionScope
+import com.stacknoise.haac.core.network.scope.ConnectionScope
 import com.stacknoise.haac.feature.entities.domain.ControlRequest
 import com.stacknoise.haac.feature.entities.domain.ServiceCallFactory
 import java.util.concurrent.ConcurrentHashMap

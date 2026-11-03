@@ -6,6 +6,8 @@ import com.stacknoise.haac.feature.entities.R
 import com.stacknoise.haac.feature.entities.domain.EntityDetail
 import com.stacknoise.haac.feature.entities.domain.ReadingKind
 import com.stacknoise.haac.feature.entities.domain.TileContent
+import com.stacknoise.haac.feature.entities.ui.tile.relativeTime
+import com.stacknoise.haac.feature.entities.ui.tile.stateText
 /** The big value: the HVAC mode of a climate entity, else the tile's state; a time also absolute. */
 @Composable
 internal fun primaryValue(detail: EntityDetail): String {

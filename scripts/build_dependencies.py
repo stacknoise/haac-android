@@ -422,7 +422,7 @@ def analyse_kotlin():
         if any(part in ("build", ".git", ".gradle") for part in path.relative_to(ROOT).parts):
             continue
         rel = path.relative_to(ROOT).as_posix()
-        if "/src/test/" in rel or "/src/androidTest/" in rel or "/src/debug/" in rel:
+        if "/src/main/" not in rel:
             continue
         source = path.read_text(encoding="utf-8")
         match = re.search(r"^package\s+([\w.]+)", source, re.M)
